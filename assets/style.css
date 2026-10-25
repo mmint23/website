@@ -1,0 +1,180 @@
+/* Gemeinsames Aussehen der Website.
+   Farben stehen als Variablen oben, damit Hell- und Dunkelmodus
+   (Systemeinstellung) automatisch funktionieren. */
+
+:root {
+  --hintergrund: #f7f6f2;
+  --flaeche: #ffffff;
+  --text: #1d2125;
+  --text-leise: #5b636b;
+  --linie: #dfdcd3;
+  --akzent: #1f5fbf;        /* Feldlinien-Blau */
+  --akzent-zart: #e3ecfa;
+  --warm: #c2410c;          /* für Hinweise wie "zieht gerade um" */
+  --schatten: 0 1px 2px rgba(0, 0, 0, .05), 0 4px 16px rgba(0, 0, 0, .04);
+  --radius: 14px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hintergrund: #14171a;
+    --flaeche: #1c2024;
+    --text: #e8eaec;
+    --text-leise: #9aa3ab;
+    --linie: #2e343a;
+    --akzent: #6ea8ff;
+    --akzent-zart: #1d2a3d;
+    --warm: #fb923c;
+    --schatten: none;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--hintergrund);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main { flex: 1; }
+
+.breite {
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+a { color: var(--akzent); }
+
+/* Kopfzeile */
+.kopf {
+  border-bottom: 1px solid var(--linie);
+  background: var(--flaeche);
+}
+.kopf .breite {
+  display: flex;
+  align-items: center;
+  min-height: 3.5rem;
+}
+.marke {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 650;
+  letter-spacing: -.01em;
+}
+
+/* Einleitung */
+.einleitung {
+  padding: 3rem 0 1.5rem;
+  max-width: 40rem;
+}
+h1 {
+  font-size: clamp(1.9rem, 4vw + 1rem, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  margin: 0 0 .75rem;
+}
+.einleitung p {
+  color: var(--text-leise);
+  margin: 0;
+  font-size: 1.125rem;
+}
+h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-leise);
+  font-weight: 600;
+  margin: 2rem 0 1rem;
+}
+
+/* Karten der Simulationen */
+.karten {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1rem;
+}
+.karte {
+  position: relative;
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten);
+  padding: 1.25rem 1.25rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  transition: border-color .15s, transform .15s;
+}
+.karte:has(a:hover), .karte:has(a:focus-visible) {
+  border-color: var(--akzent);
+  transform: translateY(-2px);
+}
+.karte__thema {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--akzent);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.karte__titel {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+.karte__titel a {
+  color: inherit;
+  text-decoration: none;
+}
+/* ganze Karte anklickbar, wenn sie einen Link hat */
+.karte__titel a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+.karte__text {
+  margin: 0;
+  color: var(--text-leise);
+  font-size: .975rem;
+  flex: 1;
+}
+.karte__status {
+  align-self: flex-start;
+  margin-top: .5rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--warm);
+}
+.karte--bald { opacity: .85; }
+
+/* Fußzeile */
+.fuss {
+  border-top: 1px solid var(--linie);
+  color: var(--text-leise);
+  font-size: .9rem;
+}
+.fuss .breite {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.5rem;
+}
