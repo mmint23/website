@@ -1,0 +1,60 @@
+[
+  {
+    "repo": "marco230199/leiterschaukel-induktion",
+    "pfad": "leiterschaukel-induktion",
+    "titel": "Induktion: Leiterschaukel",
+    "fach": "Physik",
+    "text": "Eine Leiterschaukel schwingt im Feld eines Hufeisenmagneten, ein Zeigermessgerät zeigt die induzierte Spannung."
+  },
+  {
+    "repo": "marco230199/schienenversuch-lorentzkraft",
+    "pfad": "schienenversuch-lorentzkraft",
+    "titel": "Lorentzkraft: Leiter auf Schienen",
+    "fach": "Physik",
+    "text": "Eine Stange auf zwei Schienen rollt im Magnetfeld, sobald Strom fließt."
+  },
+  {
+    "repo": "marco230199/leiterschleife_magnetfeld",
+    "pfad": "leiterschleife-magnetfeld",
+    "titel": "Leiterschleife im Magnetfeld",
+    "fach": "Physik",
+    "text": "Eine drehbare Leiterschleife im Hufeisenmagneten, der Kommutator hält sie in Bewegung."
+  },
+  {
+    "repo": "marco230199/gleichstrommotor",
+    "pfad": "gleichstrommotor",
+    "titel": "Gleichstrommotor",
+    "fach": "Physik",
+    "text": "Ein Gleichstrommotor mit austauschbaren Rotoren aus Spulen mit Eisenkern."
+  },
+  {
+    "repo": "marco230199/thomson-roehre",
+    "pfad": "thomson-roehre",
+    "titel": "Thomson-Röhre",
+    "fach": "Physik",
+    "text": "Elektronen werden im elektrischen Feld und im Feld eines Helmholtz-Spulenpaars abgelenkt."
+  },
+  {
+    "repo": "marco230199/magnetic_field_simulation",
+    "pfad": "magnetfeldlinien",
+    "titel": "Magnetfeldlinien",
+    "fach": "Physik",
+    "text": "Stabmagnete und ihre Feldlinien, einzeln und zusammen."
+  },
+  {
+    "repo": "marco230199/dezimalquadrat",
+    "pfad": "dezimalquadrat",
+    "titel": "Dezimalzahlen am Quadrat",
+    "fach": "Mathematik",
+    "text": "Ein Quadrat als Ganzes wird in Zehntel, Hundertstel und Tausendstel zerlegt."
+  },
+  {
+    "repo": "marco230199/eva_lineare_regression",
+    "pfad": "lineare-regression",
+    "titel": "Lineare Regression",
+    "fach": "Mathematik",
+    "text": "Eine Ausgleichsgerade durch Messdaten, am Beispiel CO₂ und Temperatur.",
+    "bauen": "npm ci && npm run build",
+    "ausgabe": "dist"
+  }
+]
