@@ -1,8 +1,8 @@
 // ------------------------------------------------------------------
-// Zustand der Simulation an einer Stelle: Einstellungen (Bedienfeld), bewegte Teile (Physik), Ansicht und Tafel.
-// Die Darstellung wird in jedem Bild daraus gezeichnet. Alles außer tafel.dokument (enthält den Verlauf
-// für „Rückgängig“) ist reines JSON – zustandAlsDaten() liefert eine Kopie, z. B. um später eine Simulation
-// live auf ein anderes Gerät zu spiegeln.
+// Zustand der Simulation an einer Stelle: Einstellungen (Bedienfeld), bewegte Teile (Physik) und Ansicht.
+// Die Darstellung wird in jedem Bild daraus gezeichnet. Alles ist reines JSON – zustandAlsDaten() liefert eine
+// Kopie, z. B. um später eine Simulation live auf ein anderes Gerät zu spiegeln. Die Tafel hat ihren eigenen
+// Zustand im gemeinsamen Baustein (gemeinsam/tafel/).
 // ------------------------------------------------------------------
 export const state = {
   setup: 'drehbar',   // 'drehbar' (Magnet im Drehgelenk) oder 'tisch' (Magnet liegt auf dem Tisch, verschiebbar)
@@ -50,22 +50,9 @@ export const state = {
 
   // ---- Laserpointer (laser.js): Stift und Maus markieren, statt die Simulation zu bedienen
   laser: { on: false },
-
-  // ---- Tafel im Erklärmodus
-  tafel: {
-    open: false,      // groß geöffnet
-    color: 'v',       // Stift: 'v', 'B', 'F', 'schwarz' (siehe FARBEN in striche.js)
-    eraser: false,
-    mode: 'frei',     // 'frei' (Freihand) oder 'pfeil' (gerader Pfeil)
-    eigene: [],       // eigene Zeichnung (Striche, Format siehe striche.js); im Browser gespeichert
-    // Was gerade auf der Tafel liegt: { striche, verlauf, bearbeitet } – die eigene Zeichnung oder auf der
-    // Lehrerseite die Arbeitskopie einer Abgabe (tafel.js)
-    dokument: null,
-  },
 };
 
-// Kopie des Zustands als reine Daten (ohne Verlauf für „Rückgängig“)
+// Kopie des Zustands als reine Daten
 export function zustandAlsDaten() {
-  const { dokument, ...tafel } = state.tafel;
-  return structuredClone({ ...state, tafel: { ...tafel, striche: dokument?.striche ?? tafel.eigene } });
+  return structuredClone(state);
 }

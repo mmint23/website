@@ -1,0 +1,14 @@
+{
+  "name": "website",
+  "private": true,
+  "description": "Interaktive Simulationen für den Unterricht – statische Website mit optionalem Abgabe-Server für das Klassenzimmer",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "offline": "node server/offline.js",
+    "test": "node --test \"gemeinsam/**/tests/*.test.mjs\" \"simulationen/*/tests/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

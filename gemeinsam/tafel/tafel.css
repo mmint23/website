@@ -1,0 +1,148 @@
+/* Zeichentafel, Abgabe und Lehrerseite (gemeinsam/tafel/). Eine Simulation kann einzelne Werte überschreiben,
+   z. B. Platz für ihr Bedienfeld rechts:  :root { --abgaben-rechts: 312px; } */
+
+.tafel-overlay[hidden], .tafel-overlay [hidden], .abgaben[hidden], .abgaben [hidden], #pinOverlay[hidden] { display: none !important; }
+.tafel-overlay, .abgaben, #pinOverlay { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1d2733; }
+
+/* ---------------- Tafel groß (Zeichnen) */
+.tafel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  background: #2b3540;
+  /* iPad: kein Markieren, keine Lupe, kein Zoomen durch Doppeltippen */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+.tafel-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tafel-leiste .gruppe { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-right: 8px; border-right: 1px solid #4a5866; }
+.tafel-leiste .gruppe:last-of-type { border-right: none; }
+.tafel-leiste button, .tafel-leiste input {
+  font: inherit;
+  font-size: 0.95rem;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #9aa7b4;
+  border-radius: 8px;
+  background: #fff;
+  color: #1d2733;
+}
+.tafel-leiste button { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; cursor: pointer; }
+.tafel-leiste button[aria-pressed="true"] { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+.tafel-leiste button:disabled { opacity: 0.6; }
+.tafel-leiste .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.7); }
+.tafel-leiste input { width: 13em; -webkit-user-select: text; user-select: text; }
+.tafel-leiste button.haupt { background: #2e7d32; border-color: #2e7d32; color: #fff; }
+.tafel-leiste .schliessen { margin-left: auto; }
+.tafel-status { color: #ffd2d2; font-weight: 600; }
+.tafel-status.ok { color: #9be7a0; }
+.tafel-titel { color: #fff; font-weight: 600; }
+button.gefahr.scharf { background: #c62828; border-color: #c62828; color: #fff; }
+.tafel-bereich { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.tafel-blatt {
+  position: relative;
+  border: 8px solid #7a5230;
+  border-radius: 6px;
+  box-sizing: content-box;
+  background: #e8edf2;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+.tafel-blatt img, .tafel-blatt canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tafel-blatt img { pointer-events: none; }
+.tafel-blatt canvas { touch-action: none; cursor: crosshair; }
+
+/* ---------------- Lehrerseite: PIN (nur wenn der Server mit PIN gestartet wurde) */
+#pinOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(20, 28, 38, 0.6);
+}
+.pin-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+}
+.pin-box h2 { margin: 0; }
+.pin-box .status { margin: 0; font-size: 0.85rem; color: #4a5866; }
+.pin-box input { font: inherit; font-size: 1.6rem; width: 8em; text-align: center; letter-spacing: 0.2em; padding: 6px; border: 1px solid #9aa7b4; border-radius: 8px; }
+.pin-box button { font: inherit; padding: 8px 22px; border: 1px solid #9aa7b4; border-radius: 8px; background: #fff; cursor: pointer; }
+.pin-fehler { color: #c62828; min-height: 1.2em; }
+
+/* ---------------- Lehrerseite: Leiste mit den Abgaben */
+.abgaben {
+  position: fixed;
+  left: 16px;
+  right: var(--abgaben-rechts, 16px);
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+.abgaben-kopf { flex: none; width: 180px; display: flex; flex-direction: column; gap: 6px; }
+.abgaben-kopf > button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 5px 8px;
+  border: 1px solid #9aa7b4;
+  border-radius: 8px;
+  background: #fff;
+  color: #1d2733;
+  cursor: pointer;
+}
+.abgaben-qr { display: none; }
+.abgaben-info { display: flex; flex-direction: column; font-size: 0.95rem; }
+.abgaben-info .status { margin: 0; font-size: 0.85rem; color: #4a5866; }
+.abgaben-adresse { overflow-wrap: anywhere; font-weight: 600; color: #1d4f91 !important; }
+.abgaben-liste { flex: 1; min-width: 0; display: flex; gap: 10px; overflow-x: auto; align-items: flex-start; }
+.kachel {
+  position: relative;
+  flex: none;
+  width: 164px;
+  padding: 4px;
+  font: inherit;
+  font-size: 0.85rem;
+  border: 2px solid #d5dce3;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+}
+.kachel canvas { display: block; width: 100%; height: auto; border-radius: 4px; background: #e8edf2; }
+.kachel-name { display: block; margin-top: 3px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kachel.eigen .kachel-name { color: #4a5866; font-weight: 400; font-style: italic; }
+.kachel-marke { display: none; position: absolute; top: 8px; right: 8px; padding: 1px 6px; font-size: 0.75rem; border-radius: 6px; background: #ef6c00; color: #fff; }
+.kachel.bearbeitet .kachel-marke { display: block; }
+.kachel.offen { border-color: #1d4f91; }
+.kachel.neu { animation: kachel-neu 2s ease-out; }
+@keyframes kachel-neu { from { border-color: #2e7d32; box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.45); } }
+/* groß: alle Abgaben als Raster über der Szene, mit großem QR-Code */
+.abgaben.gross { top: 16px; right: 16px; z-index: 25; background: #fff; }
+.abgaben.gross .abgaben-kopf { width: 240px; }
+.abgaben.gross .abgaben-qr { display: block; padding: 0; border: none; background: none; }
+.abgaben.gross .abgaben-qr svg { display: block; width: 100%; height: auto; }
+.abgaben.gross .abgaben-liste { flex-wrap: wrap; overflow-y: auto; align-content: flex-start; }
+.abgaben.gross .kachel { width: 260px; font-size: 1rem; }
+@media (max-width: 700px) {
+  .abgaben { right: 16px; bottom: auto; top: 16px; z-index: 12; }
+  .abgaben-kopf { width: 120px; }
+}
