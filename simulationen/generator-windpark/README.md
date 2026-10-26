@@ -74,6 +74,21 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
 
 Das U-t-Diagramm bleibt einblendbar, so lässt sich vergleichen: F_L am größten, wenn U am größten ist.
 
+### Tafel
+
+„Tafel öffnen (zeichnen)“ (unten im Bedienfeld des Erklärmodus) öffnet eine große Zeichentafel mit dem Bild
+`bilder/tafel.svg`: oben die Leiterschleife zwischen Nord- und Südpol in den Stellungen φ = 0°, 90°, 180°, 270°
+und 360° (Blick entlang der Welle von rechts, Längsseite A ausgefüllt, B hohl, Drehsinn wie in der Simulation),
+darunter ein leeres U-t-Diagramm. Die Zeitmarken 0, T/4, T/2, 3T/4 und T stehen genau unter den Bildern
+(gestrichelte Hilfslinien): Aus den Stellungen – Schleife waagrecht: U = 0, Schleife senkrecht: |U| am größten –
+lässt sich die Sinuskurve punktweise einzeichnen. Zeichnen mit Apple Pencil, Finger oder Maus; über den
+Abgabe-Server können Schüler ihre Zeichnung an die Lehrkraft schicken (gemeinsamer Baustein der Website,
+siehe [`gemeinsam/tafel/README.md`](../../gemeinsam/tafel/README.md); Lehrerseite:
+<http://localhost:8080/lehrer/generator-windpark>).
+
+Das Bild ist eine SVG-Datei und lässt sich mit einem Texteditor ändern – aber nicht mehr verschieben, sobald
+Zeichnungen geteilt wurden (die Koordinaten beziehen sich auf das Bild).
+
 ## Physikalisches Modell
 
 - Leiterschleife: Längsseiten l = 10 cm im Abstand r = 4 cm von der Achse, Fläche A = 80 cm²;
@@ -105,10 +120,13 @@ Das U-t-Diagramm bleibt einblendbar, so lässt sich vergleichen: F_L am größte
 ## Starten
 
 Die Simulation lädt [three.js](https://threejs.org) aus dem Internet und muss über einen Webserver
-geöffnet werden (ein Doppelklick auf `index.html` reicht nicht):
+geöffnet werden (ein Doppelklick auf `index.html` reicht nicht). Weil sie die Tafel aus `website/gemeinsam/`
+lädt, muss der Webserver im Ordner `website/` laufen, nicht im Ordner der Simulation:
 
-- **VS Code:** Erweiterung „Live Server“, Rechtsklick auf `index.html` → „Open with Live Server“
-- **Terminal:** im Projektordner `python3 -m http.server` ausführen und <http://localhost:8000> öffnen
+- **Mit Abgabe-Funktion:** im Ordner `website/` `npm start`, dann <http://localhost:8080/simulationen/generator-windpark/>
+- **Terminal:** im Ordner `website/` `python3 -m http.server` ausführen und
+  <http://localhost:8000/simulationen/generator-windpark/> öffnen
+- **VS Code:** Erweiterung „Live Server“ mit dem Ordner `website/` als Arbeitsbereich
 
 ## Projektstruktur
 
@@ -116,8 +134,9 @@ geöffnet werden (ein Doppelklick auf `index.html` reicht nicht):
 generator-windpark/
 ├── index.html          # Seitengerüst, Bedienfeld, Diagramm
 ├── css/style.css
+├── bilder/tafel.svg    # Tafelbild: Schleife in fünf Stellungen, leeres U-t-Diagramm
 ├── js/
-│   ├── main.js         # Start und Render-Schleife
+│   ├── main.js         # Start, Render-Schleife, Tafel einrichten (gemeinsam/tafel/)
 │   ├── config.js       # Maße und Modellgrößen
 │   ├── state.js        # Zustand (Antrieb, Drehzahl, Magnet, …)
 │   ├── physik.js       # Drehung, Induktionsspannung, Zeiger, Drehzahl der Windräder (ohne 3D, testbar)

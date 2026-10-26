@@ -204,3 +204,16 @@ html, body {
   z-index: 16;
 }
 .model-badge.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Knopf „Tafel öffnen“ im Erklärmodus (Tafel selbst: gemeinsam/tafel/) */
+.popup button.tafel-btn { margin-top: 14px; border-color: #5c3a1c; color: #5c3a1c; font-weight: 600; }
+
+/* Lehrerseite (Abgabeleiste unten: gemeinsam/tafel/tafel.css) */
+:root { --abgaben-rechts: 312px; }   /* Abgabeleiste endet vor dem Bedienfeld */
+body.lehrer .hint { display: none; }
+/* Diagramm über der Abgabeleiste, rechts neben dem Erklär-Bedienfeld (links ist dafür kein Platz) */
+body.lehrer .plot-box { bottom: 296px; left: 302px; width: min(440px, calc(100% - 614px)); }
+body.lehrer .popup { max-height: calc(100% - 380px); }
+@media (max-width: 700px) {
+  body.lehrer .plot-box { bottom: calc(45% + 16px); left: 16px; width: calc(100% - 32px); }
+}
