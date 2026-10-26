@@ -136,29 +136,26 @@ der Simulation und an der Tafel ändert sich nichts.
 
 ## Link zeigen
 
-Der Knopf „Link / QR-Code zeigen“ (ganz oben im Bedienfeld rechts) öffnet ein großes Fenster mit QR-Code und Adresse der Simulation zum
-Abscannen vom Beamer. Der Code wird im Browser aus der eigenen Adresse erzeugt; bei lokal geöffneter Seite
-(localhost) zeigt er die öffentliche Adresse <https://mmint23.github.io/website/simulationen/leiterschaukel-induktion/>
-(`PUBLIC_URL` in `js/config.js`). Die QR-Code-Bibliothek
-[qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (MIT) wird beim ersten Öffnen aus dem
-Internet geladen.
+Der Knopf „Link / QR-Code zeigen“ (ganz oben im Bedienfeld rechts) öffnet ein großes Fenster mit QR-Code und
+Adresse der Simulation zum Abscannen vom Beamer. Bei lokal geöffneter Seite (localhost) zeigt er die öffentliche
+Adresse <https://mmint23.github.io/website/simulationen/leiterschaukel-induktion/>. Das Fenster kommt aus dem
+gemeinsamen Baustein [`gemeinsam/link.js`](../../gemeinsam/link.js).
 
 ## Abgabe im Unterricht (Abgabe-Server)
 
 Schüler zeichnen auf der Tafel und schicken ihre Zeichnung mit **„Teilen“** an die Lehrkraft. Die Lehrerseite
-zeigt alle Abgaben live; ein Klick öffnet eine Abgabe groß auf der Tafel.
-
-Dafür gibt es einen kleinen Node.js-Server (`server/`, ohne weitere Abhängigkeiten), der auf dem Lehrer-Laptop
-läuft und die Simulation selbst mit ausliefert: Alle Geräte im selben WLAN öffnen `http://<Laptop-IP>:8080`.
-
-Ohne Server (GitHub Pages, Live Server) ist „Teilen“ ausgeblendet; die Simulation funktioniert wie bisher.
+zeigt alle Abgaben live; ein Klick öffnet eine Abgabe groß auf der Tafel. Tafel, Teilen und Lehrerseite sind der
+gemeinsame Baustein der Website – **Server starten, Firewall, Hotspot, Datenschutz und Technik:
+[`gemeinsam/tafel/README.md`](../../gemeinsam/tafel/README.md)**. Ohne Server (GitHub Pages, Live Server) ist
+„Teilen“ ausgeblendet; die Simulation funktioniert wie bisher.
 
 ### Ablauf in der Stunde
 
-1. Server starten (siehe unten), Lehrerseite `http://localhost:8080/lehrer` öffnen, PIN eingeben. Die Seite erzeugt einen zufälligen **Raumcode** (z. B. `k7m2`)
-   und schreibt ihn in die Adresse – Neuladen bleibt im selben Raum, die Anmeldung gilt in diesem Tab weiter
-   (bis zu 12 Stunden bzw. bis zum Neustart des Servers). Unten erscheint die Leiste **„Abgaben“** mit Raumcode,
-   Adresse und QR-Code („Groß“ zeigt den QR-Code groß und alle Abgaben als Raster).
+1. Im Ordner `website/` den Server mit `npm start` starten und die Lehrerseite
+   <http://localhost:8080/lehrer/leiterschaukel-induktion> öffnen (nur falls mit PIN gestartet: PIN eingeben). Die
+   Seite erzeugt einen zufälligen **Raumcode** (z. B. `k7m2`) und schreibt ihn in die Adresse – Neuladen bleibt im
+   selben Raum. Unten erscheint die Leiste **„Abgaben“** mit Raumcode, Adresse und QR-Code („Groß“ zeigt den
+   QR-Code groß und alle Abgaben als Raster).
 2. Schüler scannen den QR-Code (er enthält den Raumcode), öffnen „Erklärung: Elektron im Leiter“, tippen auf die
    Tafel und zeichnen. Optional Name/Kürzel, dann **„Teilen“** → „Geteilt ✓“. Erneutes Teilen ersetzt die vorige
    Abgabe dieses Geräts. Ohne Raumcode in der Adresse gibt es keinen „Teilen“-Knopf.
@@ -171,73 +168,15 @@ Ohne Server (GitHub Pages, Live Server) ist „Teilen“ ausgeblendet; die Simul
 5. „Abgabe löschen“ (in der Tafel) bzw. „Alle löschen“ (in der Leiste) fragen einmal nach („Wirklich …?“).
    „Eigene Tafel“ in der Leiste führt zurück zur eigenen Zeichnung.
 
-**Lehrerseite zusätzlich auf dem iPad:** „Lehrerseite auf anderem Gerät“ in der Leiste zeigt einen QR-Code zur
-Lehrerseite – mit demselben Raumcode. Mit dem iPad scannen, PIN eingeben: Beide Geräte sehen dieselben Abgaben live;
-Bearbeitungen bleiben auf dem jeweiligen Gerät. Der Code erscheint nur auf Knopfdruck, damit ihn die Schüler am
-Beamer nicht nebenbei mitscannen (ohne PIN kämen sie ohnehin nicht weiter).
+### Technik (Leiterschaukel)
 
-Mehrere Klassen gleichzeitig: Jede neu geöffnete Lehrerseite bekommt ihren eigenen Raumcode und sieht nur dessen
-Abgaben. Einen festen Code kann man mit `?lehrer&raum=10b` wählen.
-
-### Server auf dem Laptop starten
-
-```bash
-sudo dnf install nodejs        # einmalig; Node.js ab Version 18
-npm run offline                # einmalig, solange Internet da ist: three.js & QR-Code-Bibliothek nach server/offline/
-npm start                      # Lehrerseite: http://localhost:8080/lehrer
-```
-
-Der QR-Code zeigt dann auf die Adresse des Laptops im WLAN (z. B. `http://192.168.2.51:8080/?raum=k7m2`). Ohne
-`npm run offline` holen die Geräte three.js weiter aus dem Internet. Eigene PIN oder anderer Port:
-`PIN=2468 PORT=8090 npm start`. Beenden mit Strg+C – dabei sind alle Abgaben weg.
-
-**Firewall (Fedora, firewalld):** Auf Fedora Workstation sind in der Standardzone die Ports 1025–65535 meist schon
-offen (`firewall-cmd --list-all`). Sonst:
-
-```bash
-sudo firewall-cmd --add-port=8080/tcp                                            # bis zum Neustart
-sudo firewall-cmd --permanent --add-port=8080/tcp && sudo firewall-cmd --reload  # dauerhaft
-```
-
-Liegt das WLAN in einer anderen Zone (`firewall-cmd --get-active-zones`), `--zone=<Zone>` ergänzen; beim
-Laptop-Hotspot heißt sie meist `nm-shared`.
-
-**Wenn das WLAN die Geräte voneinander isoliert** (Schüler erreichen die Laptop-Adresse nicht): Hotspot vom Laptop
-(GNOME-Einstellungen → WLAN → ⋮ → „WLAN-Hotspot einschalten …“ oder
-`nmcli device wifi hotspot ssid Physik password 'geheim123'`; Server danach starten bzw. Lehrerseite neu laden),
-Hotspot vom Handy für alle Geräte, oder die Schul-IT nach einem Netz ohne Client-Isolation fragen.
-
-**Standby:** Der Server wird im Standby nur angehalten; die Abgaben bleiben erhalten, alle Seiten verbinden sich
-nach dem Aufwachen von selbst neu. Damit der Laptop im Unterricht gar nicht erst einschläft (auch nicht beim
-Zuklappen): `systemd-inhibit --what=idle:sleep:handle-lid-switch npm start`.
-
-### Datenschutz und Schutzmaßnahmen
-
-- Abgaben liegen **nur im Arbeitsspeicher** des Servers; nichts wird auf die Festplatte geschrieben, keine Accounts,
-  keine Zugriffsprotokolle (der Server protokolliert nur Fehler). Beim Neustart des
-  Servers ist alles weg; verwaiste Räume werden nach 12 Stunden gelöscht. Eigene Zeichnung, Name und eine zufällige
-  Geräte-Kennung bleiben nur im Browser des jeweiligen Geräts.
-- Empfehlung: Kürzel statt vollständiger Namen.
-- Nur Seiten, die vom Server selbst kommen, dürfen sich per WebSocket verbinden (Origin-Prüfung).
-- Lehrerseite (Abgaben sehen, löschen) nur mit PIN; danach ein Token, das 12 Stunden gilt. Höchstens 5 PIN-Versuche
-  pro Minute je IP-Adresse.
-- Abgeben nur in Räume, die eine angemeldete Lehrerseite geöffnet hat. Pro Abgabe höchstens 1,5 MB, 1500 Striche
-  und 60 000 Punkte; höchstens 6 Abgaben pro Minute je Gerät und je IP-Adresse; höchstens 150 Abgaben pro Raum
-  und 20 Räume.
-
-### Technik
-
-- `server/server.js`: Erkennung (`GET /api/status`), Anmeldung (`POST /api/login` → Token), WebSocket unter `/ws`
-  für alles Weitere (Nachrichten oben in der Datei beschrieben) und die statischen Dateien der Simulation.
-  `server/websocket.js` ist ein minimaler WebSocket-Server nur mit Node-Bordmitteln.
-- Zeichnungen werden als **Vektordaten** übertragen (`js/striche.js`): Freihandstriche als Punkte mit Stiftdruck,
-  Pfeile als Anfangs- und Endpunkt, jeweils mit Farbe. Koordinaten beziehen sich auf das Tafelbild (1600 × 1000).
-  Dieselbe Datei prüft die Abgaben auf dem Server.
+- `js/tafel3d.js` richtet die gemeinsame Tafel ein (Bild, Stifte v/B/F_L/Stift, Laserpointer in der
+  Werkzeugleiste) und zeigt ihren Inhalt als kleine Tafel in der 3D-Szene.
 - Der **Zustand der Simulation** liegt zentral in `js/state.js`: Einstellungen, bewegte Teile (Schaukel, Zeiger,
-  Magnet, Elektronen), Drehung des Messgeräts, Kameraansicht und Tafel (Werkzeug, Zeichnungen). Die Darstellung
-  wird in jedem Bild daraus gezeichnet; `zustandAlsDaten()` liefert eine JSON-fähige Kopie. Das ist die Grundlage
-  für einen späteren Live-Modus (Simulation eines Schülers auf den Beamer spiegeln): Der Schüler schickt diese
-  Daten regelmäßig über seinen WebSocket, der Server reicht sie an die Lehrerseite weiter.
+  Magnet, Elektronen), Drehung des Messgeräts und Kameraansicht. Die Darstellung wird in jedem Bild daraus
+  gezeichnet; `zustandAlsDaten()` liefert eine JSON-fähige Kopie. Das ist die Grundlage für einen späteren
+  Live-Modus (Simulation eines Schülers auf den Beamer spiegeln): Der Schüler schickt diese Daten regelmäßig über
+  seinen WebSocket, der Server reicht sie an die Lehrerseite weiter.
 - Das Tafelbild `bilder/tafel.jpg` ist ein Screenshot des Erklärmodus (Startansicht, drehbarer kurzer Magnet,
   Nordpol oben) mit einem schwarzen Pfeil rechts neben dem Stab, der die Bewegungsrichtung vorgibt (nach außen,
   zur offenen Seite des Magneten). Es lässt sich durch ein anderes Bild im Seitenverhältnis 16 : 10 ersetzen – dann passen aber
@@ -246,11 +185,13 @@ Zuklappen): `systemd-inhibit --what=idle:sleep:handle-lid-switch npm start`.
 ## Starten
 
 Die Simulation lädt [three.js](https://threejs.org) aus dem Internet und muss über einen Webserver
-geöffnet werden (ein Doppelklick auf `index.html` reicht nicht):
+geöffnet werden (ein Doppelklick auf `index.html` reicht nicht). Weil sie die gemeinsamen Bausteine aus
+`website/gemeinsam/` lädt, muss der Webserver im Ordner `website/` laufen, nicht im Ordner der Simulation:
 
-- **Mit Abgabe-Funktion (lokal):** `npm start` (siehe oben)
-- **VS Code:** Erweiterung „Live Server“, Rechtsklick auf `index.html` → „Open with Live Server“
-- **Terminal:** im Projektordner `python3 -m http.server` ausführen und <http://localhost:8000> öffnen
+- **Mit Abgabe-Funktion (lokal):** im Ordner `website/` `npm start`, dann <http://localhost:8080/simulationen/leiterschaukel-induktion/>
+- **Terminal:** im Ordner `website/` `python3 -m http.server` ausführen und
+  <http://localhost:8000/simulationen/leiterschaukel-induktion/> öffnen
+- **VS Code:** Erweiterung „Live Server“ mit dem Ordner `website/` als Arbeitsbereich
 
 ## Projektstruktur
 
@@ -259,17 +200,11 @@ leiterschaukel-induktion/
 ├── index.html          # Seitengerüst und Bedienfeld
 ├── css/style.css
 ├── bilder/tafel.jpg    # Bild auf der Tafel (Leiter im Magnetfeld)
-├── server/
-│   ├── server.js       # Abgabe-Server auf dem Laptop: Abgaben per WebSocket (npm start)
-│   ├── websocket.js    # minimaler WebSocket-Server ohne Abhängigkeiten
-│   └── offline.js      # lädt three.js & Co. für den Betrieb ohne Internet (npm run offline)
 ├── js/
 │   ├── main.js         # Start und Render-Schleife
 │   ├── config.js       # Maße und Modellgrößen
-│   ├── state.js        # zentraler Zustand (Einstellungen, bewegte Teile, Ansicht, Tafel)
-│   ├── tafel.js        # Tafel in der Szene und großes Zeichenfenster (Pencil, Druck, Handballen)
-│   ├── striche.js      # Striche: Datenformat, Prüfung, Zeichnen (auch vom Server genutzt)
-│   ├── abgabe.js       # Teilen (Schüler) und Lehrerseite (Abgaben live, PIN, QR-Code)
+│   ├── state.js        # zentraler Zustand (Einstellungen, bewegte Teile, Ansicht)
+│   ├── tafel3d.js      # gemeinsame Tafel einrichten und als kleine Tafel in der Szene zeigen
 │   ├── laser.js        # Laserpointer: Stift/Maus markieren, Spur verblasst
 │   ├── physik.js       # Schaukel, Induktionsspannung, Strom, Bremskraft, Zeiger (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Licht, Tisch
@@ -278,13 +213,16 @@ leiterschaukel-induktion/
 │   ├── led.js          # LED statt Messgerät (Gedankenexperiment)
 │   ├── gluehlampe.js   # Glühlampe statt Messgerät (Gedankenexperiment)
 │   ├── erklaerung.js   # Erklärmodus: Elektron, Pfeile v/B/F_L, Hand zur Drei-Finger-Regel
-│   ├── link.js         # „Link zeigen“: QR-Code und Adresse
 │   ├── ziehen.js       # Schaukel bzw. Magnet (auf dem Tisch) mit Maus/Finger ziehen
 │   ├── bedienfeld.js   # Knöpfe, Regler, Anzeigen
 │   ├── hilfen.js       # Hilfsfunktionen
 │   └── materialien.js  # gemeinsame Materialien
 ├── tests/physik.test.mjs
 └── package.json
+
+Gemeinsam mit anderen Simulationen genutzt (Ordner website/gemeinsam/):
+  link.js               # „Link zeigen“: QR-Code und Adresse
+  tafel/                # Zeichentafel, Teilen, Lehrerseite (Abgabe-Server: website/server/)
 ```
 
 ## Physikalisches Modell

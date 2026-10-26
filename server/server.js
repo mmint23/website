@@ -1,12 +1,13 @@
 // ------------------------------------------------------------------
 // Abgabe-Server für den Unterricht (läuft auf dem Lehrer-Laptop im Klassenzimmer)
 //
-// - liefert die Simulation selbst aus (statische Dateien aus diesem Repo), damit Schüler und Lehrer alles über
+// - liefert die ganze Website mit allen Simulationen aus, damit Schüler und Lehrer alles über
 //   http://<Laptop-IP>:<Port> öffnen – die GitHub-Pages-Seite (HTTPS) dürfte diesen Server nicht ansprechen
 // - nimmt Tafelzeichnungen der Schüler als Vektordaten an und meldet sie per WebSocket live an die Lehrerseite
+//   (Zeichentafel und Abgabe im Browser: gemeinsam/tafel/). Jede Simulation hat eigene Räume.
 // - hält alles nur im Arbeitsspeicher; beim Beenden ist alles weg. Keine Abhängigkeiten außer Node.js (≥ 18).
 //
-// Start:  npm start   bzw.  node server/server.js      Umgebungsvariablen: PORT (8080), PIN (sonst zufällig)
+// Start:  npm start   bzw.  node server/server.js      Umgebungsvariablen: PORT (8080), PIN (sonst ohne PIN)
 // ------------------------------------------------------------------
 import http from 'node:http';
 import fs from 'node:fs';
@@ -14,12 +15,13 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { pruefen, GRENZEN } from '../js/striche.js';
+import { pruefen, GRENZEN } from '../gemeinsam/tafel/striche.js';
 import { annehmen } from './websocket.js';
 
 const PORT = Number(process.env.PORT) || 8080;
-const PIN = String(process.env.PIN || crypto.randomInt(100000, 1000000));
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Lehrer-PIN nur, wenn beim Start gesetzt (PIN=… npm start); sonst braucht die Lehrerseite keine Anmeldung
+const PIN = process.env.PIN ? String(process.env.PIN) : null;
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');   // Ordner der Website
 const OFFLINE = path.join(ROOT, 'server', 'offline');   // optionale Kopie von three.js & Co. (npm run offline)
 const CDN = 'https://cdn.jsdelivr.net/npm/';
 
@@ -35,12 +37,14 @@ const LIMITS = {
 
 // ---------------- Speicher (nur im Arbeitsspeicher)
 
-const raeume = new Map();         // Raumcode → { abgaben: Map(Geräte-ID → { id, name, zeit, striche }), zuletzt }
+const raeume = new Map();         // 'Simulation/Raumcode' → { abgaben: Map(Geräte-ID → { id, name, zeit, striche }), zuletzt }
 const tokens = new Map();         // Anmeldung der Lehrerseite: Token → Ablaufzeit
 const verbindungen = new Set();   // offene WebSockets; jede mit rolle ('schueler' | 'lehrer'), raum, geraet
 
-// Raumcodes erzeugt die Lehrerseite (zufällig, z. B. „k7m2“); nur Räume einer angemeldeten Lehrerseite gibt es
+// Raumcodes erzeugt die Lehrerseite (zufällig, z. B. „k7m2“); nur Räume einer Lehrerseite gibt es.
+// Intern gehört zu jedem Raum die Kennung der Simulation (initTafel({ id })), z. B. 'leiterschaukel-induktion/k7m2'.
 const RAUMCODE = /^[a-z0-9-]{3,20}$/;
+const SIMULATION = /^[a-z0-9_-]{1,60}$/i;
 const raumCode = wert => String(wert ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
 
 function abgabenListe(raum) {
@@ -141,9 +145,9 @@ function lanAdressen() {
 
 async function api(req, res, url) {
   if (url.pathname === '/api/status' && req.method === 'GET') {
-    return json(res, 200, { server: 'leiterschaukel-abgabe', version: 3 });
+    return json(res, 200, { server: 'mmint-abgabe', version: 1, pin: Boolean(PIN) });
   }
-  if (url.pathname === '/api/login' && req.method === 'POST') {
+  if (url.pathname === '/api/login' && req.method === 'POST' && PIN) {
     if (zuViele('login', ipVon(req), LIMITS.LOGINS_PRO_MINUTE)) {
       return json(res, 429, { fehler: 'Zu viele Versuche – bitte eine Minute warten.' });
     }
@@ -159,8 +163,9 @@ async function api(req, res, url) {
 // ---------------- WebSocket (/ws): Abgaben der Schüler, Live-Liste und Löschen für den Lehrer
 //
 // Gerät → Server
-//   { typ: 'hallo', rolle: 'lehrer', raum, token }          Token aus POST /api/login; legt den Raum an
-//   { typ: 'hallo', rolle: 'schueler', raum, geraet }       Geräte-ID: zufällig, im Browser gespeichert
+//   { typ: 'hallo', rolle: 'lehrer', sim, raum, token }     Token aus POST /api/login (nur mit PIN); legt den Raum an
+//   { typ: 'hallo', rolle: 'schueler', sim, raum, geraet }  Geräte-ID: zufällig, im Browser gespeichert
+//                                                           sim: Kennung der Simulation (initTafel({ id }))
 //   Schüler: { typ: 'abgabe', name, striche }               ersetzt die vorige Abgabe dieses Geräts
 //   Lehrer:  { typ: 'loeschen', id }  { typ: 'alle-loeschen' }
 // Server → Gerät
@@ -188,11 +193,11 @@ function verbunden(v) {
 
 function bearbeiten(v, ip, nachricht) {
   if (nachricht.typ === 'hallo' && !v.rolle) {
-    const raum = raumCode(nachricht.raum);
-    if (!RAUMCODE.test(raum)) return v.schliessen(4000);
-    v.raum = raum;
+    const code = raumCode(nachricht.raum), sim = String(nachricht.sim ?? '');
+    if (!RAUMCODE.test(code) || !SIMULATION.test(sim)) return v.schliessen(4000);
+    const raum = v.raum = sim + '/' + code;
     if (nachricht.rolle === 'lehrer') {
-      if (!tokenGueltig(nachricht.token)) {
+      if (PIN && !tokenGueltig(nachricht.token)) {
         v.senden({ typ: 'fehler', code: 'pin', text: 'Bitte mit PIN anmelden' });
         return v.schliessen(4001);
       }
@@ -253,14 +258,14 @@ function bearbeiten(v, ip, nachricht) {
   }
 }
 
-// ---------------- Statische Dateien (die Simulation)
+// ---------------- Statische Dateien (die Website mit allen Simulationen)
 
 const TYPEN = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.md': 'text/plain; charset=utf-8',
 };
-const GESPERRT = new Set(['server', 'tests', 'node_modules']);
+const GESPERRT = new Set(['server', 'node_modules']);   // oberste Ordner, die nicht ausgeliefert werden
 const offline = () => fs.existsSync(path.join(OFFLINE, 'npm'));
 
 function datei(req, res, url) {
@@ -279,8 +284,8 @@ function datei(req, res, url) {
   } else if (GESPERRT.has(teile[0])) {
     return json(res, 404, { fehler: 'Nicht gefunden' });
   }
-  // keine versteckten Dateien (.git …) und kein Weg nach oben (..)
-  if (teile.some(t => t.startsWith('.') || t.includes('\\'))) return json(res, 404, { fehler: 'Nicht gefunden' });
+  // keine versteckten Dateien (.git …), keine Tests und kein Weg nach oben (..)
+  if (teile.some(t => t.startsWith('.') || t.includes('\\') || t === 'tests')) return json(res, 404, { fehler: 'Nicht gefunden' });
   let ziel = path.join(basis, ...teile);
   if (ziel !== basis && !ziel.startsWith(basis + path.sep)) return json(res, 404, { fehler: 'Nicht gefunden' });
   if (fs.existsSync(ziel) && fs.statSync(ziel).isDirectory()) ziel = path.join(ziel, 'index.html');
@@ -306,9 +311,11 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   try {
     if (url.pathname.startsWith('/api/')) return await api(req, res, url);
-    if (url.pathname === '/lehrer' || url.pathname === '/lehrer/') {
+    // Kurzadresse der Lehrerseite: /lehrer/<simulation> → /simulationen/<simulation>/?lehrer
+    const kurz = url.pathname.match(/^\/lehrer\/([a-z0-9_-]+)\/?$/i);
+    if (kurz) {
       const raum = raumCode(url.searchParams.get('raum'));
-      res.writeHead(302, { Location: '/?lehrer' + (raum ? '&raum=' + raum : '') });
+      res.writeHead(302, { Location: `/simulationen/${kurz[1]}/?lehrer` + (raum ? '&raum=' + raum : '') });
       return res.end();
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { fehler: 'Nicht erlaubt' });
@@ -325,13 +332,28 @@ server.on('upgrade', (req, socket) => {
   if (v) verbunden(v);
 });
 
+// Simulationen mit Zeichentafel (binden gemeinsam/tafel/ ein) – für die Übersicht beim Start
+function mitTafel() {
+  const ordner = path.join(ROOT, 'simulationen');
+  const liste = [];
+  for (const name of fs.readdirSync(ordner).sort()) {
+    const js = path.join(ordner, name, 'js');
+    if (!fs.existsSync(js)) continue;
+    const dateien = fs.readdirSync(js).filter(d => d.endsWith('.js'));
+    if (dateien.some(d => fs.readFileSync(path.join(js, d), 'utf8').includes('gemeinsam/tafel/'))) liste.push(name);
+  }
+  return liste;
+}
+
 server.listen(PORT, '0.0.0.0', () => {
   const adressen = lanAdressen();
-  console.log('\nLeiterschaukel – Abgabe-Server läuft\n');
-  console.log(`  Lehrer:   http://localhost:${PORT}/lehrer   (QR-Code für die Schüler steht dann auf der Lehrerseite)`);
+  console.log('\nAbgabe-Server läuft\n');
+  console.log(`  Website:  http://localhost:${PORT}/`);
+  console.log('  Lehrerseite (QR-Code für die Schüler steht dann dort):');
+  for (const name of mitTafel()) console.log(`            http://localhost:${PORT}/lehrer/${name}`);
   console.log('  Im WLAN:  ' + (adressen.length ? adressen.map(a => `http://${a}:${PORT}/`).join('\n            ')
     : '(keine Netzwerkverbindung gefunden)'));
-  console.log(`  PIN:      ${PIN}`);
+  console.log(`  PIN:      ${PIN ?? 'aus (einschalten mit PIN=… npm start)'}`);
   console.log('  three.js: ' + (offline() ? 'Offline-Kopie aus server/offline' : 'aus dem Internet (CDN)'));
   console.log('\nBeenden mit Strg+C – alle Abgaben werden dabei gelöscht.\n');
 });

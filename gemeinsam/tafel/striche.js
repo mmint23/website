@@ -2,16 +2,14 @@
 // Striche auf der Tafel: Datenformat, Prüfung und Zeichnen
 // Ohne DOM und ohne three.js, damit auch der Abgabe-Server (server/server.js) die Abgaben damit prüfen kann.
 //
-// Koordinaten in Tafeleinheiten: 0 … TAFEL.W nach rechts, 0 … TAFEL.H nach unten (Seitenverhältnis des Tafelbilds).
+// Koordinaten in Tafeleinheiten: 0 … TAFEL_BREITE nach rechts, 0 … Höhe nach unten. Die Höhe ergibt sich aus dem
+// Seitenverhältnis des Tafelbilds der jeweiligen Simulation (siehe tafel.js).
 // Im Browser:   { k: 'free', c: '#rrggbb', p: [{ x, y, pr }, …] }   (pr: Stiftdruck 0 … 1)
 //               { k: 'arrow', c: '#rrggbb', a: { x, y }, b: { x, y } }
 // Übertragung:  { k: 'f', c, p: [x, y, pr, x, y, pr, …] }  bzw.  { k: 'a', c, p: [ax, ay, bx, by] }
 // ------------------------------------------------------------------
 
-export const TAFEL = { W: 1600, H: 1000 };
-
-// Farben der Stifte (wie die Pfeile im Erklärmodus) und Schwarz zum Beschriften
-export const FARBEN = { v: '#2e7d32', B: '#1565c0', F: '#c62828', schwarz: '#1d2733' };
+export const TAFEL_BREITE = 1600;
 
 // Grenzen einer Abgabe (der Server weist größere ab)
 export const GRENZEN = { STRICHE: 1500, PUNKTE: 60000, NAME: 40 };
@@ -38,7 +36,7 @@ export function pruefen(daten) {
   if (!Array.isArray(daten)) return 'Striche fehlen';
   if (daten.length > GRENZEN.STRICHE) return 'Zu viele Striche';
   let punkte = 0;
-  const zahl = v => typeof v === 'number' && Number.isFinite(v) && v >= -TAFEL.W && v <= 2 * TAFEL.W;
+  const zahl = v => typeof v === 'number' && Number.isFinite(v) && v >= -TAFEL_BREITE && v <= 2 * TAFEL_BREITE;
   for (const d of daten) {
     if (!d || typeof d !== 'object' || !Array.isArray(d.p)) return 'Ungültiger Strich';
     if (typeof d.c !== 'string' || !/^#[0-9a-f]{6}$/i.test(d.c)) return 'Ungültige Farbe';
@@ -109,7 +107,7 @@ export function zeichneStrich(ctx, s, dicker = 1) {
 
 // Alle Striche auf eine Fläche der Breite breite (in Pixeln) zeichnen
 export function zeichneAlle(ctx, striche, breite, dicker = 1) {
-  const sc = breite / TAFEL.W;
+  const sc = breite / TAFEL_BREITE;
   ctx.save();
   ctx.scale(sc, sc);
   for (const s of striche) zeichneStrich(ctx, s, dicker);

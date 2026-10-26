@@ -12,15 +12,14 @@ import { syncLamp } from './gluehlampe.js';
 import { initUi, animateFlip, updateValue, updateHoldSlider } from './bedienfeld.js';
 import { syncExplain } from './erklaerung.js';
 import './ziehen.js';
-import { initLink } from './link.js';
-import { initTafel, syncTafel, tafelOffen } from './tafel.js';
-import { initAbgabe } from './abgabe.js';
+import { showLink } from '../../../gemeinsam/link.js';
+import { tafelOffen } from '../../../gemeinsam/tafel/index.js';
+import { initTafel3d, syncTafel } from './tafel3d.js';
 import { initLaser } from './laser.js';
 
 initUi();
-initLink();
-initTafel();
-initAbgabe();
+document.getElementById('linkBtn').addEventListener('click', () => showLink());
+initTafel3d();   // vor initLaser: legt den Laser-Knopf in der Werkzeugleiste der Tafel an
 initLaser();
 resetView();
 

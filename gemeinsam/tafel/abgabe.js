@@ -1,25 +1,29 @@
 // ------------------------------------------------------------------
 // Abgabe im Unterricht (nur wenn die Seite vom Abgabe-Server auf dem Lehrer-Laptop kommt, siehe server/)
+// Wird von initTafel() in index.js mit eingerichtet; die Simulation muss dafür nichts weiter tun.
 //
 // Schüler:  „Teilen“ schickt die eigene Tafelzeichnung als Vektordaten an den Server; erneutes Teilen ersetzt
 //           die vorige Abgabe dieses Geräts. Nur mit Raumcode in der Adresse (?raum=…, steht im QR-Code).
-// Lehrer:   ?lehrer (PIN) – erzeugt einen zufälligen Raumcode und zeigt alle Abgaben dieses Raums live (WebSocket)
+// Lehrer:   ?lehrer (PIN nur, wenn der Server mit PIN gestartet wurde) – erzeugt einen zufälligen Raumcode und zeigt alle Abgaben dieses Raums live (WebSocket)
 //           mit QR-Code für die Schüler. Eine Abgabe öffnet sich auf der Tafel als Arbeitskopie: Ergänzen und
 //           Radieren bleiben nur hier, das Original auf dem Server bleibt unverändert („Original wiederherstellen“).
+// Jede Simulation hat eigene Räume (Kennung aus initTafel), damit Abgaben nicht auf dem falschen Bild landen.
 // Ohne Server (GitHub Pages, lokaler Testserver) bleibt das alles ausgeblendet.
 // Nachrichten über den WebSocket: siehe Beschreibung in server/server.js.
 // ------------------------------------------------------------------
 import { packen, entpacken, zeichneAlle, GRENZEN } from './striche.js';
 import {
-  tafelBild, bildGeladen, eigenesDokument, aktuellesDokument, zeigeDokument, dokumentGeaendert, aufAenderung,
-  oeffneTafel, schliesseTafel, mitRueckfrage,
+  tafelId, tafelHoehe, tafelBild, bildGeladen, eigenesDokument, aktuellesDokument, zeigeDokument, dokumentGeaendert,
+  aufAenderung, oeffneTafel, schliesseTafel, mitRueckfrage,
 } from './tafel.js';
-import { setLinkUrl, qrSvg, showLink } from './link.js';
+import { TAFEL_BREITE } from './striche.js';
+import { setLinkUrl, qrSvg, showLink } from '../link.js';
 
 const $ = id => document.getElementById(id);
 const parameter = new URLSearchParams(location.search);
 let raum = (parameter.get('raum') ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
 let basis = null;          // Adresse des Abgabe-Servers (= Herkunft der Seite), z. B. 'http://192.168.2.51:8080'
+let pinNoetig = false;     // verlangt der Server eine Lehrer-PIN?
 
 function speicher(schluessel, wert) {
   try {
@@ -53,7 +57,10 @@ async function serverFinden() {
   if (location.protocol !== 'http:') return null;
   try {
     const antwort = await fetch(location.origin + '/api/status', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
-    return (await antwort.json()).server === 'leiterschaukel-abgabe' ? location.origin : null;
+    const status = await antwort.json();
+    if (status.server !== 'mmint-abgabe') return null;
+    pinNoetig = Boolean(status.pin);
+    return location.origin;
   } catch {
     return null;
   }
@@ -97,9 +104,10 @@ class Leitung {
 export async function initAbgabe() {
   basis = await serverFinden();
   if (!basis) return;
+  fensterAnlegen();
   if (parameter.has('lehrer')) {
     lehrerRaum();
-    if (sitzung(tokenSchluessel())) starteLehrer(); else zeigePinDialog();
+    if (!pinNoetig || sitzung(tokenSchluessel())) starteLehrer(); else zeigePinDialog();
   } else if (raum) {
     starteSchueler();
   }
@@ -109,17 +117,17 @@ export async function initAbgabe() {
 // ist die Seite am Laptop selbst geöffnet (localhost), dessen Adresse im WLAN – jeweils mit Raumcode
 function schuelerUrl(adressen = [], port = 0, lehrer = false) {
   const amLaptop = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  const url = amLaptop && adressen.length ? `http://${adressen[0]}:${port}/` : location.origin + '/';
+  const url = (amLaptop && adressen.length ? `http://${adressen[0]}:${port}` : location.origin) + location.pathname;
   return url + (lehrer ? '?lehrer&raum=' : '?raum=') + raum;
 }
 
 // ================= Schüler
 
 function geraeteId() {
-  let id = speicher('leiterschaukel-geraet');
+  let id = speicher('abgabe-geraet');
   if (!id || !/^[a-z0-9]{8,40}$/.test(id)) {
     id = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(36).padStart(2, '0')).join('');
-    speicher('leiterschaukel-geraet', id);
+    speicher('abgabe-geraet', id);
   }
   return id;
 }
@@ -129,8 +137,8 @@ function starteSchueler() {
   $('tafelSchueler').hidden = false;
   const name = $('tafelName');
   name.maxLength = GRENZEN.NAME;
-  name.value = speicher('leiterschaukel-name') ?? '';
-  name.addEventListener('change', () => speicher('leiterschaukel-name', name.value.trim()));
+  name.value = speicher('abgabe-name') ?? '';
+  name.addEventListener('change', () => speicher('abgabe-name', name.value.trim()));
   const knopf = $('tafelTeilen');
   const meldung = $('tafelTeilenStatus');
   let zeit = null, wartet = null;
@@ -142,7 +150,7 @@ function starteSchueler() {
     meldung.classList.toggle('ok', ok);
     zeit = setTimeout(() => { meldung.textContent = ''; }, ok ? 4000 : 8000);
   };
-  const leitung = new Leitung({ typ: 'hallo', rolle: 'schueler', raum, geraet: geraeteId() }, nachricht => {
+  const leitung = new Leitung({ typ: 'hallo', rolle: 'schueler', sim: tafelId(), raum, geraet: geraeteId() }, nachricht => {
     if (nachricht.typ === 'geteilt') melde('Geteilt ✓', true);
     if (nachricht.typ === 'fehler') melde(nachricht.text, false);
   });
@@ -169,7 +177,7 @@ function lehrerRaum() {
   history.replaceState(null, '', url);
 }
 
-const tokenSchluessel = () => 'leiterschaukel-lehrer|' + basis;
+const tokenSchluessel = () => 'abgabe-lehrer|' + basis;
 
 function zeigePinDialog(meldung = '') {
   $('pinOverlay').hidden = false;
@@ -178,7 +186,7 @@ function zeigePinDialog(meldung = '') {
   $('pinInput').focus();
 }
 
-$('pinForm').addEventListener('submit', async event => {
+async function pinAbschicken(event) {
   event.preventDefault();
   try {
     const { token } = await anfrage('/api/login', { method: 'POST', body: JSON.stringify({ pin: $('pinInput').value.trim() }) });
@@ -188,7 +196,7 @@ $('pinForm').addEventListener('submit', async event => {
   } catch (fehler) {
     zeigePinDialog(fehler.message);
   }
-});
+}
 
 // Abgaben: id → { abgabe (Original vom Server), arbeit (Arbeitskopie oder null), kachel }
 const abgaben = new Map();
@@ -207,8 +215,8 @@ async function starteLehrer() {
   $('abgabenQr').addEventListener('click', () => showLink());
   // Lehrerseite auf dem iPad o. Ä.: nur auf Knopfdruck, damit die Schüler den Code am Beamer nicht mitscannen
   $('abgabenLehrerQr').addEventListener('click', () => showLink(schuelerUrl(netz.adressen, netz.port, true),
-    'Lehrerseite – nur für die Lehrkraft. Mit einem eigenen Gerät (z. B. iPad) scannen, dort die PIN eingeben; '
-    + 'das Gerät kommt in denselben Raum.'));
+    'Lehrerseite – nur für die Lehrkraft. Mit einem eigenen Gerät (z. B. iPad) scannen'
+    + (pinNoetig ? ', dort die PIN eingeben' : '') + '; das Gerät kommt in denselben Raum.'));
   $('abgabenGross').addEventListener('click', () => {
     const gross = $('abgaben').classList.toggle('gross');
     $('abgabenGross').textContent = gross ? 'Verkleinern' : 'Groß';
@@ -242,7 +250,7 @@ async function starteLehrer() {
 let leitung = null;
 function verbinden() {
   if (leitung) leitung.aus = true;
-  leitung = new Leitung({ typ: 'hallo', rolle: 'lehrer', raum, token: sitzung(tokenSchluessel()) }, nachricht => {
+  leitung = new Leitung({ typ: 'hallo', rolle: 'lehrer', sim: tafelId(), raum, token: sitzung(tokenSchluessel()) }, nachricht => {
     if (nachricht.typ === 'willkommen') adresseZeigen(nachricht);
     if (nachricht.typ === 'liste') {
       const ids = new Set(nachricht.abgaben.map(a => a.id));
@@ -384,8 +392,39 @@ function vorschau(kachel, striche) {
   const canvas = kachel.querySelector('canvas');
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = 240 * dpr;
-  canvas.height = 150 * dpr;
+  canvas.height = Math.round(240 * dpr * tafelHoehe() / TAFEL_BREITE);
   const ctx = canvas.getContext('2d');
   if (tafelBild.naturalWidth) ctx.drawImage(tafelBild, 0, 0, canvas.width, canvas.height);
   zeichneAlle(ctx, striche, canvas.width, 2.5);   // Striche dicker, damit man sie im kleinen Bild erkennt
+}
+
+// ---------------- Fenster der Lehrerseite (nur angelegt, wenn die Seite vom Abgabe-Server kommt)
+
+function fensterAnlegen() {
+  document.body.insertAdjacentHTML('beforeend', `
+  <div id="pinOverlay" hidden>
+    <form class="pin-box" id="pinForm" aria-label="Anmeldung Lehrerseite">
+      <h2>Lehrerseite</h2>
+      <p class="status">PIN eingeben (steht in der Konsole des Servers).</p>
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="PIN" />
+      <p class="status pin-fehler" id="pinFehler" aria-live="polite"></p>
+      <button type="submit">Anmelden</button>
+    </form>
+  </div>
+  <section class="abgaben" id="abgaben" aria-label="Abgaben der Schüler" hidden>
+    <div class="abgaben-kopf">
+      <button class="abgaben-qr" id="abgabenQr" type="button" title="QR-Code groß zeigen"><span id="abgabenQrBild"></span></button>
+      <div class="abgaben-info">
+        <strong>Abgaben: <span id="abgabenZahl">0</span></strong>
+        <span class="status" id="abgabenRaum"></span>
+        <span class="status" id="abgabenOnline"></span>
+        <span class="status abgaben-adresse" id="abgabenAdresse"></span>
+      </div>
+      <button id="abgabenLehrerQr" type="button">Lehrerseite auf anderem Gerät</button>
+      <button id="abgabenGross" type="button">Groß</button>
+      <button id="abgabenAlleLoeschen" class="gefahr" type="button">Alle löschen</button>
+    </div>
+    <div class="abgaben-liste" id="abgabenListe"></div>
+  </section>`);
+  $('pinForm').addEventListener('submit', pinAbschicken);
 }
