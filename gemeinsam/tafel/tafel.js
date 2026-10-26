@@ -12,6 +12,8 @@ import { TAFEL_BREITE, zeichneStrich, zeichneStueck, zeichneAlle, getroffen } fr
 import { stilLaden } from '../stil.js';
 
 const $ = id => document.getElementById(id);
+// Bild aus der Offline-Version (eingebettet, globalThis.OFFLINE.dateien) oder wie angegeben
+const datei = pfad => globalThis.OFFLINE?.dateien?.[pfad] ?? pfad;
 const RADIERER = 18;          // Radius des Radierers in Tafeleinheiten
 const MIN_ABSTAND = 1.2;      // Punkte eines Strichs mindestens so weit auseinander (spart Daten)
 
@@ -336,7 +338,7 @@ function fensterAnlegen() {
   canvas = $('tafelCanvas');
   ctx = canvas.getContext('2d');
   const img = blatt.querySelector('img');
-  img.src = optionen.bild;
+  img.src = datei(optionen.bild);
   img.alt = optionen.bildText ?? '';
   // eigene Knöpfe der Simulation (z. B. Laserpointer) vor „Schließen“
   for (const element of optionen.leisteZusatz ?? []) $('tafelSchliessen').before(element);
@@ -352,7 +354,7 @@ export function initTafel(neu) {
   stilLaden(new URL('./tafel.css', import.meta.url));
 
   if (optionen.seitenverhaeltnis) hoehe = TAFEL_BREITE / optionen.seitenverhaeltnis;
-  tafelBild.src = optionen.bild;
+  tafelBild.src = datei(optionen.bild);
   bildGeladen.then(() => {
     if (!optionen.seitenverhaeltnis && tafelBild.naturalWidth) {
       hoehe = TAFEL_BREITE * tafelBild.naturalHeight / tafelBild.naturalWidth;
