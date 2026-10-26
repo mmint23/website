@@ -1,0 +1,9 @@
+{
+  "name": "schienenversuch-lorentzkraft",
+  "private": true,
+  "description": "3D-Simulation zur Lorentzkraft: Leiter auf Schienen im Feld eines Hufeisenmagneten",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}
