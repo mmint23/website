@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Physik-Simulationen</title>
+  <meta name="description" content="Interaktive Physik-Simulationen für den Unterricht – im Browser, auf Laptop und iPad.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="kopf">
+    <div class="breite">
+      <a class="marke" href="./">
+        <img src="assets/favicon.svg" alt="" width="28" height="28">
+        <span>Physik-Simulationen</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="breite">
+    <section class="einleitung">
+      <h1>Physik zum Ausprobieren</h1>
+      <p>Interaktive Simulationen für den Unterricht. Sie laufen direkt im Browser – auf dem Laptop am Beamer genauso wie auf dem iPad, ohne Installation und ohne Anmeldung.</p>
+    </section>
+
+    <section aria-labelledby="ueberschrift-simulationen">
+      <h2 id="ueberschrift-simulationen">Simulationen</h2>
+
+      <!--
+        Neue Simulation hinzufügen:
+        1. Ordner unter simulationen/<name>/ anlegen (mit index.html).
+        2. Hier eine Karte nach dem Muster unten einfügen.
+      -->
+      <ul class="karten">
+        <li class="karte karte--bald">
+          <div class="karte__thema">Elektromagnetismus</div>
+          <h3 class="karte__titel">Leiterschaukel &amp; Induktion</h3>
+          <p class="karte__text">Eine Leiterschleife schwingt im Magnetfeld. Kraft auf bewegte Ladungen, Induktionsspannung und Lenzsche Regel sichtbar gemacht.</p>
+          <span class="karte__status">zieht gerade um</span>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="fuss">
+    <div class="breite">
+      <span>Physik-Simulationen für den Unterricht</span>
+      <!-- Impressum und Datenschutz folgen vor der öffentlichen Bekanntmachung (Teil 4). -->
+    </div>
+  </footer>
+</body>
+</html>
