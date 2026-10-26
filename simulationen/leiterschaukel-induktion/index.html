@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Induktion – Leiterschaukel</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div class="header">
+    <h1>Induktion: Leiterschaukel im Magnetfeld</h1>
+    <p>Bewegt sich der Leiter im Magnetfeld, zeigt das Messgerät eine Spannung an.</p>
+  </div>
+
+  <div class="hint">
+    <span>Schaukel oder Magnet ziehen: bewegen · Messgerät ziehen: drehen · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen</span>
+    <button id="resetView" type="button">Ansicht zurücksetzen</button>
+  </div>
+
+  <!-- QR-Code und Adresse der Simulation (Knopf „Link zeigen“) -->
+  <div class="link-overlay" id="linkOverlay" hidden>
+    <div class="link-box" role="dialog" aria-modal="true" aria-label="Link zur Simulation">
+      <p class="link-hinweis" id="linkHinweis" hidden></p>
+      <div class="link-qr" id="linkQr"></div>
+      <a class="link-text" id="linkText" target="_blank" rel="noopener"></a>
+      <p class="status" id="linkLocal" hidden>Die Seite ist lokal geöffnet – gezeigt wird die öffentliche Adresse.</p>
+      <button id="linkClose" type="button">Schließen</button>
+    </div>
+  </div>
+
+  <!-- Lehrerseite: PIN-Abfrage -->
+  <div class="link-overlay" id="pinOverlay" hidden>
+    <form class="link-box pin-box" id="pinForm" aria-label="Anmeldung Lehrerseite">
+      <h2>Lehrerseite</h2>
+      <p class="status">PIN eingeben (steht in der Konsole des Servers).</p>
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="PIN" />
+      <p class="status pin-fehler" id="pinFehler" aria-live="polite"></p>
+      <button type="submit">Anmelden</button>
+    </form>
+  </div>
+
+  <!-- Lehrerseite: Abgaben der Schüler (live) mit QR-Code für die Schüler -->
+  <section class="abgaben" id="abgaben" aria-label="Abgaben der Schüler" hidden>
+    <div class="abgaben-kopf">
+      <button class="abgaben-qr" id="abgabenQr" type="button" title="QR-Code groß zeigen"><span id="abgabenQrBild"></span></button>
+      <div class="abgaben-info">
+        <strong>Abgaben: <span id="abgabenZahl">0</span></strong>
+        <span class="status" id="abgabenRaum"></span>
+        <span class="status" id="abgabenOnline"></span>
+        <span class="status abgaben-adresse" id="abgabenAdresse"></span>
+      </div>
+      <button id="abgabenLehrerQr" type="button">Lehrerseite auf anderem Gerät</button>
+      <button id="abgabenGross" type="button">Groß</button>
+      <button id="abgabenAlleLoeschen" class="gefahr" type="button">Alle löschen</button>
+    </div>
+    <div class="abgaben-liste" id="abgabenListe"></div>
+  </section>
+
+  <!-- Tafel groß: Zeichnen auf dem Bild des Leiters im Magnetfeld -->
+  <div class="tafel-overlay" id="tafelOverlay" hidden>
+    <div class="tafel-leiste" role="toolbar" aria-label="Zeichenwerkzeuge">
+      <div class="gruppe">
+        <button data-farbe="v" type="button" aria-pressed="true"><span class="dot" style="background:#2e7d32"></span>v</button>
+        <button data-farbe="B" type="button" aria-pressed="false"><span class="dot" style="background:#1565c0"></span>B</button>
+        <button data-farbe="F" type="button" aria-pressed="false"><span class="dot" style="background:#c62828"></span>F_L</button>
+        <button data-farbe="schwarz" type="button" aria-pressed="false"><span class="dot" style="background:#1d2733"></span>Stift</button>
+        <button id="tafelRadierer" type="button" aria-pressed="false">Radierer</button>
+      </div>
+      <div class="gruppe">
+        <button data-modus="frei" type="button" aria-pressed="true">Freihand</button>
+        <button data-modus="pfeil" type="button" aria-pressed="false">Gerader Pfeil</button>
+      </div>
+      <div class="gruppe">
+        <button id="tafelUndo" type="button">Rückgängig</button>
+        <button id="tafelLeeren" class="gefahr" type="button">Alles löschen</button>
+      </div>
+      <div class="gruppe" id="tafelSchueler" hidden>
+        <input id="tafelName" type="text" placeholder="Name/Kürzel (freiwillig)" autocomplete="off" aria-label="Name oder Kürzel" />
+        <button id="tafelTeilen" class="haupt" type="button">Teilen</button>
+        <span class="tafel-status" id="tafelTeilenStatus" aria-live="polite"></span>
+      </div>
+      <div class="gruppe" id="tafelLehrer" hidden>
+        <span class="tafel-titel" id="tafelTitel"></span>
+        <button id="tafelOriginal" type="button">Original wiederherstellen</button>
+        <button id="tafelAbgabeLoeschen" class="gefahr" type="button">Abgabe löschen</button>
+      </div>
+      <button class="laser-btn" data-laser type="button" aria-pressed="false" title="Mit Apple Pencil oder Maus markieren (Taste L)">Laserpointer</button>
+      <button id="tafelSchliessen" class="schliessen" type="button">Schließen ✕</button>
+    </div>
+    <div class="tafel-bereich" id="tafelBereich">
+      <div class="tafel-blatt" id="tafelBlatt">
+        <img src="bilder/tafel.jpg" alt="Leiter mit Elektron zwischen den Polen des Hufeisenmagneten" draggable="false" />
+        <canvas id="tafelCanvas" aria-label="Zeichenfläche der Tafel"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bedienfeld des Erklärmodus: erscheint nur dort, links über der Szene -->
+  <aside class="popup" id="explainPanel" aria-label="Erklärung: Elektron im Leiter" hidden>
+    <h2>Elektron im Leiter</h2>
+    <p class="status">Das Elektron bewegt sich mit dem Leiter durch das Magnetfeld. Auf die bewegte Ladung
+      wirkt die Lorentzkraft und verschiebt das Elektron entlang des Leiters.</p>
+    <div class="toggles two" role="group" aria-label="Ablauf">
+      <button id="pauseBtn" class="state" type="button" aria-pressed="false">Pause</button>
+      <button id="explainSlowBtn" class="state" type="button" aria-pressed="false">Zeitlupe</button>
+    </div>
+    <p class="status" id="pauseInfo" hidden>Pause: Die Bewegung ist angehalten, die Pfeile zeigen den Augenblick.</p>
+    <button id="holdBtn" class="state" type="button" aria-pressed="false">Leiter festhalten</button>
+    <div id="holdBox" hidden>
+      <p class="status">Der Leiter pendelt nicht. Bewege ihn mit dem Regler oder durch Ziehen – lässt du los,
+        bleibt er stehen.</p>
+      <label class="slider">
+        <span class="row">Lage des Leiters (Winkel) <output id="holdOut">0°</output></span>
+        <input id="holdSlider" type="range" step="0.5" value="0" />
+      </label>
+      <p class="status">links: hinten (zum Bogen) · rechts: vorne (aus dem Magneten)</p>
+    </div>
+    <div class="toggles" role="group" aria-label="Anzeigen">
+      <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
+      <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
+      <button id="showFBtn" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
+      <button id="showHandBtn" type="button">Hand</button>
+    </div>
+    <div class="toggles two" role="group" aria-label="Elektronen">
+      <button id="showElectronBtn" class="state" type="button" aria-pressed="true">Elektron</button>
+      <button id="manyBtn" class="state" type="button" aria-pressed="false">Viele Elektronen</button>
+    </div>
+    <ul class="legend">
+      <li><span class="dot" style="background:#2e7d32"></span>v: Geschwindigkeit des Leiters</li>
+      <li><span class="dot" style="background:#1565c0"></span>B: Magnetfeldlinien (von N nach S)</li>
+      <li><span class="dot" style="background:#c62828"></span>F_L: Lorentzkraft auf das Elektron</li>
+      <li id="manyLegend" hidden><span class="dot" style="background:#e53935"></span>positive Atomrümpfe (bleiben an
+        ihrem Platz); blau: Elektronen</li>
+    </ul>
+    <p class="status" id="manyInfo" hidden>Die Lorentzkraft schiebt alle Elektronen zum selben Ende: Dort entsteht ein
+      Elektronenüberschuss (Minuspol), am anderen Ende ein Elektronenmangel (Pluspol). So entsteht die Spannung.</p>
+    <p class="status" id="explainHandInfo">Rechte Hand: Daumen v (Bewegung der positiven Ladungen mit dem Leiter),
+      Zeigefinger B, Mittelfinger Kraft auf eine positive Ladung. Das Elektron ist negativ geladen: Die Kraft
+      auf das Elektron zeigt entgegengesetzt zum Mittelfinger.</p>
+    <button id="explainFlipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
+    <button id="electronResetBtn" type="button">Elektronen zurücksetzen</button>
+    <button id="tafelBtn" class="tafel-btn" type="button">Tafel öffnen (zeichnen)</button>
+  </aside>
+
+  <aside class="panel">
+    <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+    <button class="laser-btn" data-laser type="button" aria-pressed="false" title="Mit Apple Pencil oder Maus markieren (Taste L)">Laserpointer</button>
+    <section>
+      <h2>Versuch</h2>
+      <div class="segmented" role="group" aria-label="Versuch auswählen">
+        <button id="setupDrehbarBtn" type="button">Drehbarer Magnet</button>
+        <button id="setupTischBtn" type="button">Magnet auf dem Tisch</button>
+      </div>
+    </section>
+    <section>
+      <h2>Erklärung</h2>
+      <button id="explainBtn" type="button" aria-pressed="false">Erklärung: Elektron im Leiter</button>
+    </section>
+    <section>
+      <h2>Leiterschaukel</h2>
+      <p class="status">Fasse den Kupferstab oder einen Bügel an und bewege die Schaukel. Lässt du los,
+        schwingt sie weiter.</p>
+      <div class="button-row">
+        <button id="pushBtn" type="button">Auslenken und loslassen</button>
+        <button id="stopBtn" type="button">Zurücksetzen</button>
+      </div>
+      <button id="runPauseBtn" class="state" type="button" aria-pressed="false">Pause</button>
+      <label class="check"><input id="slowCheck" type="checkbox" /> Zeitlupe</label>
+    </section>
+    <section>
+      <h2>Hufeisenmagnet</h2>
+      <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
+      <label class="check"><input id="longCheck" type="checkbox" /> Langer Hufeisenmagnet</label>
+      <p class="status" id="longStatus" hidden>Schenkel 32 cm statt 11 cm: Die Schaukel kann weit schwingen,
+        ohne anzustoßen.</p>
+      <p class="status" id="magnetStatus"></p>
+      <div id="tableControls">
+        <p class="status">Fasse den Magneten an und schiebe ihn auf dem Tisch nach vorne oder hinten.</p>
+        <button id="resetMagnetBtn" type="button">Magnet zurücksetzen</button>
+      </div>
+      <div id="angleControls">
+        <label class="slider">
+          <span class="row">Drehwinkel des Magneten α <output id="angleOut">0°</output></span>
+          <input id="angleSlider" type="range" min="0" max="90" step="5" value="0" />
+        </label>
+        <p class="status">0°: Feld senkrecht zur Bewegung der Schaukel · 90°: Feld parallel zur Bewegung</p>
+      </div>
+    </section>
+    <section id="meterSection">
+      <h2>Anzeige</h2>
+      <div class="segmented" role="group" aria-label="Anzeige">
+        <button id="displayMeterBtn" type="button">Messgerät</button>
+        <button id="displayLedBtn" type="button">LED</button>
+        <button id="displayLampBtn" type="button">Glühlampe</button>
+      </div>
+      <button id="swapCablesBtn" type="button">Kabel vertauschen</button>
+      <p class="status" id="cableStatus"></p>
+      <div id="meterControls">
+      <p class="status" style="margin-top:12px">Messgröße</p>
+      <div class="segmented" role="group" aria-label="Messgröße">
+        <button id="modeUBtn" type="button">Spannung U</button>
+        <button id="modeIBtn" type="button">Stromstärke I</button>
+      </div>
+      <p class="status" id="modeStatus"></p>
+      <div id="brakeBox">
+        <label class="check"><input id="brakeCheck" type="checkbox" /> Bremswirkung 1000-fach verstärken</label>
+        <p class="status">Gedankenexperiment: Nur die Kraft auf den Stab wird verstärkt, damit man die Bremsung sieht.</p>
+      </div>
+      <p class="status" style="margin-top:12px">Messbereich</p>
+      <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
+      <label class="check"><input id="valueCheck" type="checkbox" /> Messwert als Zahl</label>
+      <p class="value" id="valueOut" hidden></p>
+      <button id="meterTurnBtn" type="button">Messgerät zu mir drehen</button>
+      <p class="status">Du kannst das Messgerät auch anfassen und durch seitliches Ziehen drehen.</p>
+      </div>
+    </section>
+  </aside>
+
+  <!-- Laserpointer: Spur über allem, nimmt selbst keine Berührungen an -->
+  <canvas id="laserCanvas" aria-hidden="true"></canvas>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "leiterschaukel-induktion",
+  "private": true,
+  "description": "3D-Simulation zur elektromagnetischen Induktion: Leiterschaukel im Feld eines Hufeisenmagneten mit Zeigermessgerät",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "offline": "node server/offline.js",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
