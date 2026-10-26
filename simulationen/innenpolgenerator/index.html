@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Innenpolgenerator</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div class="header">
+    <h1>Innenpolgenerator</h1>
+    <p>Der Magnet dreht sich, die Spulen stehen fest. Ändert sich das Magnetfeld im Spuleninneren, wird eine Spannung induziert.</p>
+  </div>
+
+  <!-- Diagramme B–t und U–t auf derselben Zeitachse -->
+  <div class="plot-box" id="plotBox">
+    <div class="plot-title">
+      <span>B im Spuleninneren in mT</span>
+      <span class="legende" data-zwei hidden><i class="linie s1"></i>Spule 1 <i class="linie s2"></i>Spule 2</span>
+      <span class="legende" id="slopeLegend" hidden><i class="linie tangente"></i>Änderung von B</span>
+    </div>
+    <canvas id="plotB"></canvas>
+    <div class="plot-title">
+      <span>U am Messgerät in V</span>
+      <span class="legende" data-zwei hidden><i class="linie s1 duenn"></i>U₁ <i class="linie s2 duenn"></i>U₂ <i class="linie summe"></i>U</span>
+    </div>
+    <canvas id="plotU"></canvas>
+  </div>
+
+  <div class="hint">
+    <span>Kurbel ziehen: drehen · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen</span>
+    <button id="resetView" type="button">Ansicht zurücksetzen</button>
+  </div>
+
+  <aside class="panel" id="panel">
+    <section>
+      <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+      <h2>Aufbau</h2>
+      <div class="segmented" role="group" aria-label="Anzahl der Spulen">
+        <button id="oneCoilBtn" type="button">1 Spule</button>
+        <button id="twoCoilsBtn" type="button">2 Spulen</button>
+      </div>
+      <div id="wiringBox" hidden>
+        <p class="status">Spulen in Reihe verbinden:</p>
+        <div class="segmented" role="group" aria-label="Verbindung der Spulen">
+          <button id="wiringOkBtn" type="button">Ende – Ende</button>
+          <button id="wiringSwapBtn" type="button">Ende – Anfang</button>
+        </div>
+        <p class="status" id="wiringStatus"></p>
+      </div>
+    </section>
+    <section>
+      <h2>Antrieb</h2>
+      <div class="segmented" role="group" aria-label="Antrieb">
+        <button id="driveSpeedBtn" type="button">Drehzahl</button>
+        <button id="driveCrankBtn" type="button">Kurbel</button>
+      </div>
+      <div id="speedBox">
+        <label class="slider">
+          <span class="row">Drehzahl <output id="speedOut"></output></span>
+          <input id="speedSlider" type="range" />
+        </label>
+        <p class="status">links: rückwärts · Mitte: Stillstand · rechts: vorwärts</p>
+        <button id="stopBtn" type="button">Anhalten</button>
+      </div>
+      <p class="status" id="crankInfo" hidden>Fasse die Kurbel vorne an der Welle an und drehe sie. Lässt du los,
+        läuft der Magnet langsam aus.</p>
+      <button id="holdBtn" class="state" type="button">Magnet festhalten</button>
+      <div id="holdBox" hidden>
+        <p class="status">Der Magnet dreht sich nur, wenn du ihn mit der Kurbel oder dem Regler drehst.</p>
+        <label class="slider">
+          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
+          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
+        </label>
+      </div>
+      <label class="check"><input id="slowCheck" type="checkbox" /> Zeitlupe</label>
+      <p class="status">Frequenz der Wechselspannung: <strong id="freqOut">–</strong></p>
+    </section>
+    <section>
+      <h2>Anzeigen</h2>
+      <label class="check"><input id="bCheck" type="checkbox" /> B im Spuleninneren</label>
+      <label class="check"><input id="plotCheck" type="checkbox" /> Diagramme B–t und U–t</label>
+      <label class="check"><input id="slopeCheck" type="checkbox" /> Änderung von B (Tangente)</label>
+    </section>
+    <section>
+      <h2>Messgerät</h2>
+      <p class="status">Messbereich</p>
+      <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
+    </section>
+  </aside>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

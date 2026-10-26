@@ -1,0 +1,9 @@
+{
+  "name": "innenpolgenerator",
+  "private": true,
+  "description": "3D-Simulation zum Innenpolgenerator: drehender Magnet in fest stehenden Spulen, Induktion durch Änderung des Magnetfelds",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}
