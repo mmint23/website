@@ -1,0 +1,56 @@
+# Baut die Website mit allen Simulationen und kopiert sie per SSH auf den Hetzner-Server.
+#
+# Läuft bei jedem Push auf main, auf Knopfdruck (Actions → Veröffentlichen → Run workflow)
+# und stündlich. Stündlich wird nur gebaut, wenn sich die Website oder eine Simulation geändert hat.
+#
+# Benötigte Secrets (Settings → Secrets and variables → Actions):
+#   DEPLOY_SSH_KEY       privater Schlüssel des Benutzers "deploy" auf dem Server
+#   DEPLOY_KNOWN_HOSTS   Ausgabe von: ssh-keyscan mmint23.de
+name: Veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+
+concurrency:
+  group: veroeffentlichen
+  cancel-in-progress: false
+
+env:
+  ZIEL_HOST: mmint23.de
+  SEITE: https://mmint23.de/
+
+jobs:
+  veroeffentlichen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Änderungen prüfen
+        id: pruefen
+        if: github.event_name == 'schedule'
+        run: node scripts/bauen.mjs --pruefen "$SEITE"
+
+      - name: Bauen
+        if: github.event_name != 'schedule' || steps.pruefen.outputs.geaendert == 'true'
+        run: node scripts/bauen.mjs
+
+      - name: Auf den Server kopieren
+        if: github.event_name != 'schedule' || steps.pruefen.outputs.geaendert == 'true'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # Der Server erlaubt diesem Schlüssel nur rsync in /var/www/mmint23.de (rrsync), daher der relative Pfad
+          rsync -rlz --delete --checksum _site/ "deploy@$ZIEL_HOST:./"
