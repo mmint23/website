@@ -120,7 +120,8 @@ Zuklappen): `systemd-inhibit --what=idle:sleep:handle-lid-switch npm start`.
 |---|---|
 | `index.js` | Einstieg für Simulationen: `initTafel(optionen)` und die Exporte oben |
 | `tafel.js` | Zeichenfenster, Werkzeuge, Dokumente (eigene Zeichnung oder Arbeitskopie einer Abgabe) |
-| `abgabe.js` | Server erkennen, Teilen (Schüler), Lehrerseite (Abgaben live, optionale PIN, QR-Code) |
+| `abgabe.js` | Teilen (Schüler), Lehrerseite (Abgaben live, QR-Code) |
+| `../verbindung.js` | Server erkennen, Raum, optionale PIN, eine WebSocket-Leitung je Seite (auch von der Live-Steuerung genutzt) |
 | `striche.js` | Datenformat der Striche, Prüfung, Zeichnen – ohne DOM, auch vom Server genutzt |
 | `tafel.css` | Aussehen von Tafel, Abgabeleiste und PIN-Fenster |
 | `../link.js` | „Link zeigen“ mit QR-Code (auch ohne Tafel nutzbar) |

@@ -13,6 +13,8 @@ gemeinsam/            gemeinsame Bausteine für alle Simulationen
   config.js           öffentliche Einstellungen (Website-Adresse, Supabase-URL, publishable-Schlüssel)
   link.js             „Link / QR-Code zeigen“
   tafel/              Zeichentafel mit Abgabe an die Lehrkraft (Anleitung: gemeinsam/tafel/README.md)
+  live/               Live-Steuerung: Schülergerät steuert die Simulation am Beamer (gemeinsam/live/README.md)
+  verbindung.js       Verbindung zum Abgabe-Server (von tafel/ und live/ genutzt)
 simulationen/<name>/  je eine Simulation mit eigener index.html
 server/               Abgabe-Server für das Klassenzimmer (Node.js, läuft auf dem Lehrer-Laptop)
 ```

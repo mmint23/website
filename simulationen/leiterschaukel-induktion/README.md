@@ -168,8 +168,18 @@ gemeinsame Baustein der Website – **Server starten, Firewall, Hotspot, Datensc
 5. „Abgabe löschen“ (in der Tafel) bzw. „Alle löschen“ (in der Leiste) fragen einmal nach („Wirklich …?“).
    „Eigene Tafel“ in der Leiste führt zurück zur eigenen Zeichnung.
 
+### Live-Steuerung: Schüler steuert am Beamer
+
+In der Abgabeleiste der Lehrerseite: **„Steuerung abgeben“** zeigt einen QR-Code. Ein Schüler scannt ihn und
+bedient die Leiterschaukel auf seinem iPad – der Beamer zeigt genau das, auch Erklärmodus, Kamera und Messgerät.
+**„Ich steuere“ / „Schüler steuert“** schaltet hin und her, ohne neues Scannen; „Trennen“ beendet. Laserpointer
+und „Link / QR-Code zeigen“ bleiben am Beamer bedienbar. Einzelheiten:
+[`gemeinsam/live/README.md`](../../gemeinsam/live/README.md).
+
 ### Technik (Leiterschaukel)
 
+- `js/live.js` bindet die Live-Steuerung an: Zustand aus `state.js` (ohne Laserpointer) senden bzw. übernehmen
+  und dabei nur neu aufbauen, was sich geändert hat (Versuch, Anzeige, Kabel, Polung).
 - `js/tafel3d.js` richtet die gemeinsame Tafel ein (Bild, Stifte v/B/F_L/Stift, Laserpointer in der
   Werkzeugleiste) und zeigt ihren Inhalt als kleine Tafel in der 3D-Szene.
 - Der **Zustand der Simulation** liegt zentral in `js/state.js`: Einstellungen, bewegte Teile (Schaukel, Zeiger,
@@ -205,6 +215,7 @@ leiterschaukel-induktion/
 │   ├── config.js       # Maße und Modellgrößen
 │   ├── state.js        # zentraler Zustand (Einstellungen, bewegte Teile, Ansicht)
 │   ├── tafel3d.js      # gemeinsame Tafel einrichten und als kleine Tafel in der Szene zeigen
+│   ├── live.js         # Live-Steuerung anbinden (gemeinsam/live/)
 │   ├── laser.js        # Laserpointer: Stift/Maus markieren, Spur verblasst
 │   ├── physik.js       # Schaukel, Induktionsspannung, Strom, Bremskraft, Zeiger (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Licht, Tisch
@@ -223,6 +234,8 @@ leiterschaukel-induktion/
 Gemeinsam mit anderen Simulationen genutzt (Ordner website/gemeinsam/):
   link.js               # „Link zeigen“: QR-Code und Adresse
   tafel/                # Zeichentafel, Teilen, Lehrerseite (Abgabe-Server: website/server/)
+  live/                 # Live-Steuerung: Schülergerät steuert am Beamer
+  verbindung.js         # Verbindung zum Abgabe-Server
 ```
 
 ## Physikalisches Modell
