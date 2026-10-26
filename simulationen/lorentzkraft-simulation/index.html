@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geladenes Teilchen im Magnetfeld</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="page-header">
+      <h1>Geladenes Teilchen im Magnetfeld</h1>
+      <p>Interaktive Simulation zur Lorentzkraft für den Physikunterricht</p>
+    </header>
+
+    <section class="panel controls">
+      <div class="control-columns">
+        <fieldset>
+          <legend>Magnetfeld</legend>
+
+          <label>
+            Flussdichte B <span id="bOut" class="value">25 mT</span>
+            <input id="bSlider" type="range" min="0" max="50" step="1" value="25" />
+          </label>
+
+          <div class="segmented" role="group" aria-label="Richtung des Magnetfelds">
+            <button id="bIn" class="active" type="button" aria-pressed="true">⊗ in die Ebene</button>
+            <button id="bOutOfPlane" type="button" aria-pressed="false">⊙ aus der Ebene</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Teilchen</legend>
+
+          <div class="segmented" role="group" aria-label="Ladung des Teilchens">
+            <button id="chargePos" class="active charge-pos" type="button" aria-pressed="true">+ positiv</button>
+            <button id="chargeNeg" class="charge-neg" type="button" aria-pressed="false">− negativ</button>
+          </div>
+
+          <label>
+            Geschwindigkeit v <span id="vOut" class="value">3,0 · 10⁵ m/s</span>
+            <input id="vSlider" type="range" min="0.5" max="10" step="0.1" value="3" />
+          </label>
+
+          <label>
+            Richtung von v <span id="angleOut" class="value">0°</span>
+            <input id="angleSlider" type="range" min="0" max="359" step="1" value="0" />
+          </label>
+        </fieldset>
+      </div>
+
+      <div class="button-row">
+        <button id="playPause" class="primary" type="button">▶ Start</button>
+        <button id="reset" type="button" title="Zurück an den zuletzt abgelegten Ort">↺ Zurücksetzen</button>
+        <button id="home" type="button" title="Zurück in die Bildmitte, Bewegungsrichtung 0°">⌂ Startposition</button>
+        <button id="clearTrail" type="button">Spur löschen</button>
+        <button id="bounce" type="button" aria-pressed="false" title="Am Rand anhalten oder wie an einer Bande abprallen">Abprallen am Rand: AUS</button>
+        <label class="inline">
+          Tempo
+          <select id="tempo">
+            <option value="0.25">0,25×</option>
+            <option value="0.5">0,5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="button-row" role="group" aria-label="Anzeige">
+        <label class="check"><input id="showV" type="checkbox" checked /> Geschwindigkeitspfeil v</label>
+        <label class="check"><input id="showF" type="checkbox" checked /> Lorentzkraft F<sub>L</sub></label>
+        <label class="check"><input id="showTrail" type="checkbox" checked /> Bahnspur</label>
+        <label class="check"><input id="showCircle" type="checkbox" /> Kreisbahn vorhersagen</label>
+      </div>
+    </section>
+
+    <section class="canvas-wrap">
+      <canvas
+        id="field"
+        tabindex="0"
+        aria-label="Zeichenfläche: Das Teilchen kann mit Maus oder Finger verschoben werden, die Pfeilspitze von v legt die Bewegungsrichtung fest."
+      ></canvas>
+      <div id="status" class="status" hidden></div>
+    </section>
+
+    <p class="hint">
+      Teilchen mit Maus oder Finger an eine neue Stelle <strong>ziehen</strong>.
+      Die <strong>Spitze des v-Pfeils</strong> ziehen, um die Bewegungsrichtung zu ändern.
+      Tastatur: Pfeiltasten verschieben das Teilchen, Leertaste startet/pausiert.
+    </p>
+
+    <section class="panel readout" aria-live="polite">
+      <div><span class="label">Ladung q</span><span id="rQ" class="value"></span></div>
+      <div><span class="label">Masse m</span><span class="value">1,67 · 10⁻²⁷ kg</span></div>
+      <div><span class="label">Lorentzkraft F<sub>L</sub> = |q|·v·B</span><span id="rF" class="value"></span></div>
+      <div><span class="label">Bahnradius r = m·v / (|q|·B)</span><span id="rR" class="value"></span></div>
+      <div><span class="label">Umlaufzeit T = 2π·m / (|q|·B)</span><span id="rT" class="value"></span></div>
+      <div><span class="label">Umlaufsinn</span><span id="rSense" class="value"></span></div>
+    </section>
+
+    <section class="panel info">
+      <strong>Zur Physik:</strong>
+      Auf ein Teilchen mit der Ladung q, das sich mit der Geschwindigkeit v
+      senkrecht zu einem Magnetfeld B bewegt, wirkt die Lorentzkraft
+      F<sub>L</sub> = q·v·B. Sie steht immer senkrecht zur Bewegungsrichtung,
+      ändert also nur die Richtung, nicht den Betrag der Geschwindigkeit –
+      das Teilchen läuft auf einer Kreisbahn. Die Richtung der Kraft liefert
+      die Drei-Finger-Regel der rechten Hand (Daumen: v, Zeigefinger: B,
+      Mittelfinger: F) für positive Ladungen; bei negativen Ladungen zeigt
+      die Kraft in die Gegenrichtung (linke Hand).
+      <br /><br />
+      <strong>Modell:</strong> Beide Teilchen haben die Masse eines Protons und
+      den Ladungsbetrag e = 1,6 · 10⁻¹⁹ C – sie unterscheiden sich nur im
+      Vorzeichen. Die Bewegung ist stark verlangsamt: 1 s Animation ≙ 1 µs.
+      Ein Kästchen im Hintergrund entspricht 5 cm. Erreicht das Teilchen den Rand der Zeichenfläche, hält die Simulation an. Mit „Abprallen am Rand“ wird es dort stattdessen wie an einer Bande reflektiert (keine Physik, nur zur Darstellung).
+    </section>
+
+    <footer>Geladenes Teilchen im Magnetfeld · HTML5-Simulation</footer>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

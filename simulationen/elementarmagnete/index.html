@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elementarmagnete – Magnetisieren</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="buehne">
+    <canvas id="flaeche" aria-label="Eisenstück mit Elementarmagneten"></canvas>
+    <div class="header">
+      <h1>Elementarmagnete</h1>
+      <p id="untertitel"></p>
+    </div>
+    <p class="hint" id="hinweis"></p>
+  </div>
+
+  <aside class="panel">
+    <p class="status" id="status" role="status"></p>
+
+    <section>
+      <h2>Modus</h2>
+      <div class="segmented" role="group" aria-label="Modus">
+        <button type="button" data-modus="streichen">Stabmagnet</button>
+        <button type="button" data-modus="spule">Spule mit Eisenkern</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Material</h2>
+      <div class="segmented" role="group" aria-label="Material">
+        <button type="button" data-material="weicheisen">Weicheisen</button>
+        <button type="button" data-material="stahl">Stahl</button>
+      </div>
+      <p class="note" id="materialNotiz"></p>
+    </section>
+
+    <section id="streichenBox">
+      <h2>Stabmagnet</h2>
+      <p class="note">Ziehe den Magneten mehrmals in derselben Richtung über das Eisenstück.</p>
+      <button id="umdrehenBtn" type="button">Magnet umdrehen</button>
+    </section>
+
+    <section id="spuleBox" hidden>
+      <h2>Spule</h2>
+      <button id="stromBtn" class="power" type="button">Strom einschalten</button>
+      <div class="slider">
+        <label class="row" for="stromRegler"><span>Stromstärke I</span> <output id="stromAus"></output></label>
+        <input id="stromRegler" type="range" min="0" max="5" step="0.1" />
+      </div>
+      <button id="polungBtn" type="button">Polung umkehren</button>
+      <button id="kernBtn" type="button">Eisenkern herausziehen</button>
+      <div class="messung">
+        <span>Stärke des Magnetfelds</span>
+        <div class="balken" aria-hidden="true"><div id="anteilSpule"></div><div id="anteilKern"></div></div>
+        <div class="legende"><span class="spule">Spule</span><span class="kern">Eisenkern</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Erschütterung</h2>
+      <button id="hammerBtn" type="button">🔨 Hammerschlag</button>
+      <p class="note">Oder tippe auf das Eisenstück.</p>
+    </section>
+
+    <section>
+      <h2>Ordnung der Elementarmagnete</h2>
+      <div class="balken einzeln" aria-hidden="true"><div id="ordnungBalken"></div></div>
+      <p class="note" id="ordnungText"></p>
+    </section>
+
+    <section>
+      <h2>Anzeigen</h2>
+      <label class="check"><input id="feldCheck" type="checkbox" /> Magnetfeldlinien</label>
+      <label class="check" id="kompassZeile"><input id="kompassCheck" type="checkbox" /> Kompassnadeln</label>
+      <label class="check"><input id="poleCheck" type="checkbox" /> Pole am Eisenstück</label>
+      <button id="resetBtn" type="button">Zurücksetzen (ungeordnet)</button>
+    </section>
+  </aside>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

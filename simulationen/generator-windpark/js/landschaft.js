@@ -1,0 +1,400 @@
+// ------------------------------------------------------------------
+// Windpark: stilisierte Hügellandschaft (Maße in m) mit Windrädern, einem Dorf und einer Stromleitung
+// vom Windpark zum Dorf. Wind kommt von links vorne; Windstreifen zeigen Richtung und Stärke.
+// Eigene Szene (parkScene); Kamera und Steuerung teilt sie sich mit dem Generator-Modell.
+// ------------------------------------------------------------------
+import * as THREE from 'three';
+import { TURBINE, WIND_MAX } from './config.js';
+import { state } from './state.js';
+import { park } from './physik.js';
+
+export const parkScene = new THREE.Scene();
+
+const add = (geometry, material, parent = parkScene, shadow = true) => {
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = shadow;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+};
+
+// Zufallszahlen mit festem Startwert: das Dorf sieht bei jedem Laden gleich aus
+let seed = 7;
+const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+
+// Windrichtung (wohin der Wind weht): von links vorne nach rechts hinten
+export const WIND_DIR = new THREE.Vector3(1, 0, -1).normalize();
+
+// ---------------- Himmel, Licht, Dunst
+
+{
+  const canvas = document.createElement('canvas');
+  canvas.width = 4;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+  gradient.addColorStop(0, '#5b9bd5');
+  gradient.addColorStop(0.55, '#a9cdee');
+  gradient.addColorStop(1, '#e6f0f7');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 4, 256);
+  const sky = new THREE.CanvasTexture(canvas);
+  sky.colorSpace = THREE.SRGBColorSpace;
+  parkScene.background = sky;
+}
+parkScene.fog = new THREE.Fog(0xdde9f2, 700, 2600);
+parkScene.add(new THREE.HemisphereLight(0xdfefff, 0x7d8f5a, 1.0));
+const sun = new THREE.DirectionalLight(0xfff4e0, 2.2);
+sun.position.set(-500, 700, 300);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -800, right: 800, top: 800, bottom: -800, near: 100, far: 2200 });
+sun.shadow.bias = -0.0008;
+parkScene.add(sun);
+
+// ---------------- Gelände: sanfte Hügel, flach beim Dorf; Wiesen und Felder als Vertex-Farben
+
+const VILLAGE = new THREE.Vector2(170, 90);
+export function terrainHeight(x, z) {
+  let h = 38 * Math.sin(x / 260 + 0.6) * Math.cos(z / 310 - 0.4)
+    + 22 * Math.sin(x / 140 - z / 190 + 1.3)
+    + 12 * Math.cos(x / 75 + z / 95);
+  h += 25;
+  // beim Dorf eben auslaufen lassen
+  const d = Math.hypot(x - VILLAGE.x, z - VILLAGE.y);
+  const flat = Math.min(1, Math.max(0, (d - 90) / 160));
+  return h * flat + 8 * (1 - flat);
+}
+
+{
+  const SIZE = 3200, SEG = 200;
+  const geometry = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG);
+  geometry.rotateX(-Math.PI / 2);
+  const pos = geometry.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  const meadow = new THREE.Color(0x7fae4f), meadowDark = new THREE.Color(0x5f8f3a);
+  const field = new THREE.Color(0xd9c46a), fieldGreen = new THREE.Color(0x9cc25a);
+  const c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    pos.setY(i, terrainHeight(x, z));
+    // Felder: Rechtecke im Raster, manche gelb (Getreide), manche hellgrün
+    const fx = Math.floor((x + 40) / 160), fz = Math.floor((z + 15) / 110);
+    const kind = Math.abs(Math.sin(fx * 12.9898 + fz * 78.233) * 43758.5453) % 1;
+    if (kind < 0.18) c.copy(field);
+    else if (kind < 0.36) c.copy(fieldGreen);
+    else c.copy(meadow).lerp(meadowDark, 0.5 + 0.5 * Math.sin(x / 90) * Math.cos(z / 70));
+    colors.set([c.r, c.g, c.b], i * 3);
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  const ground = add(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), parkScene, false);
+  ground.receiveShadow = true;
+}
+
+// ---------------- Windräder: Turm, Gondel, Nabe, drei Rotorblätter; Rotor zeigt in den Wind
+
+const white = new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.45 });
+const grey = new THREE.MeshStandardMaterial({ color: 0xd5dade, roughness: 0.5 });
+const redMark = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.5 });
+
+// Blatt: flaches, sich verjüngendes Profil entlang +y (Wurzel bei y = 0)
+function bladeGeometry() {
+  const L = TURBINE.BLADE;
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.9, 0);
+  shape.lineTo(-1.6, 0.18 * L);
+  shape.quadraticCurveTo(-0.9, 0.7 * L, -0.25, L);
+  shape.lineTo(0.35, L);
+  shape.quadraticCurveTo(0.9, 0.5 * L, 1.1, 0.12 * L);
+  shape.lineTo(0.9, 0);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.6, bevelEnabled: false });
+  geometry.translate(0, 0, -0.3);
+  return geometry;
+}
+const BLADE = bladeGeometry();
+
+// Schild „Generator“ (zeigt immer zur Kamera), erscheint beim Blick in die Gondel
+function makeTag(text) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const font = 'bold 64px system-ui, sans-serif';
+  ctx.font = font;
+  canvas.width = Math.ceil(ctx.measureText(text).width) + 64;
+  canvas.height = 112;
+  ctx.fillStyle = '#1d4f91';
+  ctx.beginPath();
+  ctx.roundRect(4, 4, canvas.width - 8, 104, 52);
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, canvas.width / 2, 60);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, fog: false }));
+  sprite.scale.set(1.3 * canvas.width / 112, 1.3, 1);
+  sprite.renderOrder = 20;
+  return sprite;
+}
+
+// Innenleben der Gondel (nur beim Blick hinein sichtbar): Rotorwelle und Ringgenerator direkt dahinter
+// (Generator ohne Getriebe). Läufer und Welle drehen mit dem Rotor, der Ständer ist fest.
+const copperMat = new THREE.MeshStandardMaterial({ color: 0xc46a2b, metalness: 0.8, roughness: 0.35 });
+const statorMat = new THREE.MeshStandardMaterial({ color: 0x6b7480, metalness: 0.6, roughness: 0.4 });
+const shaftMat = new THREE.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 1, roughness: 0.3 });
+function buildInterior(nacelle, rotor) {
+  const inside = new THREE.Group();
+  inside.visible = false;
+  nacelle.add(inside);
+  // Ständer als oben offener Ring, damit man den drehenden Läufer darin sieht
+  const stator = add(new THREE.CylinderGeometry(1.95, 1.95, 1.4, 40, 1, true, 0.75 * Math.PI, 1.5 * Math.PI), statorMat, inside, false);
+  stator.rotation.x = Math.PI / 2;
+  stator.position.set(0, 1.6, 1.4);
+  stator.material.side = THREE.DoubleSide;
+  const spin = new THREE.Group();          // dreht mit dem Rotor
+  spin.visible = false;
+  rotor.add(spin);
+  const shaft = add(new THREE.CylinderGeometry(0.35, 0.35, 9, 16), shaftMat, spin, false);
+  shaft.rotation.x = Math.PI / 2;
+  shaft.position.z = -5;
+  const runner = add(new THREE.CylinderGeometry(1.65, 1.65, 1.2, 40), copperMat, spin, false);
+  runner.rotation.x = Math.PI / 2;
+  runner.position.z = -2.8;
+  for (let k = 0; k < 6; k++) {            // Speichen, damit man die Drehung sieht
+    const spoke = add(new THREE.BoxGeometry(0.25, 2.9, 0.3), statorMat, spin, false);
+    spoke.rotation.z = k * Math.PI / 3;
+    spoke.position.z = -2.1;
+  }
+  const tag = makeTag('Generator');
+  tag.position.set(0, 4.3, 1.4);
+  inside.add(tag);
+  return { inside, spin };
+}
+
+export const turbines = [];      // [{ group, rotor, nacelle, housing, inside, spin, materials, phase, factor }]
+function buildTurbine(x, z, phase) {
+  const group = new THREE.Group();
+  group.position.set(x, terrainHeight(x, z) - 1, z);
+  // Gondel zeigt mit der Nabe gegen den Wind (lokale +z-Achse = Rotorachse nach vorne)
+  group.rotation.y = Math.atan2(-WIND_DIR.x, -WIND_DIR.z);
+  parkScene.add(group);
+  // eigene Materialien je Windrad: Hervorheben beim Zeigen, durchsichtige Gondel beim Blick hinein
+  const body = white.clone(), shell = white.clone();
+  const H = TURBINE.HUB_HEIGHT;
+  add(new THREE.CylinderGeometry(4, 4.5, 1.5, 24), grey, group).position.y = 0.75;        // Fundament
+  const tower = add(new THREE.CylinderGeometry(1.6, 2.8, H, 24), body, group);
+  tower.position.y = H / 2;
+  const nacelle = new THREE.Group();
+  nacelle.position.y = H;
+  group.add(nacelle);
+  const housing = add(new THREE.BoxGeometry(4.2, 4.2, 12), shell, nacelle);
+  housing.position.set(0, 1.6, -2.5);
+  const rotor = new THREE.Group();
+  rotor.position.set(0, 1.6, 4.2);
+  nacelle.add(rotor);
+  const hub = add(new THREE.SphereGeometry(2.1, 24, 16), body, rotor);
+  hub.scale.z = 1.4;
+  for (let k = 0; k < 3; k++) {
+    const blade = add(BLADE, body, rotor);
+    blade.rotation.z = k * 2 * Math.PI / 3;
+    blade.position.z = 0.4;
+    // rote Warnmarkierung an den Blattspitzen
+    const tip = add(new THREE.BoxGeometry(0.9, 3, 0.7), redMark, blade);
+    tip.position.set(0.05, TURBINE.BLADE - 2.5, 0);
+  }
+  const { inside, spin } = buildInterior(nacelle, rotor);
+  turbines.push({ group, rotor, nacelle, housing, inside, spin, materials: [body, shell], phase, factor: 0.96 + 0.08 * random() });
+}
+for (const [x, z, phase] of [[-260, -210, 0.0], [-60, -330, 1.1], [150, -250, 2.3], [-420, -60, 0.7], [420, -170, 1.7]]) {
+  buildTurbine(x, z, phase);
+}
+
+// ---------------- Dorf: Häuser mit Satteldach und eine Kirche
+
+const walls = [0xf3ead8, 0xefe2c4, 0xffffff, 0xe8d9c0, 0xf6efe6].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 }));
+const roofs = [0xa0402c, 0x8b3a2a, 0x6d4c41, 0xb5543c].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
+function roofGeometry(w, d, h) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-w / 2 - 0.6, 0);
+  shape.lineTo(0, h);
+  shape.lineTo(w / 2 + 0.6, 0);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: d + 1.2, bevelEnabled: false });
+  geometry.translate(0, 0, -(d + 1.2) / 2);
+  return geometry;
+}
+export const houses = [];
+function buildHouse(x, z, angle, w, d, h) {
+  const house = new THREE.Group();
+  house.position.set(x, terrainHeight(x, z), z);
+  house.rotation.y = angle;
+  parkScene.add(house);
+  const body = add(new THREE.BoxGeometry(w, h, d), walls[Math.floor(random() * walls.length)], house);
+  body.position.y = h / 2;
+  const roof = add(roofGeometry(w, d, 0.55 * w), roofs[Math.floor(random() * roofs.length)], house);
+  roof.position.y = h;
+  houses.push(house);
+}
+for (let i = 0; i < 16; i++) {
+  const a = random() * Math.PI * 2, r = 25 + random() * 75;
+  buildHouse(VILLAGE.x + r * Math.cos(a), VILLAGE.y + r * Math.sin(a), Math.round(random() * 4) * Math.PI / 2 + 0.3,
+    9 + random() * 5, 8 + random() * 4, 5 + random() * 2.5);
+}
+// Kirche mit Turm in der Dorfmitte
+{
+  const church = new THREE.Group();
+  church.position.set(VILLAGE.x, terrainHeight(VILLAGE.x, VILLAGE.y), VILLAGE.y);
+  church.rotation.y = 0.3;
+  parkScene.add(church);
+  const nave = add(new THREE.BoxGeometry(11, 9, 20), walls[2], church);
+  nave.position.y = 4.5;
+  add(roofGeometry(11, 20, 6), roofs[0], church).position.y = 9;
+  const tower = add(new THREE.BoxGeometry(5, 22, 5), walls[2], church);
+  tower.position.set(0, 11, 12);
+  const spire = add(new THREE.ConeGeometry(3.8, 10, 4), roofs[2], church);
+  spire.position.set(0, 27, 12);
+  spire.rotation.y = Math.PI / 4;
+}
+
+// ---------------- Stromleitung: Masten vom Windpark zum Dorf, durchhängende Leiterseile
+
+const steel = new THREE.MeshStandardMaterial({ color: 0x8d969e, metalness: 0.5, roughness: 0.5 });
+const cableMat = new THREE.MeshBasicMaterial({ color: 0x3a3f44 });
+const PYLON_H = 34;
+// Querträger: oben ein kurzer, darunter ein langer; Aufhängepunkte der Seile relativ zum Mastfuß
+const ARMS = [[-5, PYLON_H - 2], [5, PYLON_H - 2], [-9, PYLON_H - 9], [9, PYLON_H - 9]];
+function buildPylon(x, z, angle) {
+  const pylon = new THREE.Group();
+  pylon.position.set(x, terrainHeight(x, z) - 0.5, z);
+  pylon.rotation.y = angle;
+  parkScene.add(pylon);
+  // Gittermast vereinfacht: vier schräge Eckstiele und Querstreben
+  for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    const leg = add(new THREE.CylinderGeometry(0.18, 0.25, PYLON_H, 6), steel, pylon);
+    leg.position.set(sx * 1.6, PYLON_H / 2, sz * 1.6);
+    leg.rotation.set(sz * 0.07, 0, -sx * 0.07);
+  }
+  for (const y of [8, 16, 24]) {
+    const w = 3.2 * (1 - y / PYLON_H * 0.55) + 0.6;
+    for (const rot of [0, Math.PI / 2]) {
+      const brace = add(new THREE.BoxGeometry(2 * w, 0.25, 0.25), steel, pylon);
+      brace.position.y = y;
+      brace.rotation.y = rot;
+    }
+  }
+  for (const [w, y] of [[10, PYLON_H - 2], [18, PYLON_H - 9]]) {
+    const arm = add(new THREE.BoxGeometry(w + 1, 0.5, 0.6), steel, pylon);
+    arm.position.y = y;
+  }
+  const peak = add(new THREE.ConeGeometry(1.2, 4, 4), steel, pylon);
+  peak.position.y = PYLON_H + 1.5;
+  pylon.updateMatrixWorld();
+  return ARMS.map(([ax, ay]) => pylon.localToWorld(new THREE.Vector3(ax, ay - 1.2, 0)));
+}
+{
+  // Trasse vom Windpark (bei Windrad 3) zum Dorfrand
+  const start = new THREE.Vector2(120, -200), end = new THREE.Vector2(VILLAGE.x - 30, VILLAGE.y - 75);
+  const count = 4;
+  const angle = Math.atan2(-(end.y - start.y), end.x - start.x) + Math.PI / 2;
+  const hangs = [];
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1);
+    hangs.push(buildPylon(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t, angle));
+  }
+  // Seile zwischen benachbarten Masten mit Durchhang
+  for (let i = 1; i < hangs.length; i++) {
+    for (let k = 0; k < ARMS.length; k++) {
+      const a = hangs[i - 1][k], b = hangs[i][k];
+      const points = [];
+      for (let s = 0; s <= 16; s++) {
+        const t = s / 16;
+        points.push(new THREE.Vector3().lerpVectors(a, b, t).add(new THREE.Vector3(0, -6 * 4 * t * (1 - t), 0)));
+      }
+      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 32, 0.12, 4, false), cableMat, parkScene, false);
+    }
+  }
+}
+
+// ---------------- Windstreifen: helle, dünne Streifen, die mit dem Wind ziehen (mehr und schneller bei mehr Wind)
+
+const STREAKS = 70;
+const streakTexture = (() => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 8;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 256, 0);
+  gradient.addColorStop(0, 'rgba(255,255,255,0)');
+  gradient.addColorStop(0.7, 'rgba(255,255,255,0.9)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 2, 256, 4);
+  return new THREE.CanvasTexture(canvas);
+})();
+const streakMaterial = new THREE.MeshBasicMaterial({
+  map: streakTexture, transparent: true, depthWrite: false, opacity: 0.75, side: THREE.DoubleSide, fog: false,
+});
+const AREA = 1100;              // Streifen ziehen in diesem Bereich um den Windpark
+const streaks = [];
+for (let i = 0; i < STREAKS; i++) {
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), streakMaterial);
+  mesh.renderOrder = 2;
+  parkScene.add(mesh);
+  streaks.push({
+    mesh, u: (random() - 0.5) * AREA, w: (random() - 0.5) * AREA, height: 15 + random() * 130,
+    length: 50 + random() * 60, speed: 0.7 + random() * 0.6, visibleBelow: random(),
+  });
+}
+const SIDE = new THREE.Vector3(-WIND_DIR.z, 0, WIND_DIR.x);   // quer zum Wind
+const CENTER = new THREE.Vector3(-60, 0, -200);
+
+// ---------------- Abgleich (jedes Bild, dt in s Echtzeit)
+
+const rpmToRad = rpm => rpm * 2 * Math.PI / 60;
+export function syncPark(dt, camera) {
+  for (const t of turbines) t.rotor.rotation.z -= rpmToRad(park.rpm * t.factor) * dt;
+  // Windstreifen: Anzahl und Geschwindigkeit wachsen mit dem Wind
+  const strength = Math.min(1, state.wind / WIND_MAX);
+  for (const s of streaks) {
+    s.u += s.speed * (6 + 4 * state.wind) * dt;
+    if (s.u > AREA / 2) s.u -= AREA;
+    const visible = state.wind > 0.5 && s.visibleBelow < 0.25 + 0.75 * strength;
+    s.mesh.visible = visible;
+    if (!visible) continue;
+    const p = CENTER.clone().addScaledVector(WIND_DIR, s.u).addScaledVector(SIDE, s.w);
+    p.y = terrainHeight(p.x, p.z) + s.height;
+    s.mesh.position.copy(p);
+    // Streifen liegt in Windrichtung und dreht sich zur Kamera
+    const toCamera = camera.position.clone().sub(p);
+    const normal = toCamera.sub(WIND_DIR.clone().multiplyScalar(toCamera.dot(WIND_DIR))).normalize();
+    s.mesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(WIND_DIR, normal.clone().cross(WIND_DIR), normal));
+    s.mesh.scale.set(s.length, 2.6, 1);
+  }
+}
+
+// Windrad hervorheben (Maus darüber bzw. angetippt)
+export function highlightTurbine(turbine) {
+  for (const t of turbines) for (const m of t.materials) m.emissive.setHex(t === turbine ? 0x2a5d8f : 0x000000);
+}
+
+// Blick in die Gondel: amount 0 … 1 macht das Gehäuse durchsichtig und zeigt Welle und Generator
+export function revealNacelle(turbine, amount) {
+  for (const t of turbines) {
+    const a = t === turbine ? amount : 0;
+    const shell = t.housing.material;
+    shell.transparent = a > 0;
+    shell.opacity = 1 - 0.82 * a;
+    shell.depthWrite = a < 0.5;
+    shell.needsUpdate = true;
+    t.inside.visible = t.spin.visible = a > 0;
+  }
+}
+
+// Startansicht des Windparks: von links vorne (gegen den Wind, Rotoren von vorne), Dorf rechts im Bild
+export function parkView(camera, controls) {
+  camera.position.set(-640, 150, 560);
+  controls.target.set(40, 60, -180);
+}
