@@ -1,0 +1,9 @@
+{
+  "name": "elementarmagnete",
+  "private": true,
+  "description": "Simulation: Magnetisieren im Modell der Elementarmagnete (Streichen mit dem Stabmagneten, Entmagnetisieren durch Schläge, Spule mit Eisenkern)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}

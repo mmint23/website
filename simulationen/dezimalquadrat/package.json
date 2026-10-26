@@ -1,0 +1,9 @@
+{
+  "name": "dezimalquadrat",
+  "private": true,
+  "description": "Simulation: Dezimalzahlen am Quadrat (Zehntel, Hundertstel, Tausendstel, Zehntausendstel) für die 6. Jahrgangsstufe",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}
