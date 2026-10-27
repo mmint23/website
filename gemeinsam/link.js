@@ -101,7 +101,9 @@ export async function showLink(url = pageUrl(), hinweis = '') {
   }
 }
 
-function hideLink() {
+// Fenster schließen (auch von außen, z. B. wenn der QR-Code der Live-Steuerung gescannt wurde)
+export function hideLink() {
+  if (!$('linkOverlay') || $('linkOverlay').hidden) return;
   $('linkOverlay').hidden = true;
   vorher?.focus?.();
 }

@@ -83,6 +83,15 @@ function updateUi() {
   updateMeterFace();
 }
 
+// Nach einem von außen übernommenen Zustand (Live-Steuerung): Knöpfe, Häkchen und Regler nachziehen
+export function uiAbgleichen() {
+  $('angleSlider').value = state.angle;
+  $('brakeCheck').checked = state.brakeBoost;
+  $('valueCheck').checked = state.showValue;
+  $('longCheck').checked = state.longMagnet;
+  updateUi();
+}
+
 // Regler „Lage des Leiters“: zeigt das Ziel; die Anzeige daneben den aktuellen Winkel (vorne +, hinten −).
 // Beim Ziehen des Leiters folgt der Regler dem Finger, solange man ihn nicht selbst bedient.
 let holdSliderActive = false;
