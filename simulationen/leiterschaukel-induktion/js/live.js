@@ -12,6 +12,12 @@ import { uiAbgleichen } from './bedienfeld.js';
 import { cancelDrag } from './ziehen.js';
 import { table } from './szene.js';
 
+// Bewegte Größen, die beim Zuschauen zwischen zwei empfangenen Zuständen geglättet werden (alles andere springt)
+const GLAETTEN = [
+  'swing.theta', 'swing.omega', 'magnetAngle', 'magnetMotion.z', 'magnetMotion.v', 'needle.pos', 'needle.vel',
+  'lamp.heat', 'electron.x', 'meterAngle', 'view.position', 'view.target',
+];
+
 // Felder, bei deren Änderung der Aufbau neu entsteht
 const AUFBAU = ['explain', 'setup', 'longMagnet', 'display', 'cablesSwapped'];
 // einfache Einstellungen (Zahlen, Wahrheitswerte, Texte) – ändert sich eine, wird das Bedienfeld nachgezogen
@@ -50,5 +56,5 @@ function beiWechsel(zuschauen) {
 }
 
 export function initLiveSteuerung() {
-  initLive({ id: 'leiterschaukel-induktion', lesen, schreiben, beiWechsel });
+  initLive({ id: 'leiterschaukel-induktion', lesen, schreiben, beiWechsel, glaetten: GLAETTEN });
 }

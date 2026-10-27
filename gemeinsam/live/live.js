@@ -6,9 +6,11 @@
 // den aktuellen Stand und steuert dann. Mit „Schüler steuert“ / „Ich steuere“ wird hin- und hergeschaltet; das
 // Schülergerät bleibt verbunden, bis die Lehrkraft trennt oder einen neuen QR-Code erzeugt.
 // Gespiegelt wird der Zustand der Simulation (nicht die Eingaben): Das Gerät, das steuert, rechnet und schickt
-// seinen Zustand etwa 30-mal pro Sekunde; das andere rechnet nicht selbst, übernimmt ihn nur und ist gesperrt.
+// seinen Zustand etwa 30-mal pro Sekunde mit der Zeit des Bilds; das andere rechnet nicht selbst, ist gesperrt und
+// zeigt den Zustand leicht verzögert und geglättet an (glaetten.js), damit ungleichmäßige Ankunft nicht ruckelt.
 // ------------------------------------------------------------------
 import { verbindungStarten, aufNachricht, aufStatus, senden, halloErgaenzen, adresseFuer } from '../verbindung.js';
+import { Glaetter } from './glaetten.js';
 import { showLink, hideLink } from '../link.js';
 import { stilLaden } from '../stil.js';
 
@@ -19,6 +21,7 @@ const parameter = new URLSearchParams(location.search);
 const code = parameter.get('steuern');   // Schülergerät: Code aus dem QR-Code
 
 let optionen = null;
+let glaetter = null;
 let rolle = null;   // 'lehrer', 'schueler' (Gerät mit Code) oder null
 // Stand laut Server: aktiv (es gibt einen gültigen Code), verbunden (Schülergerät da), quelle ('schueler' |
 // 'lehrer' | null), ich (diese Lehrerseite steuert); beendet: Schülergerät, dessen Code nicht mehr gilt
@@ -45,9 +48,12 @@ function sendet() {
 // ---------------- Anzeige
 
 let warZuschauen = false;
+let warQuelle = null;
 function anzeigen() {
   const zu = zuschauen();
   document.body.classList.toggle('live-zuschauen', zu);
+  if (zu !== warZuschauen || stand.quelle !== warQuelle) glaetter.leeren();   // neue Quelle: andere Uhr
+  warQuelle = stand.quelle;
   if (zu !== warZuschauen) {
     warZuschauen = zu;
     optionen.beiWechsel?.(zu);
@@ -118,10 +124,28 @@ body.live-zuschauen :is(${bereiche}) .live-frei { pointer-events: auto !importan
 
 // ---------------- Start
 
-// optionen: { id, lesen, schreiben, sperren?, beiWechsel? } – siehe README.md
+// Jedes Bild: steuernd im Takt senden (Zustand mit der Zeit dieses Bilds), zuschauend den geglätteten Zustand
+// übernehmen (nur, wenn sich etwas geändert hat)
+let gesendet = -Infinity, geschrieben = null;
+function bild(zeit) {
+  requestAnimationFrame(bild);
+  if (sendet()) {
+    if (zeit - gesendet >= TAKT - 4) {
+      gesendet = zeit;
+      senden({ typ: 'zustand', daten: { zeit, zustand: optionen.lesen() } });
+    }
+  } else if (zuschauen()) {
+    const zustand = glaetter.anzeigen(performance.now());
+    if (zustand && zustand !== geschrieben) optionen.schreiben(structuredClone(zustand));
+    geschrieben = zustand;
+  }
+}
+
+// optionen: { id, lesen, schreiben, glaetten?, sperren?, beiWechsel? } – siehe README.md
 export async function initLive(neu) {
   if (optionen) throw new Error('initLive() wurde schon aufgerufen');
   optionen = { sperren: '#scene, .panel, .popup, .hint', ...neu };
+  glaetter = new Glaetter(optionen.glaetten);
   if (code) halloErgaenzen({ steuern: code });   // vor dem Start der Verbindung
   const verbindung = await verbindungStarten(optionen.id);
   rolle = verbindung === 'lehrer' ? 'lehrer' : verbindung === 'schueler' && code ? 'schueler' : null;
@@ -148,16 +172,14 @@ export async function initLive(neu) {
     anzeigen();
     setTimeout(() => { $('liveBanner').hidden = true; }, 6000);
   });
-  aufNachricht('zustand', nachricht => {
-    if (zuschauen()) optionen.schreiben(nachricht.daten);
+  aufNachricht('zustand', ({ daten }) => {
+    if (zuschauen() && daten?.zustand && Number.isFinite(daten.zeit)) glaetter.empfangen(daten.zeit, daten.zustand, performance.now());
   });
   aufStatus(offen => {
     stand.offen = offen;
     anzeigen();
   });
-  setInterval(() => {
-    if (sendet()) senden({ typ: 'zustand', daten: optionen.lesen() });
-  }, TAKT);
+  requestAnimationFrame(bild);
   anzeigen();
 }
 

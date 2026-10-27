@@ -35,7 +35,7 @@ const LIMITS = {
   RAEUME: 20,
   RAUM_LEERLAUF: 12 * 3600_000, // Raum ohne Lehrerseite und ohne Aktivität wird nach 12 h gelöscht
   ANMELDUNG: 12 * 3600_000,     // so lange gilt eine Anmeldung mit PIN
-  ZUSTAND_ABSTAND: 20,          // Live-Steuerung: höchstens ein Zustand je 20 ms und Verbindung (50 pro Sekunde)
+  ZUSTAND_ABSTAND: 20,          // Live-Steuerung: höchstens ein Zustand je 20 ms und Verbindung weiterreichen (50 pro Sekunde)
   ZUSTAND_GROESSE: 64 * 1024,   // ... mit höchstens 64 KB
 };
 
@@ -339,18 +339,36 @@ function liveLehrer(v, nachricht) {
   liveMelden(v.raum);
 }
 
-// Zustand nur vom Gerät annehmen, das gerade steuert, und an alle anderen des Raums weiterreichen
-// (Lehrerseiten und das Schülergerät mit Code)
-function liveZustand(v, daten) {
+// Steuert dieses Gerät gerade die Live-Steuerung seines Raums? (Dann gibt es dessen live zurück.)
+function steuertLive(v) {
   const live = raeume.get(v.raum)?.live;
-  if (!live?.code) return;
+  if (!live?.code) return null;
   const steuert = live.quelle === 'schueler' ? v.live && live.schueler === v : live.quelle === v;
-  if (!steuert || !daten || typeof daten !== 'object') return;
-  const jetzt = Date.now();
-  if (jetzt - (v.zustandZeit ?? 0) < LIMITS.ZUSTAND_ABSTAND) return;
-  v.zustandZeit = jetzt;
+  return steuert ? live : null;
+}
+
+// Zustand nur vom Gerät annehmen, das gerade steuert, und an alle anderen des Raums weiterreichen
+// (Lehrerseiten und das Schülergerät mit Code). Kommen Zustände schneller als ZUSTAND_ABSTAND (iPads schicken im
+// WLAN oft zwei auf einmal), wird nichts verworfen, sondern der neueste kurz zurückgehalten und dann weitergereicht.
+function liveZustand(v, daten) {
+  const live = steuertLive(v);
+  if (!live || !daten || typeof daten !== 'object') return;
   if (JSON.stringify(daten).length > LIMITS.ZUSTAND_GROESSE) return;
   live.letzter = daten;
+  v.zustandWartet = daten;
+  if (v.zustandTimer) return;   // wird ohnehin gleich weitergereicht – dann schon mit diesem neuesten Zustand
+  const warten = LIMITS.ZUSTAND_ABSTAND - (Date.now() - (v.zustandZeit ?? 0));
+  if (warten > 0) v.zustandTimer = setTimeout(() => zustandWeiter(v), warten);
+  else zustandWeiter(v);
+}
+
+function zustandWeiter(v) {
+  v.zustandTimer = null;
+  const daten = v.zustandWartet;
+  v.zustandWartet = null;
+  const live = steuertLive(v);   // inzwischen umgeschaltet oder getrennt? Dann nicht mehr weiterreichen
+  if (!daten || !live) return;
+  v.zustandZeit = Date.now();
   for (const andere of verbindungen) {
     if (andere === v || andere.raum !== v.raum) continue;
     if (andere.rolle === 'lehrer' || andere === live.schueler) andere.senden({ typ: 'zustand', daten });

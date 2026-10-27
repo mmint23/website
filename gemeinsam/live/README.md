@@ -33,6 +33,13 @@ schickt seinen Zustand etwa 30-mal pro Sekunde über den Server. Das andere rech
 Zustand nur und zeichnet ihn – auch die Ansicht (Kamera). Der Server merkt sich den letzten Zustand, damit ein
 neu verbundenes Gerät sofort den aktuellen Stand hat.
 
+**Glätten** (`glaetten.js`): Jeder Zustand trägt die Zeit des Bilds, in dem er gerechnet wurde. iPads schicken im
+WLAN oft zwei Zustände auf einmal und dann eine Weile nichts – direkt angezeigt ruckelt das. Das zuschauende Gerät
+zeigt deshalb 120 ms später an, als gesendet wurde, und rechnet für die bewegten Größen (Option `glaetten`) in jedem
+Bild Zwischenwerte zwischen den beiden umliegenden Zuständen. Schalter und Einstellungen werden nicht gemittelt,
+sie kommen unverändert aus dem älteren Zustand. Kommen Zustände schneller als alle 20 ms, verwirft der Server sie
+nicht, sondern reicht den neuesten kurz danach weiter.
+
 ## In eine Simulation einbauen
 
 Voraussetzung: Der ganze veränderliche Zustand der Simulation liegt in einem Objekt (z. B. `state` in `state.js`),
@@ -59,6 +66,7 @@ if (!zuschauen()) stepPhysics(dt);
 | `id` | **Pflicht.** Kennung der Simulation (wie bei `initTafel`). |
 | `lesen` | **Pflicht.** Liefert den Zustand als reine Daten (JSON-fähig). Was nur auf einem Gerät gelten soll (z. B. Laserpointer), weglassen. |
 | `schreiben` | **Pflicht.** Übernimmt empfangene Daten. `zustandUebernehmen(ziel, daten)` ersetzt keine Teilobjekte – wichtig, wenn andere Module Verweise darauf halten. |
+| `glaetten` | Bewegte Größen, die beim Zuschauen geglättet werden, als Punkt-Pfade, z. B. `['swing.theta', 'view.position']` (Zahlen oder Listen von Zahlen). Nur stetige Größen eintragen – nichts, was springen darf (z. B. Fortschritt einer Animation, die von 1 auf 0 zurückfällt). Ohne Angabe: keine Zwischenwerte, nur die Verzögerung. |
 | `sperren` | Bereiche, die beim Zuschauen gesperrt sind (CSS-Selektor). Standard: `#scene, .panel, .popup, .hint`. Elemente mit der Klasse `live-frei` darin bleiben bedienbar. |
 | `beiWechsel(zuschauen)` | Wird aufgerufen, wenn das Gerät zwischen Zuschauen und Steuern wechselt (z. B. laufendes Ziehen beenden). |
 
