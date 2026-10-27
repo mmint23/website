@@ -28,13 +28,17 @@ controls.maxDistance = 200;
 // Kamera und Steuerung für die jeweilige Ansicht: Windpark in Metern (weite Sicht, Kamera über dem Boden),
 // Generator-Modell in Zentimetern
 export function applyViewSettings(view) {
-  const parkView = view === 'park';
-  camera.near = parkView ? 2 : 0.5;
-  camera.far = parkView ? 5000 : 1000;
+  // Windpark (m), Raum im Dorf (m, man schaut sich nur um – die offene Vorderseite bleibt hinter der Kamera),
+  // Generator-Modell (cm)
+  const [near, far, minD, maxD, maxPolar, azimut] = {
+    park: [2, 5000, 60, 1600, Math.PI * 0.47, Infinity],
+    room: [0.05, 60, 0.6, 4.2, Math.PI * 0.62, 0.75],
+    model: [0.5, 1000, 20, 200, Math.PI, Infinity],
+  }[view];
+  camera.near = near;
+  camera.far = far;
   camera.updateProjectionMatrix();
-  controls.minDistance = parkView ? 60 : 20;
-  controls.maxDistance = parkView ? 1600 : 200;
-  controls.maxPolarAngle = parkView ? Math.PI * 0.47 : Math.PI;
+  Object.assign(controls, { minDistance: minD, maxDistance: maxD, maxPolarAngle: maxPolar, minAzimuthAngle: -azimut, maxAzimuthAngle: azimut });
 }
 
 // Startansicht: schräg von vorne oben, Modell links, Messgerät rechts unten

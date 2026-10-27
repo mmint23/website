@@ -83,7 +83,7 @@ export const WIND_MAX = 20;   // Wind-Regler bis 20 m/s
 
 // Übergang Windrad → Modell (Dauern in s): Kamerafahrt zur Gondel, Gondel wird durchsichtig (danach bleibt
 // die Ansicht stehen, bis noch einmal getippt wird), Überblendung, Hinweis „Vereinfachtes Modell“
-export const TRANSITION = { FLY: 2.8, REVEAL: 1.1, FADE_OUT: 0.7, FADE_IN: 0.7, BADGE: 2.5 };
+export const TRANSITION = { FLY: 2.8, REVEAL: 1.1, BACK: 2, FADE_OUT: 0.7, FADE_IN: 0.7, BADGE: 2.5 };
 
 // U-t-Diagramm: so viele Sekunden (Simulationszeit) sind sichtbar
 export const PLOT_SECONDS = 4;

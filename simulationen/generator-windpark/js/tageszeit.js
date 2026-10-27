@@ -41,6 +41,14 @@ export function sonnenstand(uhrzeit) {
 export const dunkelheit = uhrzeit => 1 - smooth(-0.08, 0.18, sonnenstand(uhrzeit).sinHoehe);
 
 const mischen = (a, b, t) => a.clone().lerp(b, t);
+
+// Himmelsfarben (oben, Mitte, Horizont) zu einer Uhrzeit: Nacht → Dämmerung → Tag (auch für den Blick aus dem
+// Fenster im Raum, raum.js)
+export function himmelsfarben(uhrzeit) {
+  const { sinHoehe } = sonnenstand(uhrzeit);
+  const hell = smooth(0, 0.3, sinHoehe), daemmrig = smooth(-0.15, 0.03, sinHoehe);
+  return [0, 1, 2].map(i => mischen(farbe.nacht[i], mischen(farbe.daemmerung[i], farbe.tag[i], hell), daemmrig));
+}
 function himmel(oben, mitte, unten) {
   const ctx = skyCanvas.getContext('2d');
   const g = ctx.createLinearGradient(0, 0, 0, skyCanvas.height);
@@ -66,7 +74,7 @@ export function syncTageszeit(uhrzeit, zeit) {
     const hell = smooth(0, 0.3, sinHoehe);              // 0 bei Sonne am Horizont, 1 ab mittlerer Höhe
     const daemmrig = smooth(-0.15, 0.03, sinHoehe);      // 0 in der Nacht, 1 ab Sonnenaufgang
     // Himmel und Dunst: Nacht → Dämmerung → Tag
-    const [oben, mitte, unten] = [0, 1, 2].map(i => mischen(farbe.nacht[i], mischen(farbe.daemmerung[i], farbe.tag[i], hell), daemmrig));
+    const [oben, mitte, unten] = himmelsfarben(uhrzeit);
     himmel(oben, mitte, unten);
     parkScene.fog.color.copy(unten);
     // Sonne: Richtung, Stärke, Farbe (tief stehend warm); unter dem Horizont aus

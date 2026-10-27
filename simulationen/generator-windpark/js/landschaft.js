@@ -288,6 +288,7 @@ function buildHouse(x, z, angle, w, d, h) {
     [-w / 4, y, -d / 2 - aussen, Math.PI], [w / 4, y, -d / 2 - aussen, Math.PI],
     [w / 2 + aussen, y, 0, Math.PI / 2], [-w / 2 - aussen, y, 0, -Math.PI / 2],
   ]);
+  house.userData = { body, roof, w, d, h };
   houses.push(house);
 }
 for (let i = 0; i < 16; i++) {
@@ -295,6 +296,52 @@ for (let i = 0; i < 16; i++) {
   buildHouse(VILLAGE.x + r * Math.cos(a), VILLAGE.y + r * Math.sin(a), Math.round(random() * 4) * Math.PI / 2 + 0.3,
     9 + random() * 5, 8 + random() * 4, 5 + random() * 2.5);
 }
+// Betretbare Häuser (uebergang.js): mit Tür, eigenem Material zum Hervorheben und einem Schild, das auch aus der
+// Ferne lesbar bleibt. Das Haus, das der Startansicht am nächsten liegt, führt ins Wohnzimmer (raum.js); das
+// nächstgelegene Haus, das von dort aus gesehen mindestens 45 m weiter rechts steht, ins Generator-Modell (sein
+// Schild steht höher, damit sich die Schilder nicht überdecken).
+const START_BLICK = { position: new THREE.Vector3(-860, 200, 760), ziel: new THREE.Vector3(150, 45, -40) };   // parkView
+const BLICK = START_BLICK.position;
+const RECHTS = START_BLICK.ziel.clone().sub(BLICK).cross(new THREE.Vector3(0, 1, 0)).normalize();   // im Bild nach rechts
+const rechts = haus => haus.position.clone().sub(BLICK).dot(RECHTS);
+function betretbar(haus, text, ziel, schildHoehe = 9) {
+  const { body, roof, d, h } = haus.userData;
+  body.material = body.material.clone();
+  roof.material = roof.material.clone();
+  // Tür auf der Seite zur Startansicht (lokale Seite mit der kleineren Entfernung)
+  const vorne = haus.localToWorld(new THREE.Vector3(0, 0, d)).distanceTo(BLICK) < haus.localToWorld(new THREE.Vector3(0, 0, -d)).distanceTo(BLICK) ? 1 : -1;
+  const tuer = add(new THREE.BoxGeometry(1.4, 2.3, 0.2), new THREE.MeshStandardMaterial({ color: 0x6d4c41, roughness: 0.7 }), haus);
+  tuer.position.set(0, 1.15, vorne * (d / 2 + 0.05));
+  const schild = makeTag(text);
+  schild.position.y = h + schildHoehe;
+  haus.add(schild);
+  haus.userData.tuer = { lokal: new THREE.Vector3(0, 1.6, vorne * (d / 2)), vorne };
+  return { haus, ziel, schild, seiten: schild.scale.x / schild.scale.y };
+}
+
+// Schilder jedes Bild so groß machen, dass sie auf dem Bildschirm gleich hoch bleiben (2,4 % der Bildhöhe), auch aus
+// der Ferne. (Nicht über sizeAttenuation = false: Dann trifft das Antippen nicht die sichtbare Fläche.)
+const SCHILD_HOEHE = 0.024;
+const schildPunkt = new THREE.Vector3();
+function syncSchilder(camera) {
+  const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  for (const { schild, seiten } of eingaenge) {
+    const h = SCHILD_HOEHE * 2 * tan * camera.position.distanceTo(schild.getWorldPosition(schildPunkt));
+    schild.scale.set(h * seiten, h, 1);
+  }
+}
+const naechstes = liste => liste.reduce((a, b) => (a.position.distanceTo(BLICK) < b.position.distanceTo(BLICK) ? a : b));
+const wohnhaus = naechstes(houses);
+const werkstatt = naechstes(houses.filter(h => rechts(h) > rechts(wohnhaus) + 45));
+export const eingaenge = [betretbar(wohnhaus, 'Hineinschauen', 'room'), betretbar(werkstatt, 'Generator-Modell', 'model', 24)];
+
+// Hervorheben (Maus darüber); null: keins
+export function highlightHouse(eingang) {
+  for (const e of eingaenge) {
+    for (const teil of [e.haus.userData.body, e.haus.userData.roof]) teil.material.emissive.setHex(e === eingang ? 0x2a5d8f : 0x000000);
+  }
+}
+
 // Kirche mit Turm in der Dorfmitte
 {
   const church = new THREE.Group();
@@ -412,6 +459,7 @@ let laufzeit = 0;   // s, für das Blinken der Warnlichter
 export function syncPark(dt, camera) {
   laufzeit += dt;
   syncTageszeit(state.time, laufzeit);
+  syncSchilder(camera);
   for (const t of turbines) t.rotor.rotation.z -= rpmToRad(park.rpm * t.factor) * dt;
   // Windstreifen: Anzahl und Geschwindigkeit wachsen mit dem Wind
   const strength = Math.min(1, state.wind / WIND_MAX);
@@ -450,8 +498,9 @@ export function revealNacelle(turbine, amount) {
   }
 }
 
-// Startansicht des Windparks: von links vorne (gegen den Wind, Rotoren von vorne), Dorf rechts im Bild
+// Startansicht des Windparks: von links vorne (gegen den Wind, Rotoren von vorne), Dorf rechts im Bild – noch links
+// vom Bedienfeld, damit die Schilder der betretbaren Häuser zu sehen sind
 export function parkView(camera, controls) {
-  camera.position.set(-640, 150, 560);
-  controls.target.set(40, 60, -180);
+  camera.position.copy(START_BLICK.position);
+  controls.target.copy(START_BLICK.ziel);
 }

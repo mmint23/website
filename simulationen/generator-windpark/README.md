@@ -22,12 +22,23 @@ Leiterschleife im Magnetfeld.
   In der Dämmerung gehen im Dorf nach und nach die Lichter an (Fenster mit Lichtschein, auch in der Kirche),
   und auf den Gondeln blinkt die rote Flugsicherungsbefeuerung. So lässt sich die Energiekette beschreiben:
   Wind → Rotor → Generator → Stromleitung → Licht in den Häusern.
+- **Haus antippen** (das Haus am Dorfrand mit dem Schild „Hineinschauen“; mit der Maus wird es hervorgehoben):
+  Kamerafahrt vor die Haustür, Überblendung in ein Wohnzimmer. Durchs Fenster sieht man die Windräder – sie
+  drehen so schnell wie im Windpark, der Himmel passt zur Uhrzeit, nachts blinkt die Befeuerung. Eine Stehlampe
+  hängt an der Steckdose und brennt abends. Am Fenster steht jemand und fragt sich: „Wie wird aus der Energie der
+  Windräder eigentlich elektrische Energie?“ – Einstieg in die Energiekette. Im Bedienfeld: „Zurück zum
+  Windpark“ und „Zum Generator-Modell“ (dort die Antwort).
 - **Windrad antippen** (jedes der fünf; mit der Maus wird es beim Darüberfahren hervorgehoben): Die Kamera
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator
   (Schild „Generator“). Dargestellt ist ein Generator ohne Getriebe: Ein Ringgenerator sitzt direkt auf der
   Rotorwelle, sein kupferfarbener Läufer dreht mit dem Rotor im fest stehenden Ständer. Die Ansicht
-  bleibt stehen, bis noch einmal getippt wird (Hinweis unten); dann wird ins Generator-Modell übergeblendet,
-  kurz erscheint „Vereinfachtes Modell des Generators“. Antippen während der Fahrt überspringt sie. „Direkt zum Generator-Modell“ wechselt ohne Kamerafahrt.
+  bleibt stehen, bis noch einmal getippt wird (Hinweis unten); dann fliegt die Kamera zurück in den Windpark.
+  (Hier soll später ein eigenes Modell der Windkraftanlage anschließen.) Antippen während der Fahrt überspringt sie.
+- **Haus „Generator-Modell“ antippen** (im Dorf, Schild darüber): Kamerafahrt vor die Haustür, Überblendung ins
+  Generator-Modell (Antrieb „Wind“), kurz erscheint „Vereinfachtes Modell des Generators“. „Direkt zum
+  Generator-Modell“ im Bedienfeld wechselt ohne Kamerafahrt.
+- Die Startansicht zeigt alle fünf Windräder und das Dorf links vom Bedienfeld; die Schilder der betretbaren Häuser
+  bleiben auch aus der Ferne gleich groß.
 - Alles ist aus einfachen Formen gebaut (keine geladenen 3D-Modelle), damit es schnell lädt und auf Tablets
   flüssig läuft.
 
@@ -157,7 +168,8 @@ generator-windpark/
 │   ├── szene.js        # Renderer, Kamera, Licht, Einstellungen je Ansicht
 │   ├── landschaft.js   # Windpark: Gelände, Windräder (mit Innenleben der Gondel), Dorf, Stromleitung, Windstreifen
 │   ├── tageszeit.js    # Uhrzeit: Sonnenstand, Himmel, Licht, Lichter im Dorf, Befeuerung der Windräder
-│   ├── uebergang.js    # Windrad antippen, Kamerafahrt, Blick in die Gondel, Überblendung ins Modell
+│   ├── raum.js         # Wohnzimmer im Dorf: Blick auf die Windräder, Lampe an der Steckdose, Person mit Frage
+│   ├── uebergang.js    # Windrad bzw. Haus antippen, Kamerafahrt, Blick in die Gondel, Überblendung ins Modell bzw. in den Raum
 │   ├── modell.js       # Magnet, Welle, Leiterschleife, Schleifringe, Bürsten, Kurbel
 │   ├── messgeraet.js   # Zeigermessgerät und Kabel
 │   ├── diagramm.js     # U-t-Diagramm

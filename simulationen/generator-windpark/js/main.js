@@ -13,6 +13,7 @@ import { initUi, updateHoldSlider, updateParkStatus } from './bedienfeld.js';
 import { syncExplain } from './erklaerung.js';
 import './ziehen.js';
 import { updateTransition } from './uebergang.js';
+import { raumScene, syncRaum } from './raum.js';
 import { initTafel, oeffneTafel, tafelOffen } from '../../../gemeinsam/tafel/index.js';
 
 initUi();
@@ -50,6 +51,12 @@ renderer.setAnimationLoop(() => {
     syncPark(dt, camera);
     updatePlot();                // blendet das Diagramm aus
     renderer.render(parkScene, camera);
+    return;
+  }
+  if (state.view === 'room') {
+    syncRaum(dt);
+    updatePlot();                // blendet das Diagramm aus
+    renderer.render(raumScene, camera);
     return;
   }
   if (!state.paused) stepPhysics(state.slowMotion ? dt * SLOW_MOTION : dt);

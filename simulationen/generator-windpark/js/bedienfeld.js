@@ -10,7 +10,8 @@ import { onCrankGrab } from './ziehen.js';
 import { explainView } from './erklaerung.js';
 import { resetView as resetModelView, controls, camera, applyViewSettings } from './szene.js';
 import { parkView } from './landschaft.js';
-import { onEnterModel, transitionActive } from './uebergang.js';
+import { onEnterModel, onEnterRoom, transitionActive } from './uebergang.js';
+import { raumView } from './raum.js';
 import { formatNumber } from './hilfen.js';
 import { uhrText } from './tageszeit.js';
 
@@ -24,6 +25,7 @@ const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'sho
 // Startansicht: im Windpark über die Landschaft, im Erklärmodus nah an der Schleife
 const resetView = () => {
   if (state.view === 'park') parkView(camera, controls);
+  else if (state.view === 'room') raumView(camera, controls);
   else if (state.explain) explainView(controls);
   else resetModelView();
 };
@@ -35,21 +37,24 @@ const beaufort = v => BEAUFORT.findIndex(limit => v < limit + 1e-9);
 const TEXTS = {
   park: ['Windpark', 'Der Wind dreht die Rotoren – in der Gondel sitzt der Generator.',
     'Ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen · Rechte Maustaste: verschieben'],
+  room: ['Im Haus', 'Woher kommt die elektrische Energie für die Lampe?',
+    'Ziehen: umschauen · Mausrad/zwei Finger: näher heran'],
   model: ['Generator: Leiterschleife im Magnetfeld', 'Dreht sich die Leiterschleife im Magnetfeld, entsteht eine Wechselspannung.',
     'Kurbel ziehen: drehen · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen'],
 };
 
 function updateUi() {
-  const inPark = state.view === 'park';
+  const inPark = state.view === 'park', inRoom = state.view === 'room';
   [$('title').textContent, $('subtitle').textContent, $('hintText').textContent] = TEXTS[state.view];
   $('parkPanel').hidden = !inPark;
-  $('modelPanel').hidden = inPark;
+  $('roomPanel').hidden = !inRoom;
+  $('modelPanel').hidden = state.view !== 'model';
   $('windOut').textContent = `${formatNumber(state.wind, 1).replace(',0', '')} m/s`;
   $('beaufortStatus').textContent = `Windstärke ${beaufort(state.wind)} (Beaufort)`;
   $('timeOut').textContent = uhrText(state.time);
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';
   $('explainBtn').classList.toggle('active', state.explain);
-  $('explainPanel').hidden = !state.explain || inPark;
+  $('explainPanel').hidden = !state.explain || state.view !== 'model';
   $('meterSection').hidden = state.explain;
   for (const [id, key] of TOGGLES) $(id).setAttribute('aria-pressed', String(state[key]));
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
@@ -158,6 +163,14 @@ export function initUi() {
   const modelWind = $('modelWindSlider');
   Object.assign(modelWind, { min: 0, max: WIND_MAX, step: 0.5, value: state.wind });
   modelWind.addEventListener('input', () => { state.wind = Number(modelWind.value); wind.value = state.wind; updateUi(); });
+  // Haus im Dorf: hinein (nach der Kamerafahrt) und wieder hinaus bzw. weiter zum Generator-Modell
+  onEnterRoom(() => setView('room'));
+  $('roomToParkBtn').addEventListener('click', () => setView('park'));
+  $('roomToModelBtn').addEventListener('click', () => {
+    state.drive = 'wind';
+    if (state.hold) setHold(false);
+    setView('model');
+  });
   // Nach der Kamerafahrt ins Windrad: Modell mit Antrieb „Wind“
   onEnterModel(() => {
     state.drive = 'wind';
