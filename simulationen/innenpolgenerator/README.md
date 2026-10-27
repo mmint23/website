@@ -6,7 +6,7 @@ Kraftwerksgeneratoren und viele Windkraftgeneratoren aufgebaut.
 
 Die Simulation setzt beim Induktionsgesetz in der Form an, die die Schüler kennen: **Ändert sich das Magnetfeld
 im Inneren einer Spule, wird an ihren Enden eine Spannung induziert.** Sie braucht keine Lorentzkraft (anders als
-die rotierende Leiterschleife in `generator-windpark`).
+die rotierende Leiterschleife in `generator-leiterschleife`).
 
 ## Kernidee
 

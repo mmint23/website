@@ -1,7 +1,7 @@
 {
   "name": "generator-windpark",
   "private": true,
-  "description": "3D-Simulation zum Generator: vom Windpark zur rotierenden Leiterschleife im Magnetfeld",
+  "description": "3D-Simulation Windpark: Windräder, Dorf mit Tageszeit und Wohnzimmer; Einstieg zu Generator-Leiterschleife und Innenpolgenerator",
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs"

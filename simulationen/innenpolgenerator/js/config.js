@@ -50,6 +50,9 @@ export const METER = {
   RANGES: [0.3, 1, 3],        // Messbereiche ±0,3 / ±1 / ±3 V
 };
 
+// Feldlinien des Magneten: Startpunkte auf der Polfläche (Anteil der halben Breite, je nach links und rechts)
+export const FIELD_LINES = [0.1, 0.3, 0.5, 0.7, 0.9];
+
 // Pfeil für B im Spuleninneren: Länge in cm bei B_MAX
 export const B_ARROW = 4.6;
 
