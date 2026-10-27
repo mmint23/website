@@ -173,7 +173,9 @@ gemeinsame Baustein der Website – **Server starten, Firewall, Hotspot, Datensc
 In der Abgabeleiste der Lehrerseite: **„Steuerung abgeben“** zeigt einen QR-Code. Ein Schüler scannt ihn und
 bedient die Leiterschaukel auf seinem iPad – der Beamer zeigt genau das, auch Erklärmodus, Kamera und Messgerät.
 **„Ich steuere“ / „Schüler steuert“** schaltet hin und her, ohne neues Scannen; „Trennen“ beendet. Laserpointer
-und „Link / QR-Code zeigen“ bleiben am Beamer bedienbar. Einzelheiten:
+und „Link / QR-Code zeigen“ bleiben am Beamer bedienbar. Benutzt das steuernde Gerät den Laserpointer, erscheint die
+Spur auch am Beamer (bzw. umgekehrt auf dem Schülergerät, wenn die Lehrkraft steuert) – am selben Teil der
+Simulation, auch bei anderer Bildschirmgröße. Einzelheiten:
 [`gemeinsam/live/README.md`](../../gemeinsam/live/README.md).
 
 ### Technik (Leiterschaukel)
