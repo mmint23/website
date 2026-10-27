@@ -1,0 +1,9 @@
+{
+  "name": "generator-leiterschleife",
+  "private": true,
+  "description": "3D-Simulation zum Generator: rotierende Leiterschleife im Magnetfeld, mit Erklärmodus (Lorentzkraft auf die Elektronen)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}

@@ -34,7 +34,7 @@ const grabbed = () => state.drive !== 'wind' && raycaster.intersectObjects(crank
 
 // Erfassungsphase: läuft vor den OrbitControls, die dann für diesen Zug abgeschaltet werden
 canvas.addEventListener('pointerdown', event => {
-  if (activeId !== null || state.paused || state.view !== 'model') return;   // in der Pause bleibt alles stehen
+  if (activeId !== null || state.paused) return;   // in der Pause bleibt alles stehen
   setRay(event);
   if (!grabbed()) return;
   activeId = event.pointerId;
@@ -51,7 +51,7 @@ canvas.addEventListener('pointerdown', event => {
 canvas.addEventListener('pointermove', event => {
   setRay(event);
   if (event.pointerId !== activeId) {
-    if (activeId === null && event.pointerType === 'mouse') canvas.style.cursor = state.view === 'model' && grabbed() ? 'grab' : '';
+    if (activeId === null && event.pointerType === 'mouse') canvas.style.cursor = grabbed() ? 'grab' : '';
     return;
   }
   const angle = angleAtPointer();

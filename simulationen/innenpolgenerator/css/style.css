@@ -145,3 +145,14 @@ html, body {
 @media (max-width: 1100px) and (min-width: 701px) {
   .hint > span { display: none; }
 }
+/* Aus dem Windpark gekommen: Knopf zurück, ganz oben im Bedienfeld */
+.panel a.zurueck-btn {
+  display: block; margin: 0 0 8px; padding: 9px 10px; border: 1px solid #1d4f91; border-radius: 8px;
+  background: #1d4f91; color: #fff; font-size: 0.95rem; font-weight: 600; text-align: center; text-decoration: none;
+}
+.panel a.zurueck-btn:hover { background: #163f75; }
+/* Feldlinien im Inneren der Spule: Farbmarke in der Beschriftung */
+.farbe { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+.farbe.innen { background: #aa00ff; }
+/* Umschalter Feldlinienmodell / reale Physik oben im Bedienfeld */
+.panel button.modell-btn { margin-top: 0; font-weight: 600; }

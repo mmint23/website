@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator – Leiterschleife im Magnetfeld</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="scene"></div>
+  <!-- Hinweis „Vereinfachtes Modell“ (kurz, wenn man aus dem Windpark kommt) -->
+  <div class="model-badge" id="modelBadge">Vereinfachtes Modell des Generators</div>
+
+  <div class="header">
+    <h1 id="title">Generator: Leiterschleife im Magnetfeld</h1>
+    <p id="subtitle">Dreht sich die Leiterschleife im Magnetfeld, entsteht eine Wechselspannung.</p>
+  </div>
+
+  <!-- U-t-Diagramm -->
+  <div class="plot-box" id="plotBox">
+    <div class="plot-title">U in mV</div>
+    <canvas id="plot"></canvas>
+  </div>
+
+  <div class="hint">
+    <span id="hintText">Kurbel ziehen: drehen · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen</span>
+    <button id="resetView" type="button">Ansicht zurücksetzen</button>
+  </div>
+
+  <!-- Bedienfeld des Erklärmodus: nur Schalter für die Größen und den Ablauf -->
+  <aside class="popup" id="explainPanel" aria-label="Erklärung" hidden>
+    <h2>Erklärung</h2>
+    <div class="toggles three" role="group" aria-label="Größen">
+      <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
+      <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
+      <button id="showFBtn" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
+    </div>
+    <div class="toggles two" role="group" aria-label="Elektronen">
+      <button id="showElectronBtn" type="button"><span class="dot" style="background:#1565c0"></span>e⁻</button>
+      <button id="showManyBtn" type="button"><span class="dot" style="background:#1565c0"></span>viele e⁻</button>
+    </div>
+    <button id="showRingsBtn" class="state" type="button">Schleifringe</button>
+    <div class="toggles two" role="group" aria-label="Ablauf">
+      <button id="pauseBtn" class="state" type="button">Pause</button>
+      <button id="explainSlowBtn" class="state" type="button">Zeitlupe</button>
+    </div>
+    <button id="explainHoldBtn" class="state" type="button">Festhalten</button>
+    <button id="tafelBtn" class="tafel-btn" type="button">Tafel öffnen (zeichnen)</button>
+  </aside>
+
+  <!-- Bedienfeld -->
+  <aside class="panel" id="modelPanel">
+    <section>
+      <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
+      <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+    </section>
+    <section>
+      <h2>Erklärung</h2>
+      <button id="explainBtn" type="button">Erklärung: Elektronen in der Schleife</button>
+    </section>
+    <section>
+      <h2>Antrieb</h2>
+      <div class="segmented" role="group" aria-label="Antrieb">
+        <button id="driveWindBtn" type="button">Wind</button>
+        <button id="driveSpeedBtn" type="button">Drehzahl</button>
+        <button id="driveCrankBtn" type="button">Kurbel</button>
+      </div>
+      <div id="windBox">
+        <label class="slider">
+          <span class="row">Windgeschwindigkeit <output id="modelWindOut"></output></span>
+          <input id="modelWindSlider" type="range" />
+        </label>
+        <p class="status" id="modelRotorStatus"></p>
+      </div>
+      <div id="speedBox">
+        <label class="slider">
+          <span class="row">Drehzahl <output id="speedOut"></output></span>
+          <input id="speedSlider" type="range" />
+        </label>
+        <p class="status">links: rückwärts · Mitte: Stillstand · rechts: vorwärts</p>
+        <button id="stopBtn" type="button">Anhalten</button>
+      </div>
+      <p class="status" id="crankInfo" hidden>Fasse die Kurbel links an der Welle an und drehe sie. Lässt du los,
+        läuft die Schleife langsam aus.</p>
+      <button id="holdBtn" class="state" type="button">Leiterschleife festhalten</button>
+      <div id="holdBox" hidden>
+        <p class="status">Die Schleife dreht sich nur, wenn du sie mit der Kurbel oder dem Regler drehst.</p>
+        <label class="slider">
+          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
+          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
+        </label>
+      </div>
+      <label class="check"><input id="slowCheck" type="checkbox" /> Zeitlupe</label>
+    </section>
+    <section>
+      <h2>Magnet</h2>
+      <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
+      <p class="status" id="magnetStatus"></p>
+    </section>
+    <section id="meterSection">
+      <h2>Messgerät</h2>
+      <p class="status">Messbereich</p>
+      <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
+      <label class="check"><input id="plotCheck" type="checkbox" /> U-t-Diagramm</label>
+    </section>
+  </aside>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

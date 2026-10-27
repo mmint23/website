@@ -3,51 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Generator – Leiterschleife im Magnetfeld</title>
+  <title>Windpark – vom Wind zum Licht im Dorf</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="scene"></div>
-  <!-- Überblendung beim Übergang Windrad → Modell und Hinweis „Vereinfachtes Modell“ -->
+  <!-- Ausblenden vor dem Wechsel zu einer anderen Simulation bzw. ins Wohnzimmer -->
   <div class="fade" id="fade"></div>
-  <div class="model-badge" id="modelBadge">Vereinfachtes Modell des Generators</div>
 
   <div class="header">
-    <h1 id="title">Generator: Leiterschleife im Magnetfeld</h1>
-    <p id="subtitle">Dreht sich die Leiterschleife im Magnetfeld, entsteht eine Wechselspannung.</p>
-  </div>
-
-  <!-- U-t-Diagramm -->
-  <div class="plot-box" id="plotBox">
-    <div class="plot-title">U in mV</div>
-    <canvas id="plot"></canvas>
+    <h1 id="title">Windpark</h1>
+    <p id="subtitle">Der Wind dreht die Rotoren – in der Gondel sitzt der Generator.</p>
   </div>
 
   <div class="hint">
-    <span id="hintText">Kurbel ziehen: drehen · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen</span>
+    <span id="hintText">Ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen · Rechte Maustaste: verschieben</span>
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
   </div>
-
-  <!-- Bedienfeld des Erklärmodus: nur Schalter für die Größen und den Ablauf -->
-  <aside class="popup" id="explainPanel" aria-label="Erklärung" hidden>
-    <h2>Erklärung</h2>
-    <div class="toggles three" role="group" aria-label="Größen">
-      <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
-      <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
-      <button id="showFBtn" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
-    </div>
-    <div class="toggles two" role="group" aria-label="Elektronen">
-      <button id="showElectronBtn" type="button"><span class="dot" style="background:#1565c0"></span>e⁻</button>
-      <button id="showManyBtn" type="button"><span class="dot" style="background:#1565c0"></span>viele e⁻</button>
-    </div>
-    <button id="showRingsBtn" class="state" type="button">Schleifringe</button>
-    <div class="toggles two" role="group" aria-label="Ablauf">
-      <button id="pauseBtn" class="state" type="button">Pause</button>
-      <button id="explainSlowBtn" class="state" type="button">Zeitlupe</button>
-    </div>
-    <button id="explainHoldBtn" class="state" type="button">Festhalten</button>
-    <button id="tafelBtn" class="tafel-btn" type="button">Tafel öffnen (zeichnen)</button>
-  </aside>
 
   <!-- Bedienfeld im Windpark -->
   <aside class="panel" id="parkPanel">
@@ -70,64 +42,20 @@
     </section>
     <section>
       <h2>Generator</h2>
-      <p class="status">Tippe auf ein Windrad, um in die Gondel zu schauen.</p>
+      <p class="status">Tippe auf ein Windrad, um in die Gondel zu schauen – von dort geht es zum Innenpolgenerator.
+        Im Dorf: das Haus „Generator-Modell“ führt zum Modell, „Hineinschauen“ in ein Wohnzimmer.</p>
       <button id="toModelBtn" type="button">Direkt zum Generator-Modell</button>
     </section>
   </aside>
 
-  <!-- Bedienfeld im Generator-Modell -->
-  <aside class="panel" id="modelPanel">
+  <!-- Bedienfeld im Raum (Haus im Dorf) -->
+  <aside class="panel" id="roomPanel" hidden>
     <section>
-      <button id="toParkBtn" type="button">Zurück zum Windpark</button>
-    </section>
-    <section>
-      <h2>Erklärung</h2>
-      <button id="explainBtn" type="button">Erklärung: Elektronen in der Schleife</button>
-    </section>
-    <section>
-      <h2>Antrieb</h2>
-      <div class="segmented" role="group" aria-label="Antrieb">
-        <button id="driveWindBtn" type="button">Wind</button>
-        <button id="driveSpeedBtn" type="button">Drehzahl</button>
-        <button id="driveCrankBtn" type="button">Kurbel</button>
-      </div>
-      <div id="windBox">
-        <label class="slider">
-          <span class="row">Windgeschwindigkeit <output id="modelWindOut"></output></span>
-          <input id="modelWindSlider" type="range" />
-        </label>
-        <p class="status" id="modelRotorStatus"></p>
-      </div>
-      <div id="speedBox">
-        <label class="slider">
-          <span class="row">Drehzahl <output id="speedOut"></output></span>
-          <input id="speedSlider" type="range" />
-        </label>
-        <p class="status">links: rückwärts · Mitte: Stillstand · rechts: vorwärts</p>
-        <button id="stopBtn" type="button">Anhalten</button>
-      </div>
-      <p class="status" id="crankInfo" hidden>Fasse die Kurbel links an der Welle an und drehe sie. Lässt du los,
-        läuft die Schleife langsam aus.</p>
-      <button id="holdBtn" class="state" type="button">Leiterschleife festhalten</button>
-      <div id="holdBox" hidden>
-        <p class="status">Die Schleife dreht sich nur, wenn du sie mit der Kurbel oder dem Regler drehst.</p>
-        <label class="slider">
-          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
-          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
-        </label>
-      </div>
-      <label class="check"><input id="slowCheck" type="checkbox" /> Zeitlupe</label>
-    </section>
-    <section>
-      <h2>Magnet</h2>
-      <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
-      <p class="status" id="magnetStatus"></p>
-    </section>
-    <section id="meterSection">
-      <h2>Messgerät</h2>
-      <p class="status">Messbereich</p>
-      <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
-      <label class="check"><input id="plotCheck" type="checkbox" /> U-t-Diagramm</label>
+      <h2>Im Haus</h2>
+      <p class="status">Draußen drehen sich die Windräder, abends brennt hier die Lampe. Wie kommt die Energie vom
+        Wind bis zur Lampe?</p>
+      <button id="roomToParkBtn" type="button">Zurück zum Windpark</button>
+      <button id="roomToModelBtn" type="button">Zum Generator-Modell</button>
     </section>
   </aside>
 

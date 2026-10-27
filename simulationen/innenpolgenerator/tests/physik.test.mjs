@@ -2,18 +2,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { state } from '../js/state.js';
+import { linienInSpule, linien, imInneren } from '../js/feldlinienModell.js';
 import { B_MAX, TURNS, CORE_AREA } from '../js/config.js';
 import {
   rotor, needle, coilField, coilFieldRate, coilVoltage, meterVoltage, frequency, stepPhysics, resetPhysics,
-  startCrank, crankTo, endCrank, setHold, holdTo,
+  startCrank, crankTo, endCrank, setHold, holdTo, linesInCoil,
 } from '../js/physik.js';
 
 const TWO_PI = 2 * Math.PI;
+
+// Die bisherigen Tests prüfen die reale Physik (cos-Modell); das Feldlinienmodell hat eigene Tests am Ende
+state.lineModel = false;
 const near = (a, b, tol, text) => assert.ok(Math.abs(a - b) <= tol, `${text ?? ''} ${a} vs. ${b}`);
 
 // Gleichmäßig drehen und Höchst- und Tiefstwert der Messgerätspannung nach dem Anlaufen bestimmen
 function spin(speed, seconds, setup = {}) {
-  Object.assign(state, { coils: 1, reversed: false, drive: 'speed', hold: false, speed, range: 1, ...setup });
+  Object.assign(state, { coils: 1, reversed: false, drive: 'speed', hold: false, speed, range: 1, lineModel: false, ...setup });
   resetPhysics();
   let max = -Infinity, min = Infinity;
   for (let i = 0; i < seconds * 600; i++) {
@@ -117,4 +121,43 @@ test('Festhalten: Magnet bleibt stehen, Drehwinkel lässt sich einstellen', () =
   near(rotor.phi, phi + 1, 1e-3);
   near(meterVoltage(), 0, 1e-3, 'steht wieder: keine Spannung');
   setHold(false);
+});
+
+// ---------------- Feldlinienmodell
+
+test('Feldlinienmodell: Zahl der Linien durch die Spule folgt etwa cos, stetig', () => {
+  for (const coils of [1, 2]) {
+    const n0 = linienInSpule(0, 0, coils);
+    assert.ok(n0 > 4, `Nordpol auf Spule 1: ${n0} Linien`);
+    near(linienInSpule(0, Math.PI / 2, coils), 0, 1e-9, 'Magnet quer: keine Linie');
+    near(linienInSpule(0, Math.PI, coils), -n0, 1e-9, 'Südpol: gleich viele, andersherum');
+    for (let d = 0; d <= 180; d += 5) {
+      const phi = d * Math.PI / 180;
+      near(linienInSpule(0, phi, coils), n0 * Math.cos(phi), 0.12 * n0, `${coils} Spule(n), ${d}°`);
+      // keine Sprünge
+      near(linienInSpule(0, phi + 0.002, coils), linienInSpule(0, phi, coils), 0.01 * n0, `stetig bei ${d}°`);
+    }
+    if (coils === 2) near(linienInSpule(1, 0.7, 2), -linienInSpule(0, 0.7, 2), 1e-6, 'Spule 2: andersherum');
+  }
+});
+
+test('Feldlinienmodell: |U| am größten, wenn der Magnet quer steht; 0, wenn ein Pol auf die Spule zeigt', () => {
+  Object.assign(state, { lineModel: true, coils: 1 });
+  const u = d => Math.abs(coilVoltage(0, d * Math.PI / 180, TWO_PI));
+  near(u(0), 0, 1e-6, 'Nordpol auf Spule');
+  for (const d of [10, 30, 50, 70]) assert.ok(u(d) < u(90), `${d}°: ${u(d)} < ${u(90)}`);
+  near(coilField(0, 0), B_MAX, 1e-12, 'B bei Nordpol auf Spule wie im realen Modell');
+  near(coilField(0, 0.6), B_MAX * linesInCoil(0, 0.6) / linesInCoil(0, 0), 1e-12, 'B ∝ Zahl der Linien');
+  near(coilVoltage(0, 1, 0), 0, 1e-12, 'Stillstand: keine Spannung');
+  state.lineModel = false;
+});
+
+test('Feldlinien: geschlossen durch den Magneten, gefärbte Stücke liegen in der Wicklung', () => {
+  const alle = linien(0, 1);
+  assert.equal(alle.length, 10);
+  const innen = alle.flat().filter(([x, y]) => imInneren(x, y, 0));
+  assert.ok(innen.length > 100, 'Linien laufen durch Spule 1');
+  assert.ok(innen.every(([x, y]) => Math.abs(x) < 2.4 && y > 8.8 && y < 14.1));
+  const quer = linien(Math.PI / 2, 1).flat().filter(([x, y]) => imInneren(x, y, 0)).length;
+  assert.ok(quer < innen.length / 4, `quer: höchstens kurze Stücke quer durch die Wicklung (${quer})`);
 });

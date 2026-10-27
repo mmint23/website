@@ -32,7 +32,7 @@ function resizeCanvas() {
 
 // Neuen Messpunkt aufnehmen und zeichnen (jedes Bild)
 export function updatePlot() {
-  box.hidden = !state.showPlot || state.view !== 'model';
+  box.hidden = !state.showPlot;
   const now = clock.t;
   const seconds = state.drive === 'wind' ? PLOT_SECONDS_WIND : PLOT_SECONDS;
   if (!samples.length || now > samples.at(-1).t) samples.push({ t: now, u: meterReading() });

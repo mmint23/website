@@ -36,7 +36,18 @@
 
   <aside class="panel" id="panel">
     <section>
+      <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
       <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+      <button id="lineModelBtn" class="state modell-btn" type="button" aria-pressed="false">Reale Physik</button>
+      <p class="status" id="lineModelInfo">Feldlinienmodell: B in der Spule und Spannung ergeben sich aus der Zahl der
+        Feldlinien durch die Spule. Spannung nur, wenn sich diese Zahl ändert.</p>
+      <p class="status" id="realInfo" hidden>Reale Physik: B in der Spule ändert sich wie cos des Drehwinkels –
+        unabhängig von den gezeichneten Feldlinien.</p>
+      <label class="check"><input id="fieldCheck" type="checkbox" /> Magnetfeld (Feldlinien)</label>
+      <label class="check"><input id="insideCheck" type="checkbox" /> <span class="farbe innen"></span>Feldlinien im
+        Inneren der Spule färben</label>
+    </section>
+    <section>
       <h2>Aufbau</h2>
       <div class="segmented" role="group" aria-label="Anzahl der Spulen">
         <button id="oneCoilBtn" type="button">1 Spule</button>

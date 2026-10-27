@@ -6,7 +6,7 @@ Kraftwerksgeneratoren und viele Windkraftgeneratoren aufgebaut.
 
 Die Simulation setzt beim Induktionsgesetz in der Form an, die die Schüler kennen: **Ändert sich das Magnetfeld
 im Inneren einer Spule, wird an ihren Enden eine Spannung induziert.** Sie braucht keine Lorentzkraft (anders als
-die rotierende Leiterschleife in `generator-windpark`).
+die rotierende Leiterschleife in `generator-leiterschleife`).
 
 ## Kernidee
 
@@ -18,11 +18,26 @@ Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wi
 - Sie ist am größten, wenn sich B am schnellsten ändert: beim Nulldurchgang von B (Magnet quer zur Spule).
 - Steht der Magnet still, ist U = 0 – auch wenn B groß ist.
 
+**Feldlinienmodell** (Standard, wie bei `induktion-spule`): Die Feldlinien des Magneten lassen sich einblenden,
+die Abschnitte im Inneren der Spule violett färben. Beim Drehen sieht man, wie sich die Zahl der Feldlinien durch
+die Spule ändert: Zeigt ein Pol auf die Spule, gehen die meisten Linien hindurch – aber ihre Zahl ändert sich
+gerade nicht (U = 0). Steht der Magnet quer, geht keine Linie hindurch – aber die Zahl wechselt gerade am
+schnellsten von „nach außen“ zu „nach innen“ (|U| am größten). Im Feldlinienmodell werden B und U aus der Zahl der
+gezeigten Feldlinien berechnet: *Ändert sich die Zahl der Feldlinien durch die Spule, wird eine Spannung
+induziert.* Der Knopf **„Reale Physik“** oben im Bedienfeld schaltet auf das cos-Modell um (siehe unten);
+nochmal gedrückt geht es zurück. Weil die Linien so gebaut sind, dass ihre Zahl fast wie cos verläuft, stimmen
+beide Modelle annähernd überein (Abweichung von B höchstens etwa 10 %).
+
 Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung für Stellung durchgehen),
 **Zeitlupe** und **Änderung von B (Tangente)** an die B-Kurve im aktuellen Punkt.
 
 ## Funktionen
 
+- **Aus dem Windpark** (Windrad antippen in der Simulation Generator-Windpark, Adresse `?von=windpark&wind=…&zeit=…`):
+  Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
+- **Ganz oben im Bedienfeld:** „Reale Physik“ (statt Feldlinienmodell), **Magnetfeld (Feldlinien)** (10 Linien in
+  der Bildebene mit Pfeilen; Spulen, Magnet und Joch werden dafür durchsichtig) und **Feldlinien im Inneren der
+  Spule färben** (violett; nur mit eingeblendeten Feldlinien). Zu Beginn: Feldlinienmodell, Feldlinien aus.
 - **Aufbau**
   - **1 Spule** (oben): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
   - **2 Spulen**: zweite Spule unten, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator
@@ -56,6 +71,16 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   U = N · A · B_max · ω · sin(φ − θ). Bei 1 Umdrehung pro Sekunde ist der Scheitelwert einer Spule etwa 0,29 V.
 - Zwei Spulen: Wendet der Magnet Spule 1 den Nordpol zu, wendet er Spule 2 den Südpol zu – also B₂ = −B₁ und
   U₂ = −U₁. Ende – Ende ergibt U = U₁ − U₂ = 2 · U₁, Ende – Anfang U = U₁ + U₂ = 0.
+- **Feldlinienmodell** (`feldlinienModell.js`, ebenes Modell in der Bildebene): Der Magnet besteht aus zwei
+  Polflächen mit gleichmäßig verteilter Polstärke, innen gleichmäßig magnetisiert. Jeder Eisenkern wird vom Magneten
+  magnetisiert und wirkt selbst wie ein Stabmagnet entlang der Spulenachse, mit der Stärke 0,3 · cos(φ − θ) (Anteil
+  der Polstärke des Magneten) – so bündelt der Kern die Linien, wenn ein Pol auf ihn zeigt. Die 10 gezeichneten
+  Linien verlassen den Nordpol in gleichen Flussabständen. Weil Feldlinien Höhenlinien einer Stromfunktion ψ sind,
+  ist die Zahl der Linien durch die Spule = Fluss durch den Querschnitt (Mitte der Wicklung, ganze Breite) / Fluss
+  je Linie; sie ändert sich stetig (eine Linie am Rand der Wicklung zählt zum Teil). Nordpol auf Spule 1: gut 6 von
+  10 Linien gehen hindurch. B = B_max · n / n₀, U = −N · A · dB/dt. **Vereinfachung:** Das Joch lenkt die Linien
+  nicht um (bei zwei Spulen laufen sie über den Ring hinweg). Linien, die quer durch die Wicklung laufen, werden
+  violett gefärbt, zählen aber nicht (nur der Fluss entlang der Achse zählt).
 - Drehung als Bewegungsgleichung (Drehzahl-Regler stellt die Drehzahl mit 0,4 s Zeitkonstante ein, Kurbel folgt
   dem Finger, freies Auslaufen mit Reibung) – vorbereitet für ein späteres Gegenmoment bei Belastung (Lenz).
 - Zeiger: gedämpfter Schwinger (Eigenfrequenz 1,2 Hz, Dämpfungsgrad 0,55), Anschlag bei 108 %.
@@ -91,7 +116,9 @@ innenpolgenerator/
 │   ├── main.js         # Start und Render-Schleife
 │   ├── config.js       # Maße und Modellgrößen
 │   ├── state.js        # Zustand (Aufbau, Antrieb, Anzeigen, Messbereich)
-│   ├── physik.js       # Drehung, B in den Spulen, Induktionsspannung, Zeiger (ohne 3D, testbar)
+│   ├── physik.js       # Drehung, B in den Spulen (real oder Feldlinienmodell), Induktionsspannung, Zeiger (ohne 3D, testbar)
+│   ├── feldlinienModell.js  # Feldlinien als Punktfolgen, Zahl der Linien durch eine Spule (ohne 3D, testbar)
+│   ├── feldlinien.js   # Darstellung der Feldlinien, violette Abschnitte im Spuleninneren
 │   ├── szene.js        # Renderer, Kamera, Licht, Startansicht einpassen
 │   ├── modell.js       # Polrad mit Kurbel, Spulen mit Eisenkern, Joch, B-Pfeile
 │   ├── messgeraet.js   # Zeigermessgerät und Kabel (je nach Schaltung verlegt)
@@ -111,4 +138,6 @@ npm test
 ```
 
 Prüft u. a.: B am größten bei U = 0, |U| am größten beim Nulldurchgang von B, U = −N·A·dB/dt, Scheitelwert
-proportional zur Drehzahl, zwei Spulen (doppelt bzw. null), Frequenz, Zeiger, Kurbel und Festhalten.
+proportional zur Drehzahl, zwei Spulen (doppelt bzw. null), Frequenz, Zeiger, Kurbel und Festhalten; im
+Feldlinienmodell: Linienzahl stetig und etwa ∝ cos, |U| am größten bei quer stehendem Magneten, Linien durch die
+Wicklung.
