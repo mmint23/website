@@ -13,6 +13,15 @@ test('packen und entpacken ergeben dieselben Striche (gerundet)', () => {
   ]);
 });
 
+test('Striche auf weiteren Seiten behalten ihre Seite', () => {
+  const zurueck = entpacken(packen([{ ...pfeil, s: 1 }, frei]));
+  assert.equal(zurueck[0].s, 1);
+  assert.ok(!('s' in zurueck[1]));
+  assert.equal(pruefen(packen([{ ...pfeil, s: 1 }])), null);
+  assert.equal(pruefen([{ k: 'a', c: '#000000', p: [0, 0, 1, 1], s: 1.5 }]), 'Ungültige Seite');
+  assert.equal(pruefen([{ k: 'a', c: '#000000', p: [0, 0, 1, 1], s: GRENZEN.SEITEN }]), 'Ungültige Seite');
+});
+
 test('gültige Abgabe wird angenommen', () => {
   assert.equal(pruefen(packen([frei, pfeil])), null);
   assert.equal(pruefen([]), null);

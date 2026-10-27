@@ -7,8 +7,10 @@
 // (im Browser gespeichert); die Lehrerseite (abgabe.js) legt stattdessen eine Arbeitskopie einer Abgabe auf.
 // Zeichnen: Stiftdruck bestimmt die Strichbreite; sobald ein Stift benutzt wurde, werden Berührungen mit
 // Finger/Handballen ignoriert.
+// Mehrere Seiten (Option seiten): je ein eigenes Bild, umschaltbar in der Werkzeugleiste. Alle Striche bleiben in
+// einem Dokument und tragen ihre Seite (striche.js); gezeichnet, radiert und gelöscht wird auf der gezeigten Seite.
 // ------------------------------------------------------------------
-import { TAFEL_BREITE, zeichneStrich, zeichneStueck, zeichneAlle, getroffen } from './striche.js';
+import { TAFEL_BREITE, GRENZEN, zeichneStrich, zeichneStueck, zeichneAlle, getroffen, seiteVon } from './striche.js';
 import { stilLaden } from '../stil.js';
 
 const $ = id => document.getElementById(id);
@@ -25,18 +27,33 @@ const STANDARD_STIFTE = [
   { name: 'gruen', farbe: '#2e7d32', text: 'Grün' },
 ];
 
-let optionen = null;   // { id, bild, bildText, seitenverhaeltnis, stifte } aus initTafel
+let optionen = null;   // { id, seiten: [{ bild, bildText, titel }], seitenverhaeltnis, stifte } aus initTafel
 export const tafelId = () => optionen.id;
 
-// Höhe der Tafel in Tafeleinheiten (Breite: TAFEL_BREITE); aus den Optionen oder aus dem Bild
+// Höhe der Tafel in Tafeleinheiten (Breite: TAFEL_BREITE); aus den Optionen oder aus dem Bild der ersten Seite
 let hoehe = TAFEL_BREITE / 1.6;
 export const tafelHoehe = () => hoehe;
 
-export const tafelBild = new Image();
-export const bildGeladen = new Promise(resolve => {
-  tafelBild.onload = resolve;
-  tafelBild.onerror = resolve;
-});
+// Bilder der Seiten; tafelBild ist das der ersten Seite
+function neuesBild() {
+  const bild = new Image();
+  bild.geladen = new Promise(resolve => {
+    bild.onload = resolve;
+    bild.onerror = resolve;
+  });
+  return bild;
+}
+export const tafelBild = neuesBild();
+export const bildGeladen = tafelBild.geladen;
+const seitenBilder = [tafelBild];
+
+// Gezeigte Seite (0 = erste) und ihr Bild; aufSeitenwechsel: Rückruf nach dem Umschalten (z. B. Vorschaubilder)
+let seite = 0;
+export const aktuelleSeite = () => seite;
+export const seitenBild = (nummer = seite) => seitenBilder[nummer];
+const beiSeitenwechsel = [];
+export const aufSeitenwechsel = rueckruf => beiSeitenwechsel.push(rueckruf);
+export const stricheDerSeite = (striche, nummer = seite) => striche.filter(s => seiteVon(s) === nummer);
 
 // ---------------- Dokumente
 
@@ -141,7 +158,7 @@ const massstab = () => canvas.width / TAFEL_BREITE;
 function basisNeu() {
   basisCtx.setTransform(1, 0, 0, 1, 0, 0);
   basisCtx.clearRect(0, 0, basis.width, basis.height);
-  zeichneAlle(basisCtx, zustand.dokument.striche, basis.width);
+  zeichneAlle(basisCtx, stricheDerSeite(zustand.dokument.striche), basis.width);
 }
 function anzeigen() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -166,7 +183,7 @@ function punkt(event) {
 }
 
 function radiere(p) {
-  const treffer = zustand.dokument.striche.filter(s => getroffen(s, p, RADIERER));
+  const treffer = stricheDerSeite(zustand.dokument.striche).filter(s => getroffen(s, p, RADIERER));
   if (!treffer.length) return;
   zustand.dokument.striche = zustand.dokument.striche.filter(s => !treffer.includes(s));
   radiert.push(...treffer);
@@ -202,6 +219,7 @@ function zeichnenEinrichten() {
     }
     const c = optionen.stifte.find(s => s.name === zustand.color).farbe;
     strich = zustand.mode === 'pfeil' ? { k: 'arrow', c, a: p, b: p } : { k: 'free', c, p: [p] };
+    if (seite) strich.s = seite;
     anzeigen();
   });
 
@@ -261,6 +279,9 @@ function zeichnenEinrichten() {
 function rueckgaengig() {
   const schritt = zustand.dokument.verlauf.pop();
   if (!schritt) return;
+  // Schritt auf einer anderen Seite: dorthin umschalten, damit man sieht, was zurückgenommen wird
+  const betroffen = (schritt.neu ?? schritt.weg)[0];
+  if (betroffen && seiteVon(betroffen) !== seite) zeigeSeite(seiteVon(betroffen));
   if (schritt.neu) zustand.dokument.striche = zustand.dokument.striche.filter(s => !schritt.neu.includes(s));
   else zustand.dokument.striche.push(...schritt.weg);
   neuZeichnen();
@@ -299,9 +320,14 @@ const html = text => String(text).replace(/[&<>"]/g, z => ({ '&': '&amp;', '<': 
 function fensterAnlegen() {
   const stifte = optionen.stifte.map((s, i) => `
         <button data-farbe="${html(s.name)}" type="button" aria-pressed="${i === 0}"><span class="dot" style="background:${html(s.farbe)}"></span>${html(s.text ?? s.name)}</button>`).join('');
+  const mehrereSeiten = optionen.seiten.length > 1;
+  const seitenKnoepfe = optionen.seiten.map((s, i) => `
+        <button data-seite="${i}" type="button" aria-pressed="${i === 0}">${html(s.titel ?? 'Seite ' + (i + 1))}</button>`).join('');
   document.body.insertAdjacentHTML('beforeend', `
   <div class="tafel-overlay" id="tafelOverlay" hidden>
     <div class="tafel-leiste" role="toolbar" aria-label="Zeichenwerkzeuge">
+      <div class="gruppe" role="group" aria-label="Seiten"${mehrereSeiten ? '' : ' hidden'}>${seitenKnoepfe}
+      </div>
       <div class="gruppe">${stifte}
         <button id="tafelRadierer" type="button" aria-pressed="false">Radierer</button>
       </div>
@@ -311,7 +337,7 @@ function fensterAnlegen() {
       </div>
       <div class="gruppe">
         <button id="tafelUndo" type="button">Rückgängig</button>
-        <button id="tafelLeeren" class="gefahr" type="button">Alles löschen</button>
+        <button id="tafelLeeren" class="gefahr" type="button">${mehrereSeiten ? 'Seite löschen' : 'Alles löschen'}</button>
       </div>
       <div class="gruppe" id="tafelSchueler" hidden>
         <input id="tafelName" type="text" placeholder="Name/Kürzel (freiwillig)" autocomplete="off" aria-label="Name oder Kürzel" />
@@ -337,24 +363,44 @@ function fensterAnlegen() {
   blatt = $('tafelBlatt');
   canvas = $('tafelCanvas');
   ctx = canvas.getContext('2d');
-  const img = blatt.querySelector('img');
-  img.src = datei(optionen.bild);
-  img.alt = optionen.bildText ?? '';
+  bildZeigen();
   // eigene Knöpfe der Simulation (z. B. Laserpointer) vor „Schließen“
   for (const element of optionen.leisteZusatz ?? []) $('tafelSchliessen').before(element);
 }
 
-// optionen: { id, bild, bildText?, seitenverhaeltnis?, stifte?, leisteZusatz? } – siehe README.md
+function bildZeigen() {
+  const img = blatt.querySelector('img');
+  img.src = datei(optionen.seiten[seite].bild);
+  img.alt = optionen.seiten[seite].bildText ?? '';
+}
+
+// Andere Seite der Tafel zeigen
+function zeigeSeite(nummer) {
+  if (nummer === seite || !optionen.seiten[nummer]) return;
+  abbrechen();
+  seite = nummer;
+  for (const knopf of fenster.querySelectorAll('[data-seite]')) knopf.setAttribute('aria-pressed', String(Number(knopf.dataset.seite) === seite));
+  bildZeigen();
+  neuZeichnen();
+  for (const rueckruf of beiSeitenwechsel) rueckruf(seite);
+}
+
+// optionen: { id, bild, bildText?, seiten?, seitenverhaeltnis?, stifte?, leisteZusatz? } – siehe README.md
 export function initTafel(neu) {
   if (optionen) throw new Error('initTafel() wurde schon aufgerufen');
-  if (!neu?.id || !neu?.bild) throw new Error('initTafel() braucht mindestens id und bild');
-  optionen = { ...neu, stifte: neu.stifte?.length ? neu.stifte : STANDARD_STIFTE };
+  const seiten = neu?.seiten?.length ? neu.seiten : [{ bild: neu?.bild, bildText: neu?.bildText }];
+  if (!neu?.id || !seiten.every(s => s.bild)) throw new Error('initTafel() braucht mindestens id und bild (bzw. seiten)');
+  if (seiten.length > GRENZEN.SEITEN) throw new Error('initTafel(): höchstens ' + GRENZEN.SEITEN + ' Seiten');
+  optionen = { ...neu, seiten, stifte: neu.stifte?.length ? neu.stifte : STANDARD_STIFTE };
   zustand.color = optionen.stifte[0].name;
   zustand.eigene = ladeEigenes();
   stilLaden(new URL('./tafel.css', import.meta.url));
 
   if (optionen.seitenverhaeltnis) hoehe = TAFEL_BREITE / optionen.seitenverhaeltnis;
-  tafelBild.src = datei(optionen.bild);
+  seiten.forEach((s, i) => {
+    seitenBilder[i] ??= neuesBild();
+    seitenBilder[i].src = datei(s.bild);
+  });
   bildGeladen.then(() => {
     if (!optionen.seitenverhaeltnis && tafelBild.naturalWidth) {
       hoehe = TAFEL_BREITE * tafelBild.naturalHeight / tafelBild.naturalWidth;
@@ -380,6 +426,9 @@ export function initTafel(neu) {
     zustand.eraser = true;
     gedrueckt([...farbKnoepfe, radiererKnopf], radiererKnopf);
   });
+  for (const knopf of fenster.querySelectorAll('[data-seite]')) {
+    knopf.addEventListener('click', () => zeigeSeite(Number(knopf.dataset.seite)));
+  }
   for (const knopf of modusKnoepfe) {
     knopf.addEventListener('click', () => {
       zustand.mode = knopf.dataset.modus;
@@ -389,9 +438,10 @@ export function initTafel(neu) {
   }
   $('tafelUndo').addEventListener('click', rueckgaengig);
   mitRueckfrage($('tafelLeeren'), 'Wirklich löschen?', () => {
-    if (!zustand.dokument.striche.length) return;
-    zustand.dokument.verlauf.push({ weg: zustand.dokument.striche });
-    zustand.dokument.striche = [];
+    const weg = stricheDerSeite(zustand.dokument.striche);
+    if (!weg.length) return;
+    zustand.dokument.verlauf.push({ weg });
+    zustand.dokument.striche = zustand.dokument.striche.filter(s => !weg.includes(s));
     neuZeichnen();
     geaendert();
   });

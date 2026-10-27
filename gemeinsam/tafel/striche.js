@@ -7,27 +7,33 @@
 // Im Browser:   { k: 'free', c: '#rrggbb', p: [{ x, y, pr }, …] }   (pr: Stiftdruck 0 … 1)
 //               { k: 'arrow', c: '#rrggbb', a: { x, y }, b: { x, y } }
 // Übertragung:  { k: 'f', c, p: [x, y, pr, x, y, pr, …] }  bzw.  { k: 'a', c, p: [ax, ay, bx, by] }
+// Tafel mit mehreren Seiten: Striche ab der zweiten Seite tragen zusätzlich s (Nummer der Seite, ab 0);
+// ohne s liegt ein Strich auf der ersten Seite.
 // ------------------------------------------------------------------
 
 export const TAFEL_BREITE = 1600;
 
 // Grenzen einer Abgabe (der Server weist größere ab)
-export const GRENZEN = { STRICHE: 1500, PUNKTE: 60000, NAME: 40 };
+export const GRENZEN = { STRICHE: 1500, PUNKTE: 60000, NAME: 40, SEITEN: 10 };
 
 const r1 = v => Math.round(v * 10) / 10;
 
+// Seite eines Strichs (0 = erste Seite)
+export const seiteVon = s => s.s ?? 0;
+const mitSeite = (strich, s) => (s ? { ...strich, s } : strich);
+
 export function packen(striche) {
-  return striche.map(s => s.k === 'arrow'
+  return striche.map(s => mitSeite(s.k === 'arrow'
     ? { k: 'a', c: s.c, p: [r1(s.a.x), r1(s.a.y), r1(s.b.x), r1(s.b.y)] }
-    : { k: 'f', c: s.c, p: s.p.flatMap(q => [r1(q.x), r1(q.y), Math.round(q.pr * 100) / 100]) });
+    : { k: 'f', c: s.c, p: s.p.flatMap(q => [r1(q.x), r1(q.y), Math.round(q.pr * 100) / 100]) }, s.s));
 }
 
 export function entpacken(daten) {
   return daten.map(d => {
-    if (d.k === 'a') return { k: 'arrow', c: d.c, a: { x: d.p[0], y: d.p[1] }, b: { x: d.p[2], y: d.p[3] } };
+    if (d.k === 'a') return mitSeite({ k: 'arrow', c: d.c, a: { x: d.p[0], y: d.p[1] }, b: { x: d.p[2], y: d.p[3] } }, d.s);
     const p = [];
     for (let i = 0; i < d.p.length; i += 3) p.push({ x: d.p[i], y: d.p[i + 1], pr: d.p[i + 2] });
-    return { k: 'free', c: d.c, p };
+    return mitSeite({ k: 'free', c: d.c, p }, d.s);
   });
 }
 
@@ -40,6 +46,7 @@ export function pruefen(daten) {
   for (const d of daten) {
     if (!d || typeof d !== 'object' || !Array.isArray(d.p)) return 'Ungültiger Strich';
     if (typeof d.c !== 'string' || !/^#[0-9a-f]{6}$/i.test(d.c)) return 'Ungültige Farbe';
+    if (d.s !== undefined && !(Number.isInteger(d.s) && d.s >= 0 && d.s < GRENZEN.SEITEN)) return 'Ungültige Seite';
     if (d.k === 'a') {
       if (d.p.length !== 4) return 'Ungültiger Pfeil';
     } else if (d.k === 'f') {

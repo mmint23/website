@@ -40,6 +40,7 @@ Server alle Simulationen auf, die den Baustein einbinden.
 | `id` | **Pflicht.** Kennung der Simulation (Buchstaben, Ziffern, `-`, `_`). Jede Simulation hat eigene Räume. |
 | `bild` | **Pflicht.** Hintergrundbild der Tafel. |
 | `bildText` | Beschreibung des Bilds (Alternativtext). |
+| `seiten` | Statt `bild`/`bildText`: mehrere Seiten, Liste `{ bild, bildText, titel }` (höchstens 10, alle im selben Seitenverhältnis). In der Werkzeugleiste erscheint dann je Seite ein Knopf (`titel`, sonst „Seite 1“ …); „Alles löschen“ heißt „Seite löschen“ und löscht nur die gezeigte Seite. Geteilt werden alle Seiten zusammen; die Vorschaubilder der Lehrerseite zeigen die gerade gewählte Seite. |
 | `seitenverhaeltnis` | Breite : Höhe der Tafel, z. B. `1.6`. Ohne Angabe wird es aus dem Bild genommen. |
 | `stifte` | Liste `{ name, farbe, text }`, z. B. `{ name: 'F', farbe: '#c62828', text: 'F_L' }`. Der erste ist zu Beginn gewählt. Ohne Angabe: Schwarz, Rot, Blau, Grün. |
 | `leisteZusatz` | Eigene Knöpfe (DOM-Elemente) für die Werkzeugleiste, z. B. ein Laserpointer. |
@@ -47,6 +48,8 @@ Server alle Simulationen auf, die den Baustein einbinden.
 Weitere Exporte von `index.js` für Simulationen mit eigener Darstellung der Tafel (wie die kleine Tafel in der
 3D-Szene der Leiterschaukel): `tafelOffen()` (z. B. Szene anhalten, solange gezeichnet wird), `aufAnzeige(rückruf)`
 (Tafelinhalt hat sich geändert), `aktuellesDokument().striche`, `tafelBild`, `zeichneAlle(ctx, striche, breite)`.
+Bei mehreren Seiten: `aktuelleSeite()`, `seitenBild(nummer)`, `aufSeitenwechsel(rückruf)`, `stricheDerSeite(striche)`
+(Striche ab der zweiten Seite tragen `s`, die Nummer ihrer Seite ab 0).
 
 **Aussehen anpassen:** Die Regeln stehen in `tafel.css` und werden vor dem eigenen Stylesheet der Seite geladen;
 die Simulation kann sie also überschreiben. Hat sie rechts ein festes Bedienfeld, endet die Abgabeleiste davor mit
