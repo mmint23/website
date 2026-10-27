@@ -50,8 +50,10 @@ export const METER = {
   RANGES: [0.3, 1, 3],        // Messbereiche ±0,3 / ±1 / ±3 V
 };
 
-// Feldlinien des Magneten: Startpunkte auf der Polfläche (Anteil der halben Breite, je nach links und rechts)
-export const FIELD_LINES = [0.1, 0.3, 0.5, 0.7, 0.9];
+// Feldlinien (feldlinienModell.js): so viele verlassen den Nordpol; Stärke der vom Magneten magnetisierten
+// Eisenkerne (Anteil der Polstärke des Magneten, wenn ein Pol auf den Kern zeigt)
+export const FIELD_LINES = 10;
+export const CORE_STRENGTH = 0.3;
 
 // Pfeil für B im Spuleninneren: Länge in cm bei B_MAX
 export const B_ARROW = 4.6;

@@ -1,5 +1,6 @@
 // ------------------------------------------------------------------
-// Bedienfeld: Aufbau (eine oder zwei Spulen), Antrieb, Anzeigen, Messbereich
+// Bedienfeld: ganz oben reale Physik statt Feldlinienmodell, Feldlinien und ihre Färbung im Spuleninneren;
+// Aufbau (eine oder zwei Spulen), Antrieb, Anzeigen, Messbereich
 // ------------------------------------------------------------------
 import { METER, SPEED_MAX } from './config.js';
 import { state } from './state.js';
@@ -14,7 +15,7 @@ const $ = id => document.getElementById(id);
 const DRIVES = [['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 const COILS = [['oneCoilBtn', 1], ['twoCoilsBtn', 2]];
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
-const CHECKS = [['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope'], ['slowCheck', 'slowMotion']];
+const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope'], ['slowCheck', 'slowMotion']];
 
 const segment = (id, active) => {
   $(id).classList.toggle('active', active);
@@ -37,6 +38,10 @@ function updateUi() {
   for (const button of $('rangeButtons').children) segment(button.id, Number(button.dataset.range) === state.range);
   for (const [id, key] of CHECKS) $(id).checked = state[key];
   $('slopeCheck').disabled = !state.showPlot;
+  $('insideCheck').disabled = !state.showField;   // färben geht nur bei eingeblendeten Feldlinien
+  $('lineModelBtn').setAttribute('aria-pressed', String(!state.lineModel));   // gedrückt: reale Physik
+  $('lineModelInfo').hidden = !state.lineModel;
+  $('realInfo').hidden = state.lineModel;
   updateMeterFace();
 }
 
@@ -123,6 +128,12 @@ export function initUi() {
       if (key === 'showPlot' && !verschoben) resetView();   // mehr bzw. weniger Platz für das Modell
     });
   }
+  // Knopf „Reale Physik“: wechselt zwischen Feldlinienmodell (Standard) und cos-Modell. Ob die Feldlinien zu sehen
+  // sind, bleibt davon unberührt.
+  $('lineModelBtn').addEventListener('click', () => {
+    state.lineModel = !state.lineModel;
+    updateUi();
+  });
   $('resetView').addEventListener('click', resetView);
   $('linkBtn').addEventListener('click', () => showLink());
   // Aus dem Windpark gekommen (?von=windpark): Knopf zurück, mit Wind und Uhrzeit, damit der Windpark wieder so aussieht

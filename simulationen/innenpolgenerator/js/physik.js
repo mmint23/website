@@ -7,6 +7,10 @@
 // in Richtung der Spulenachse nach außen (vom Magneten weg): Zeigt der Nordpol auf die Spule, ist B am größten.
 // Diese Kosinusform ist eine Vereinfachung – echte Generatoren formen ihre Polschuhe aber genau so, dass sie
 // annähernd gilt. Induktionsgesetz: U = −N · A · dB/dt.
+// Feldlinienmodell (state.lineModel, Standard, für den Unterricht): B im Spuleninneren folgt der Zahl der gezeigten
+// Feldlinien durch die Spule (feldlinienModell.js), B = B_MAX · n / n₀ mit n₀ = Zahl der Linien, wenn der Nordpol
+// auf die Spule zeigt. Spannung entsteht also genau dann, wenn sich die Zahl der Feldlinien durch die Spule ändert.
+// Die Linien sind so gebaut, dass n fast wie cos(φ − θ) verläuft – beide Modelle stimmen also annähernd überein.
 // Drehzahl und Antrieb sind als Bewegungsgleichung angelegt, damit später ein Gegenmoment (Belastung)
 // dazukommen kann.
 // ------------------------------------------------------------------
@@ -14,6 +18,7 @@ import {
   COIL, B_MAX, TURNS, CORE_AREA, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER,
 } from './config.js';
 import { state } from './state.js';
+import { linienInSpule } from './feldlinienModell.js';
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const TWO_PI = 2 * Math.PI;
@@ -28,11 +33,24 @@ export const clock = { t: 0 };
 
 // ---------------- Feld und Spannung
 
-// Flussdichte im Kern von Spule k in T (positiv: nach außen, vom Magneten weg)
-export const coilField = (k, phi = rotor.phi) => B_MAX * Math.cos(phi - COIL.THETA[k]);
+// Feldlinienmodell: Zahl der Feldlinien durch Spule k und Bezugswert n₀ (Nordpol auf Spule 1), je Aufbau
+const n0 = {};
+export const linesInCoil = (k, phi = rotor.phi) => linienInSpule(k, phi, state.coils);
+const linesMax = () => (n0[state.coils] ??= linienInSpule(0, COIL.THETA[0], state.coils));
 
-// Änderung der Flussdichte in T/s: dB/dt = −B_MAX · sin(φ − θ) · ω
-export const coilFieldRate = (k, phi = rotor.phi, omega = rotor.omega) => -B_MAX * Math.sin(phi - COIL.THETA[k]) * omega;
+// Flussdichte im Kern von Spule k in T (positiv: nach außen, vom Magneten weg)
+export const coilField = (k, phi = rotor.phi) => state.lineModel
+  ? B_MAX * linesInCoil(k, phi) / linesMax()
+  : B_MAX * Math.cos(phi - COIL.THETA[k]);
+
+// Änderung der Flussdichte in T/s: real dB/dt = −B_MAX · sin(φ − θ) · ω; im Feldlinienmodell aus der Änderung der
+// Linienzahl beim Weiterdrehen
+export function coilFieldRate(k, phi = rotor.phi, omega = rotor.omega) {
+  if (!state.lineModel) return -B_MAX * Math.sin(phi - COIL.THETA[k]) * omega;
+  if (omega === 0) return 0;
+  const h = 1e-4;
+  return (coilField(k, phi + h) - coilField(k, phi - h)) / (2 * h) * omega;
+}
 
 // Induktionsspannung an Spule k in V, U = φ(Anschluss A) − φ(Anschluss E) = −N · A · dB/dt.
 // (A: Anfang, E: Ende der Wicklung. Welcher Anschluss Plus ist, hängt vom Wickelsinn ab; beide Spulen sind

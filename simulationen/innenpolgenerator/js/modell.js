@@ -23,11 +23,13 @@ const shaft = addMesh(new THREE.CylinderGeometry(SHAFT.R, SHAFT.R, SHAFT.Z_MAX -
 shaft.rotation.x = Math.PI / 2;
 shaft.position.z = (SHAFT.Z_MIN + SHAFT.Z_MAX) / 2;
 
+// eigene Materialien, damit der Magnet für die Feldlinien durchsichtig werden kann
+const magnetMat = { north: mat.north.clone(), south: mat.south.clone() };
 {
   const half = MAGNET.LENGTH / 2;
   const geometry = new THREE.BoxGeometry(MAGNET.WIDTH, half, MAGNET.DEPTH);
-  addMesh(geometry, mat.north, rotorGroup).position.y = half / 2;
-  addMesh(geometry, mat.south, rotorGroup).position.y = -half / 2;
+  addMesh(geometry, magnetMat.north, rotorGroup).position.y = half / 2;
+  addMesh(geometry, magnetMat.south, rotorGroup).position.y = -half / 2;
   for (const [text, y] of [['N', half * 0.6], ['S', -half * 0.6]]) {
     const label = makeLabel(text, 2.6);
     label.position.set(0, y, MAGNET.DEPTH / 2 + 0.02);
@@ -164,28 +166,35 @@ const yoke = (() => {
   shape.holes.push(new THREE.Path().absarc(0, 0, YOKE.R_IN, 0, Math.PI * 2, true));
   const geometry = new THREE.ExtrudeGeometry(shape, { depth: YOKE.DEPTH, bevelEnabled: false, curveSegments: 72 });
   geometry.translate(0, 0, -YOKE.DEPTH / 2);
-  return addMesh(geometry, mat.yoke, scene);
+  return addMesh(geometry, mat.yoke.clone(), scene);
 })();
 
 // ---------------- Abgleich mit dem Zustand
 
-function setSeeThrough(coil, on) {
-  for (const [material, opacity] of [[coil.copper, 0.32], [coil.iron, 0.22], [coil.insulator, 0.3]]) {
+function setSeeThrough(pairs, on) {
+  for (const [material, opacity] of pairs) {
     material.transparent = on;
     material.opacity = on ? opacity : 1;
     material.depthWrite = !on;
   }
 }
-let seeThrough = null;
+const coilParts = coil => [[coil.copper, 0.32], [coil.iron, 0.22], [coil.insulator, 0.3]];
+let seeThrough = null, magnetSeeThrough = null;
 
 export function syncModel() {
   rotorGroup.rotation.z = rotor.phi;
   const two = state.coils === 2;
   coils[1].group.visible = two;
   yoke.visible = two;
-  if (seeThrough !== state.showB) {
-    seeThrough = state.showB;
-    for (const coil of coils) setSeeThrough(coil, state.showB);
+  // Spulen durchsichtig für den B-Pfeil und die Feldlinien; Magnet und Joch nur für die Feldlinien
+  const durchsichtig = state.showB || state.showField;
+  if (seeThrough !== durchsichtig) {
+    seeThrough = durchsichtig;
+    for (const coil of coils) setSeeThrough(coilParts(coil), durchsichtig);
+  }
+  if (magnetSeeThrough !== state.showField) {
+    magnetSeeThrough = state.showField;
+    setSeeThrough([[magnetMat.north, 0.45], [magnetMat.south, 0.45], [yoke.material, 0.3]], state.showField);
   }
   coils.forEach((coil, k) => {
     coil.arrow.visible = coil.bLabel.visible = state.showB;
