@@ -38,6 +38,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 - **Ganz oben im Bedienfeld:** „Reale Physik“ (statt Feldlinienmodell), **Magnetfeld (Feldlinien)** (10 Linien in
   der Bildebene mit Pfeilen; Spulen, Magnet und Joch werden dafür durchsichtig) und **Feldlinien im Inneren der
   Spule färben** (violett; nur mit eingeblendeten Feldlinien). Zu Beginn: Feldlinienmodell, Feldlinien aus.
+  Darunter „Magnet festhalten“ (mit Drehwinkel-Regler) und „Zeitlupe“.
 - **Aufbau**
   - **1 Spule** (oben): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
   - **2 Spulen**: zweite Spule unten, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator
@@ -49,7 +50,8 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 - **Antrieb:** Drehzahl-Regler −3 … +3 Umdrehungen pro Sekunde, „Anhalten“; oder **Kurbel** vorne an der Welle
   mit Maus oder Finger drehen (wer die Kurbel greift, schaltet auf diesen Antrieb; losgelassen läuft der Magnet
   langsam aus).
-- **Magnet festhalten** mit Drehwinkel-Regler (0°–360°), Zeitlupe (¼).
+- **Magnet festhalten** und **Zeitlupe** (¼) als Knöpfe oben im Bedienfeld, direkt unter den Feldlinien: Festgehalten
+  erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
 - **Frequenz der Wechselspannung** (bei einem Polpaar gleich der Drehzahl).
 - **Anzeigen:** B im Spuleninneren (Pfeil; Wicklung und Kern werden dafür durchsichtig), Diagramme B–t und U–t,
   Änderung von B (Tangente).
