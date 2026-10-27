@@ -4,6 +4,7 @@
 export const state = {
   view: 'park',       // Ansicht: 'park' (Windpark, Einstieg) oder 'model' (Generator-Modell)
   wind: 8,            // Windgeschwindigkeit im Windpark in m/s
+  time: 12,           // Uhrzeit im Windpark in Stunden (Sonnenstand, abends Licht im Dorf; tageszeit.js)
   drive: 'speed',     // Antrieb: 'speed' (Drehzahl-Regler), 'crank' (Handkurbel) oder 'wind' (Rotor wie im Windpark)
   speed: 0.5,         // Drehzahl-Regler in Umdrehungen pro Sekunde (vorwärts positiv)
   northUp: true,      // Nordpol oben, Südpol unten

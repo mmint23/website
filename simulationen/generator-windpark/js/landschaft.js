@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { TURBINE, WIND_MAX } from './config.js';
 import { state } from './state.js';
 import { park } from './physik.js';
+import { syncTageszeit } from './tageszeit.js';
 
 export const parkScene = new THREE.Scene();
 
@@ -25,32 +26,26 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 // Windrichtung (wohin der Wind weht): von links vorne nach rechts hinten
 export const WIND_DIR = new THREE.Vector3(1, 0, -1).normalize();
 
-// ---------------- Himmel, Licht, Dunst
+// ---------------- Himmel, Licht, Dunst (Farben und Sonnenstand je nach Uhrzeit: tageszeit.js)
 
-{
-  const canvas = document.createElement('canvas');
-  canvas.width = 4;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-  gradient.addColorStop(0, '#5b9bd5');
-  gradient.addColorStop(0.55, '#a9cdee');
-  gradient.addColorStop(1, '#e6f0f7');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 4, 256);
-  const sky = new THREE.CanvasTexture(canvas);
-  sky.colorSpace = THREE.SRGBColorSpace;
-  parkScene.background = sky;
-}
+// Himmel als senkrechter Farbverlauf auf einem schmalen Canvas
+export const skyCanvas = document.createElement('canvas');
+skyCanvas.width = 4;
+skyCanvas.height = 256;
+export const skyTexture = new THREE.CanvasTexture(skyCanvas);
+skyTexture.colorSpace = THREE.SRGBColorSpace;
+parkScene.background = skyTexture;
 parkScene.fog = new THREE.Fog(0xdde9f2, 700, 2600);
-parkScene.add(new THREE.HemisphereLight(0xdfefff, 0x7d8f5a, 1.0));
-const sun = new THREE.DirectionalLight(0xfff4e0, 2.2);
+export const hemi = new THREE.HemisphereLight(0xdfefff, 0x7d8f5a, 1.0);
+parkScene.add(hemi);
+export const sun = new THREE.DirectionalLight(0xfff4e0, 2.2);
 sun.position.set(-500, 700, 300);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -800, right: 800, top: 800, bottom: -800, near: 100, far: 2200 });
 sun.shadow.bias = -0.0008;
 parkScene.add(sun);
+parkScene.add(sun.target);   // Sonne zielt auf den Ursprung (Mitte der Landschaft)
 
 // ---------------- Gelände: sanfte Hügel, flach beim Dorf; Wiesen und Felder als Vertex-Farben
 
@@ -174,6 +169,26 @@ function buildInterior(nacelle, rotor) {
   return { inside, spin };
 }
 
+// Lichtschein (runder, weicher Fleck) für Fenster und Warnlichter – auch aus der Ferne gut zu sehen
+function scheinTextur(farbe) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, farbe);
+  g.addColorStop(0.25, farbe);
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+const glow = (farbe, opacity) => new THREE.SpriteMaterial({
+  map: scheinTextur(farbe), transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+});
+const warnMaterial = glow('rgba(255,40,30,1)', 1);
+
 export const turbines = [];      // [{ group, rotor, nacelle, housing, inside, spin, materials, phase, factor }]
 function buildTurbine(x, z, phase) {
   const group = new THREE.Group();
@@ -206,7 +221,13 @@ function buildTurbine(x, z, phase) {
     tip.position.set(0.05, TURBINE.BLADE - 2.5, 0);
   }
   const { inside, spin } = buildInterior(nacelle, rotor);
-  turbines.push({ group, rotor, nacelle, housing, inside, spin, materials: [body, shell], phase, factor: 0.96 + 0.08 * random() });
+  // Flugsicherungsbefeuerung auf dem Dach der Gondel: rotes Licht, nachts blinkend (tageszeit.js)
+  const warn = new THREE.Sprite(warnMaterial);
+  warn.position.set(0, 4.6, -5.5);
+  warn.scale.setScalar(14);
+  warn.visible = false;
+  nacelle.add(warn);
+  turbines.push({ group, rotor, nacelle, housing, inside, spin, warn, materials: [body, shell], phase, factor: 0.96 + 0.08 * random() });
 }
 for (const [x, z, phase] of [[-260, -210, 0.0], [-60, -330, 1.1], [150, -250, 2.3], [-420, -60, 0.7], [420, -170, 1.7]]) {
   buildTurbine(x, z, phase);
@@ -227,6 +248,30 @@ function roofGeometry(w, d, h) {
   return geometry;
 }
 export const houses = [];
+// Fenster: je Haus ein eigenes Material (Glas am Tag, warmes Licht am Abend) und vor jedem Fenster ein kleiner
+// Lichtschein, damit man die erleuchteten Fenster auch aus der Ferne sieht. schwelle: ab welcher Dunkelheit
+// (0 … 1) hier das Licht angeht – so gehen die Lichter nach und nach an.
+export const lichter = [];   // [{ material, schein (Material der Lichtscheine), scheine, schwelle }]
+const FENSTER = new THREE.PlaneGeometry(2.2, 1.9);
+function fensterSetzen(gruppe, plaetze, groesse = 1) {
+  const material = new THREE.MeshStandardMaterial({ color: 0x3b4a5a, roughness: 0.2, emissive: 0xffc861, emissiveIntensity: 0 });
+  const schein = glow('rgba(255,200,110,1)', 0);
+  const scheine = [];
+  for (const [x, y, z, drehung] of plaetze) {
+    const fenster = new THREE.Mesh(FENSTER, material);
+    fenster.position.set(x, y, z);
+    fenster.rotation.y = drehung;
+    fenster.scale.setScalar(groesse);
+    gruppe.add(fenster);
+    const s = new THREE.Sprite(schein);   // etwas vor dem Fenster
+    s.position.set(x + 0.8 * Math.sin(drehung), y, z + 0.8 * Math.cos(drehung));
+    s.scale.setScalar(7 * groesse);
+    s.visible = false;
+    gruppe.add(s);
+    scheine.push(s);
+  }
+  lichter.push({ material, schein, scheine, schwelle: 0.25 + 0.6 * random() });
+}
 function buildHouse(x, z, angle, w, d, h) {
   const house = new THREE.Group();
   house.position.set(x, terrainHeight(x, z), z);
@@ -236,6 +281,13 @@ function buildHouse(x, z, angle, w, d, h) {
   body.position.y = h / 2;
   const roof = add(roofGeometry(w, d, 0.55 * w), roofs[Math.floor(random() * roofs.length)], house);
   roof.position.y = h;
+  // zwei Fenster auf den langen Seiten, eins auf den Giebelseiten
+  const y = h * 0.5, aussen = 0.06;
+  fensterSetzen(house, [
+    [-w / 4, y, d / 2 + aussen, 0], [w / 4, y, d / 2 + aussen, 0],
+    [-w / 4, y, -d / 2 - aussen, Math.PI], [w / 4, y, -d / 2 - aussen, Math.PI],
+    [w / 2 + aussen, y, 0, Math.PI / 2], [-w / 2 - aussen, y, 0, -Math.PI / 2],
+  ]);
   houses.push(house);
 }
 for (let i = 0; i < 16; i++) {
@@ -257,6 +309,8 @@ for (let i = 0; i < 16; i++) {
   const spire = add(new THREE.ConeGeometry(3.8, 10, 4), roofs[2], church);
   spire.position.set(0, 27, 12);
   spire.rotation.y = Math.PI / 4;
+  // hohe Fenster an den Längsseiten des Kirchenschiffs
+  fensterSetzen(church, [-6, 0, 6].flatMap(z => [[5.56, 4.5, z, Math.PI / 2], [-5.56, 4.5, z, -Math.PI / 2]]), 1.3);
 }
 
 // ---------------- Stromleitung: Masten vom Windpark zum Dorf, durchhängende Leiterseile
@@ -334,7 +388,7 @@ const streakTexture = (() => {
   ctx.fillRect(0, 2, 256, 4);
   return new THREE.CanvasTexture(canvas);
 })();
-const streakMaterial = new THREE.MeshBasicMaterial({
+export const streakMaterial = new THREE.MeshBasicMaterial({
   map: streakTexture, transparent: true, depthWrite: false, opacity: 0.75, side: THREE.DoubleSide, fog: false,
 });
 const AREA = 1100;              // Streifen ziehen in diesem Bereich um den Windpark
@@ -354,7 +408,10 @@ const CENTER = new THREE.Vector3(-60, 0, -200);
 // ---------------- Abgleich (jedes Bild, dt in s Echtzeit)
 
 const rpmToRad = rpm => rpm * 2 * Math.PI / 60;
+let laufzeit = 0;   // s, für das Blinken der Warnlichter
 export function syncPark(dt, camera) {
+  laufzeit += dt;
+  syncTageszeit(state.time, laufzeit);
   for (const t of turbines) t.rotor.rotation.z -= rpmToRad(park.rpm * t.factor) * dt;
   // Windstreifen: Anzahl und Geschwindigkeit wachsen mit dem Wind
   const strength = Math.min(1, state.wind / WIND_MAX);

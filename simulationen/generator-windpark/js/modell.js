@@ -98,7 +98,7 @@ const loopNormal = buildLoop(LOOP.WIRE_R, mat.copper);
 lead(1, R, 0, LOOP.WIRE_R * 0.6, loopNormal);     // Seite A → Ring 1
 lead(-1, R, 1, LOOP.WIRE_R * 0.6, loopNormal);    // Seite B → Ring 2
 const glassCopper = new THREE.MeshStandardMaterial({
-  color: 0xd9874a, metalness: 0.3, roughness: 0.3, transparent: true, opacity: 0.55, depthWrite: false,
+  color: 0xd9874a, metalness: 0.3, roughness: 0.3, transparent: true, opacity: 0.75, depthWrite: false,
 });
 const loopExplain = buildLoop(EXPLAIN.WIRE_R, glassCopper);
 loopExplain.visible = false;
