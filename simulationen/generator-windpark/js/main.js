@@ -17,11 +17,22 @@ import { initTafel, oeffneTafel, tafelOffen } from '../../../gemeinsam/tafel/ind
 
 initUi();
 // Tafel im Erklärmodus: Schleife in fünf Stellungen, darunter ein leeres U-t-Diagramm zum Einzeichnen
-// der Sinuskurve; mit Abgabe an die Lehrkraft, wenn die Seite über den Abgabe-Server läuft
+// der Sinuskurve; Seite 2 zeigt dieselben Stellungen als Bilder des 3D-Modells mit dem einzelnen Elektron
+// (dort lassen sich B, v und F_L direkt einzeichnen). Mit Abgabe an die Lehrkraft, wenn die Seite über den Abgabe-Server läuft
 initTafel({
   id: 'generator-windpark',
-  bild: 'bilder/tafel.svg',
-  bildText: 'Leiterschleife zwischen Nord- und Südpol in den Stellungen 0°, 90°, 180°, 270° und 360°, darunter ein leeres U-t-Diagramm',
+  seiten: [
+    {
+      bild: 'bilder/tafel.svg',
+      bildText: 'Leiterschleife zwischen Nord- und Südpol in den Stellungen 0°, 90°, 180°, 270° und 360°, darunter ein leeres U-t-Diagramm',
+      titel: 'Seite 1: Schema',
+    },
+    {
+      bild: 'bilder/tafel2.svg',
+      bildText: 'Generator im 3D-Modell in den Stellungen 0°, 90°, 180°, 270° und 360° mit einem einzelnen Elektron in Längsseite A, darunter ein leeres U-t-Diagramm',
+      titel: 'Seite 2: 3D-Modell',
+    },
+  ],
   seitenverhaeltnis: 1.6,
 });
 document.getElementById('tafelBtn').addEventListener('click', oeffneTafel);

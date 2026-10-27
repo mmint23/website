@@ -18,5 +18,6 @@ export function initTafel(optionen) {
 
 export {
   oeffneTafel, schliesseTafel, tafelOffen, aufAnzeige, aktuellesDokument, tafelBild, tafelHoehe,
+  aktuelleSeite, seitenBild, aufSeitenwechsel, stricheDerSeite,
 } from './tafel.js';
-export { zeichneAlle, TAFEL_BREITE } from './striche.js';
+export { zeichneAlle, seiteVon, TAFEL_BREITE } from './striche.js';

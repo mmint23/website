@@ -13,8 +13,8 @@
 // ------------------------------------------------------------------
 import { packen, entpacken, zeichneAlle, GRENZEN } from './striche.js';
 import {
-  tafelId, tafelHoehe, tafelBild, bildGeladen, eigenesDokument, aktuellesDokument, zeigeDokument, dokumentGeaendert,
-  aufAenderung, oeffneTafel, schliesseTafel, mitRueckfrage,
+  tafelId, tafelHoehe, seitenBild, stricheDerSeite, aufSeitenwechsel, eigenesDokument, aktuellesDokument, zeigeDokument,
+  dokumentGeaendert, aufAenderung, oeffneTafel, schliesseTafel, mitRueckfrage,
 } from './tafel.js';
 import { TAFEL_BREITE } from './striche.js';
 import { setLinkUrl, qrSvg, showLink } from '../link.js';
@@ -237,6 +237,11 @@ async function starteLehrer() {
     if (!eintrag) return;
     leitung.senden({ typ: 'loeschen', id: eintrag.abgabe.id });
   });
+  // Tafel mit mehreren Seiten: Vorschaubilder zeigen die Seite, die gerade auf der Tafel gewählt ist
+  aufSeitenwechsel(() => {
+    vorschau(eigene, []);
+    for (const eintrag of abgaben.values()) kachelZeichnen(eintrag);
+  });
   aufAenderung(dok => {
     const eintrag = offenerEintrag();
     if (eintrag && eintrag.arbeit === dok) {
@@ -369,8 +374,9 @@ function neueKachel(text = '') {
   return kachel;
 }
 
+let eigene = null;   // Kachel „Eigene Tafel“
 function eigeneKachel() {
-  const kachel = neueKachel('Eigene Tafel');
+  const kachel = eigene = neueKachel('Eigene Tafel');
   kachel.classList.add('eigen');
   kachel.addEventListener('click', () => {
     zeigeDokument(eigenesDokument);
@@ -379,23 +385,27 @@ function eigeneKachel() {
     oeffneTafel();
   });
   $('abgabenListe').append(kachel);
-  bildGeladen.then(() => vorschau(kachel, []));
+  vorschau(kachel, []);
 }
 
 // Vorschau zeigt immer das Original; ist die Arbeitskopie bearbeitet, steht „bearbeitet“ daran
 function kachelZeichnen(eintrag) {
   eintrag.kachel.classList.toggle('bearbeitet', Boolean(eintrag.arbeit?.bearbeitet));
-  bildGeladen.then(() => vorschau(eintrag.kachel, entpacken(eintrag.abgabe.striche)));
+  vorschau(eintrag.kachel, entpacken(eintrag.abgabe.striche));
 }
 
-function vorschau(kachel, striche) {
+// Vorschau der gewählten Seite (wartet, bis ihr Bild geladen ist)
+async function vorschau(kachel, striche) {
+  const bild = seitenBild();
+  await bild.geladen;
+  if (bild !== seitenBild()) return;   // inzwischen umgeschaltet
   const canvas = kachel.querySelector('canvas');
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = 240 * dpr;
   canvas.height = Math.round(240 * dpr * tafelHoehe() / TAFEL_BREITE);
   const ctx = canvas.getContext('2d');
-  if (tafelBild.naturalWidth) ctx.drawImage(tafelBild, 0, 0, canvas.width, canvas.height);
-  zeichneAlle(ctx, striche, canvas.width, 2.5);   // Striche dicker, damit man sie im kleinen Bild erkennt
+  if (bild.naturalWidth) ctx.drawImage(bild, 0, 0, canvas.width, canvas.height);
+  zeichneAlle(ctx, stricheDerSeite(striche), canvas.width, 2.5);   // Striche dicker, damit man sie im kleinen Bild erkennt
 }
 
 // ---------------- Fenster der Lehrerseite (nur angelegt, wenn die Seite vom Abgabe-Server kommt)

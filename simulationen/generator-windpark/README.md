@@ -81,7 +81,15 @@ Das U-t-Diagramm bleibt einblendbar, so lässt sich vergleichen: F_L am größte
 und 360° (Blick entlang der Welle von rechts, Längsseite A ausgefüllt, B hohl, Drehsinn wie in der Simulation),
 darunter ein leeres U-t-Diagramm. Die Zeitmarken 0, T/4, T/2, 3T/4 und T stehen genau unter den Bildern
 (gestrichelte Hilfslinien): Aus den Stellungen – Schleife waagrecht: U = 0, Schleife senkrecht: |U| am größten –
-lässt sich die Sinuskurve punktweise einzeichnen. Zeichnen mit Apple Pencil, Finger oder Maus; über den
+lässt sich die Sinuskurve punktweise einzeichnen.
+
+**Seite 2** (Knopf „Seite 2: 3D-Modell“ in der Werkzeugleiste, `bilder/tafel2.svg`): dieselbe Aufteilung, oben
+aber Screenshots des 3D-Modells im Erklärmodus in den fünf Stellungen – nur mit dem einzelnen Elektron in
+Längsseite A (weißer Rand), ohne Feldlinien und Pfeile. So lassen sich B, v und die Lorentzkraft direkt an das
+Elektron zeichnen. Die Bilder stecken als JPEG in der SVG-Datei (Kamera schräg von links oben vorne, Elektron in der
+Mitte der Seite). Beide Seiten werden zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite.
+
+Zeichnen mit Apple Pencil, Finger oder Maus; über den
 Abgabe-Server können Schüler ihre Zeichnung an die Lehrkraft schicken (gemeinsamer Baustein der Website,
 siehe [`gemeinsam/tafel/README.md`](../../gemeinsam/tafel/README.md); Lehrerseite:
 <http://localhost:8080/lehrer/generator-windpark>).
