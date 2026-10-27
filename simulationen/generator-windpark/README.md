@@ -16,6 +16,12 @@ Leiterschleife im Magnetfeld.
 - Windräder wie echte Anlagen: Unter 3 m/s stehen sie, dann drehen sie mit wachsendem Wind schneller (ab
   6 U/min), ab 12 m/s mit Nenndrehzahl 14 U/min. Sie sind träge (laufen in einigen Sekunden hoch bzw. aus).
   Die aktuelle Drehzahl steht im Bedienfeld.
+- **Uhrzeit-Regler** (0–24 Uhr, Start 12 Uhr): Die Sonne geht um 6 Uhr auf und um 20 Uhr unter und zieht von
+  links (morgens) nach rechts (abends); abends steht sie tief, das Licht wird warm, der Himmel rötlich, dann
+  dunkelblau. Nachts bleibt die Landschaft im schwachen Mondlicht erkennbar, die Windstreifen werden blass.
+  In der Dämmerung gehen im Dorf nach und nach die Lichter an (Fenster mit Lichtschein, auch in der Kirche),
+  und auf den Gondeln blinkt die rote Flugsicherungsbefeuerung. So lässt sich die Energiekette beschreiben:
+  Wind → Rotor → Generator → Stromleitung → Licht in den Häusern.
 - **Windrad antippen** (jedes der fünf; mit der Maus wird es beim Darüberfahren hervorgehoben): Die Kamera
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator
   (Schild „Generator“). Dargestellt ist ein Generator ohne Getriebe: Ein Ringgenerator sitzt direkt auf der
@@ -150,6 +156,7 @@ generator-windpark/
 │   ├── physik.js       # Drehung, Induktionsspannung, Zeiger, Drehzahl der Windräder (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Licht, Einstellungen je Ansicht
 │   ├── landschaft.js   # Windpark: Gelände, Windräder (mit Innenleben der Gondel), Dorf, Stromleitung, Windstreifen
+│   ├── tageszeit.js    # Uhrzeit: Sonnenstand, Himmel, Licht, Lichter im Dorf, Befeuerung der Windräder
 │   ├── uebergang.js    # Windrad antippen, Kamerafahrt, Blick in die Gondel, Überblendung ins Modell
 │   ├── modell.js       # Magnet, Welle, Leiterschleife, Schleifringe, Bürsten, Kurbel
 │   ├── messgeraet.js   # Zeigermessgerät und Kabel

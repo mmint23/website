@@ -12,6 +12,7 @@ import { resetView as resetModelView, controls, camera, applyViewSettings } from
 import { parkView } from './landschaft.js';
 import { onEnterModel, transitionActive } from './uebergang.js';
 import { formatNumber } from './hilfen.js';
+import { uhrText } from './tageszeit.js';
 
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
@@ -45,6 +46,7 @@ function updateUi() {
   $('modelPanel').hidden = inPark;
   $('windOut').textContent = `${formatNumber(state.wind, 1).replace(',0', '')} m/s`;
   $('beaufortStatus').textContent = `Windstärke ${beaufort(state.wind)} (Beaufort)`;
+  $('timeOut').textContent = uhrText(state.time);
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';
   $('explainBtn').classList.toggle('active', state.explain);
   $('explainPanel').hidden = !state.explain || inPark;
@@ -150,6 +152,9 @@ export function initUi() {
   const wind = $('windSlider');
   Object.assign(wind, { min: 0, max: WIND_MAX, step: 0.5, value: state.wind });
   wind.addEventListener('input', () => { state.wind = Number(wind.value); updateUi(); });
+  const time = $('timeSlider');
+  time.value = state.time;
+  time.addEventListener('input', () => { state.time = Number(time.value); updateUi(); });
   const modelWind = $('modelWindSlider');
   Object.assign(modelWind, { min: 0, max: WIND_MAX, step: 0.5, value: state.wind });
   modelWind.addEventListener('input', () => { state.wind = Number(modelWind.value); wind.value = state.wind; updateUi(); });
