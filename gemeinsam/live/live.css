@@ -1,0 +1,72 @@
+/* Live-Steuerung (gemeinsam/live/live.js): Hinweis oben, Bedienfeld der Lehrerseite */
+.live-banner[hidden], .live-feld [hidden] { display: none !important; }
+
+.live-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 28;
+  max-width: calc(100% - 32px);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font: 600 0.95rem system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #fff;
+  background: #4a5866;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  text-align: center;
+}
+.live-banner.du { background: #2e7d32; }
+.live-banner.warte { background: #1d4f91; }
+.live-banner.ende { background: #4a5866; }
+
+/* Bedienfeld der Lehrerseite: eigene Spalte in der Abgabeleiste … */
+.live-feld {
+  flex: none;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 12px;
+  border-left: 1px solid #d5dce3;
+  font-size: 0.95rem;
+}
+.live-feld .status { margin: 0; font-size: 0.85rem; color: #4a5866; }
+.live-feld button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 5px 8px;
+  border: 1px solid #9aa7b4;
+  border-radius: 8px;
+  background: #fff;
+  color: #1d2733;
+  cursor: pointer;
+}
+.live-feld button:disabled { opacity: 0.5; cursor: default; }
+.live-feld #liveAbgeben { border-color: #1d4f91; color: #1d4f91; font-weight: 600; }
+.live-wahl { display: flex; gap: 4px; }
+.live-wahl button { flex: 1 1 0; min-width: 0; padding-left: 4px; padding-right: 4px; }
+.live-wahl button[aria-pressed="true"] { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+.live-feld button.gefahr { border-color: #c62828; color: #c62828; }
+
+/* … oder als kleiner Kasten unten links, wenn die Simulation keine Abgabeleiste hat */
+.live-kasten {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 12;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #1d2733;
+}
+.live-kasten .live-feld { padding-left: 0; border-left: none; }
+
+/* Beim Zuschauen: Bedienelemente sichtbar gedämpft */
+body.live-zuschauen .panel, body.live-zuschauen .popup { opacity: 0.72; }
+@media (max-width: 700px) {
+  .live-feld { width: 140px; }
+}
