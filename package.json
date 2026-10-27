@@ -6,9 +6,15 @@
   "scripts": {
     "start": "node server/server.js",
     "offline": "node server/offline.js",
-    "test": "node --test \"gemeinsam/**/tests/*.test.mjs\" \"simulationen/*/tests/*.test.mjs\""
+    "test": "node --test \"gemeinsam/**/tests/*.test.mjs\" \"simulationen/*/tests/*.test.mjs\"",
+    "downloads": "node werkzeuge/downloads.mjs"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "qrcode-generator": "1.4.4",
+    "three": "0.170.0"
   }
 }
