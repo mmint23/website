@@ -8,7 +8,8 @@ Messgerät schließen die Schüler selbst an.
 ## Kernidee
 
 **Ändert sich das Magnetfeld im Inneren der Spule, wird an ihren Enden eine Spannung induziert.** Die Feldlinien
-des Magneten lassen sich einblenden; die Abschnitte, die gerade im Inneren der Spule liegen, sind violett. So sieht
+des Magneten lassen sich einblenden; die Abschnitte, die gerade im Inneren der Spule liegen, lassen sich violett
+färben. So sieht
 man beim Verschieben, wie sich „das Feld in der Spule“ ändert – und dass das Messgerät genau dann ausschlägt.
 
 Was sich damit erarbeiten lässt:
@@ -65,9 +66,11 @@ ausgeblendet („Magnetfeld (Feldlinien)“ blendet sie ein) – gerechnet wird 
   statt der Spule eine einzelne Leiterschleife da (Drahtring mit dem Radius der Wicklung, Anschlüsse A und E dicht
   nebeneinander darüber).
 - **Magnet und Spule zurück an den Start** (Lage und Drehung; die Kabel bleiben gesteckt).
-- **Anzeigen:** Magnetfeld (Feldlinien mit Pfeilen; Spule und Magnet werden dafür durchsichtig), B im
-  Spuleninneren (Pfeil entlang der Achse, Länge ∝ mittlere Flussdichte), Diagramme B–t und U–t auf derselben
-  Zeitachse (letzte 6 s; U in mV beim Messbereich ±1 mV).
+- **Ganz oben im Bedienfeld:** „Reale Physik“ (statt Feldlinienmodell), Magnetfeld (Feldlinien mit Pfeilen; Spule
+  und Magnet werden dafür halb durchsichtig) und „Feldlinien im Inneren der Spule färben“ (violett; nur mit
+  eingeblendeten Feldlinien, zu Beginn aus).
+- **Anzeigen:** B im Spuleninneren (Pfeil entlang der Achse, Länge ∝ mittlere Flussdichte), Diagramme B–t und U–t
+  auf derselben Zeitachse (letzte 6 s; U in mV beim Messbereich ±1 mV).
 
 ## Physikalisches Modell
 

@@ -187,7 +187,7 @@ function setArrow(length) {
 
 let durchsichtig = null;
 function setSeeThrough(on) {
-  for (const [material, opacity] of [[coilMat.copper, 0.22], [coilMat.flange, 0.4], [magnetMat.north, 0.45], [magnetMat.south, 0.45]]) {
+  for (const [material, opacity] of [[coilMat.copper, 0.5], [coilMat.flange, 0.65], [magnetMat.north, 0.45], [magnetMat.south, 0.45]]) {
     material.transparent = on;
     material.opacity = on ? opacity : 1;
     material.depthWrite = !on;

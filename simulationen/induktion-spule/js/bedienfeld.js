@@ -14,7 +14,7 @@ import { showLink } from '../../../gemeinsam/link.js';
 
 const $ = id => document.getElementById(id);
 const METERS = [['pointerBtn', 'pointer'], ['qualBtn', 'qual'], ['multiBtn', 'multi']];
-const CHECKS = [['fieldCheck', 'showField'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
+const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
 
 const segment = (id, active) => {
   $(id).classList.toggle('active', active);
@@ -32,7 +32,7 @@ function updateUi() {
   $('coilStatus').textContent = TURNS[state.turns].loop ? 'Einzelne Leiterschleife (1 Windung)' : `Spule mit ${state.turns} Windungen`;
   $('magnetStatus').textContent = state.northRight ? 'Nordpol (rot) rechts, Südpol (grün) links' : 'Nordpol (rot) links, Südpol (grün) rechts';
   for (const [id, key] of CHECKS) $(id).checked = state[key];
-  $('fieldLegend').hidden = !state.showField;
+  $('insideCheck').disabled = !state.showField;   // färben geht nur bei eingeblendeten Feldlinien
   $('lineModelBtn').setAttribute('aria-pressed', String(!state.lineModel));   // gedrückt: reale Physik
   $('lineModelInfo').hidden = !state.lineModel;
   $('realInfo').hidden = state.lineModel;

@@ -1,8 +1,8 @@
 // ------------------------------------------------------------------
 // Feldlinien des Stabmagneten in der Ebene durch die Achse (z = 0), berechnet in feldlinienModell.js. Sie hängen
-// am Magneten. Die Abschnitte im Inneren der Spule (innerhalb der Wicklung) werden in jedem Bild violett
-// hervorgehoben: So sieht man, wie viele Feldlinien durch die Spule gehen und wie sich das beim Bewegen ändert.
-// Bei der Leiterschleife sind es die kurzen Stücke, die gerade durch den Ring gehen.
+// am Magneten. Die Abschnitte im Inneren der Spule (innerhalb der Wicklung) werden auf Wunsch (state.colorInside)
+// in jedem Bild violett hervorgehoben: So sieht man, wie viele Feldlinien durch die Spule gehen und wie sich das
+// beim Bewegen ändert. Bei der Leiterschleife sind es die kurzen Stücke, die gerade durch den Ring gehen.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
@@ -58,10 +58,12 @@ function linieAufbauen(punkte, gruppe) {
 }
 
 // Liegt der Punkt (Koordinaten im Magneten) gerade im Inneren der Spule bzw. im Ring der Leiterschleife?
+// Ohne state.colorInside zählt nichts als „innen“ – dann sind alle Linien einfarbig.
 // Umrechnung Magnet → Spule
 const zuSpule = new THREE.Matrix4(), p = new THREE.Vector3();
 let laenge = COIL.LENGTH / 2;
 function imInneren(x, y) {
+  if (!state.colorInside) return false;
   p.set(x, y, 0).applyMatrix4(zuSpule);
   return Math.abs(p.x) < laenge && Math.hypot(p.y, p.z) < COIL.R_WIND;
 }
@@ -96,7 +98,7 @@ export function syncFeld() {
   for (const [staerke, { gruppe }] of Object.entries(gruppen)) gruppe.visible = staerke === state.strength;
   const { magnet, coil } = bodies;
   const neu = [magnet.x, magnet.y, magnet.angle, coil.x, coil.y, coil.angle].map(v => v.toFixed(4)).join(' ')
-    + ` ${state.northRight} ${state.strength} ${Boolean(TURNS[state.turns].loop)}`;
+    + ` ${state.northRight} ${state.strength} ${Boolean(TURNS[state.turns].loop)} ${state.colorInside}`;
   if (neu === stand) return;
   stand = neu;
   einfaerben(gruppen[state.strength].eintraege);

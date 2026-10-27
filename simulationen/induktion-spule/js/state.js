@@ -16,8 +16,9 @@ export const state = {
   // Feldlinienmodell (Didaktik, Standard): Spannung nur aus den gezeigten Feldlinien – nur wenn sich ihre Anzahl oder
   // ihr Verlauf im Spuleninneren ändert (feldlinienModell.js). false: reale Physik (echtes Feld des Magneten)
   lineModel: true,
-  showField: false,   // Feldlinien des Magneten (die Abschnitte im Spuleninneren hervorgehoben); auch im
-                      // Feldlinienmodell erst auf Knopfdruck – gerechnet wird dort trotzdem mit den Feldlinien
+  showField: false,   // Feldlinien des Magneten; auch im Feldlinienmodell erst auf Knopfdruck – gerechnet wird dort
+                      // trotzdem mit den Feldlinien
+  colorInside: false, // Abschnitte der Feldlinien im Spuleninneren violett färben (nur bei eingeblendeten Feldlinien)
   showB: false,       // Pfeil für B im Spuleninneren
   showPlot: false,    // Diagramme B–t und U–t
 };
