@@ -29,8 +29,8 @@ function resizeCanvas(canvas) {
 
 const zahl = (value, digits) => (value < 0 ? '−' : '') + formatNumber(Math.abs(value), digits);
 
-// Achsen, Raster und Beschriftung; liefert die Umrechnung in Pixel
-function rahmen(canvas, max, ticks, digits, mitZeit) {
+// Achsen, Raster und Beschriftung (Werte · faktor, z. B. 1000 für mV); liefert die Umrechnung in Pixel
+function rahmen(canvas, max, ticks, digits, mitZeit, faktor = 1) {
   const { ctx, w, h } = resizeCanvas(canvas);
   const x0 = PAD.left, x1 = w - PAD.right, y0 = PAD.top, y1 = h - PAD.bottom;
   const now = clock.t;
@@ -48,7 +48,7 @@ function rahmen(canvas, max, ticks, digits, mitZeit) {
     ctx.moveTo(x0, Y(v));
     ctx.lineTo(x1, Y(v));
     ctx.stroke();
-    ctx.fillText(zahl(v, digits), x0 - 6, Y(v));
+    ctx.fillText(zahl(v * faktor, digits), x0 - 6, Y(v));
   }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -118,8 +118,9 @@ export function updatePlot() {
   const b = rahmen(plots.b, B_PLOT, [-B_PLOT, -B_PLOT / 2, 0, B_PLOT / 2, B_PLOT], 0, false);
   kurve(b, 'b', FARBE.b, 2.4);
   punkt(b, jetzt.b, FARBE.b);
-  const r = state.range;
-  const u = rahmen(plots.u, r, [-r, -r / 2, 0, r / 2, r], r < 1 ? 2 : 1, true);
+  const r = state.range, milli = r < 0.01;   // kleiner Messbereich (Leiterschleife): Achse in mV
+  $('plotUTitle').textContent = `U an der Spule in ${milli ? 'mV' : 'V'}`;
+  const u = rahmen(plots.u, r, [-r, -r / 2, 0, r / 2, r], milli ? 1 : r < 1 ? 2 : 1, true, milli ? 1000 : 1);
   kurve(u, 'u', FARBE.u, 2.4);
   punkt(u, jetzt.u, FARBE.u);
 }

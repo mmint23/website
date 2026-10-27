@@ -141,3 +141,5 @@ html, body {
 .farbe { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
 .farbe.innen { background: #aa00ff; }
 #rangeBox .segmented { margin-top: 6px; }
+/* Umschalter Feldlinienmodell / reale Physik ganz oben im Bedienfeld */
+.panel button.modell-btn { margin-top: 0; font-weight: 600; }

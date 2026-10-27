@@ -18,33 +18,63 @@
   <div class="plot-box" id="plotBox" hidden>
     <div class="plot-title"><span>B im Spuleninneren in mT</span></div>
     <canvas id="plotB"></canvas>
-    <div class="plot-title"><span>U an der Spule in V</span></div>
+    <div class="plot-title"><span id="plotUTitle">U an der Spule in V</span></div>
     <canvas id="plotU"></canvas>
   </div>
 
   <div class="hint">
-    <span>Magnet oder Spule ziehen: verschieben · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen</span>
+    <span>Magnet, Spule oder Stecker ziehen · daneben ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen</span>
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
   </div>
 
   <aside class="panel" id="panel">
     <section>
+      <button id="lineModelBtn" class="state modell-btn" type="button" aria-pressed="false">Reale Physik</button>
+      <p class="status" id="lineModelInfo">Feldlinienmodell: Spannung nur, wenn sich die Anzahl der Feldlinien in der
+        Spule oder ihr Verlauf dort ändert. Gezählt werden nur die gezeigten Feldlinien.</p>
+      <p class="status" id="realInfo" hidden>Reale Physik: Spannung aus dem echten Magnetfeld – auch dort, wo keine
+        Feldlinie gezeichnet ist.</p>
+    </section>
+    <section>
       <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
       <h2>Messgerät</h2>
       <div class="segmented" role="group" aria-label="Messgerät">
-        <button id="pointerBtn" type="button">Zeigermessgerät</button>
+        <button id="pointerBtn" type="button">Mit Skala</button>
+        <button id="qualBtn" type="button">Ohne Skala</button>
         <button id="multiBtn" type="button">Multimeter</button>
       </div>
+      <p class="status" id="qualInfo" hidden>Empfindliches Zeigermessgerät ohne Skala: schlägt auch bei der kleinen
+        Spannung einer einzelnen Leiterschleife aus. Der Ausschlag wächst nicht gleichmäßig mit der Spannung.</p>
       <div id="rangeBox">
         <p class="status">Messbereich</p>
         <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
       </div>
-      <p class="status" id="multiInfo" hidden>Das Multimeter zeigt dreimal pro Sekunde einen neuen Messwert.</p>
+      <p class="status" id="multiInfo" hidden>Drehschalter antippen: eine Stellung weiter. Das Multimeter zeigt
+        dreimal pro Sekunde einen neuen Messwert.</p>
+      <p class="status">Ziehe die Stecker der Kabel an die Buchsen des Messgeräts.</p>
+      <button id="unplugBtn" type="button">Kabel abziehen</button>
     </section>
     <section>
-      <h2>Magnet und Spule</h2>
+      <h2>Magnet</h2>
+      <p class="status">Stärke</p>
+      <div class="segmented" role="group" aria-label="Stärke des Magneten" id="strengthButtons"></div>
+      <label class="slider">
+        <span class="row">Drehung <output id="magnetAngleOut">0°</output></span>
+        <input id="magnetAngle" type="range" min="-180" max="180" step="1" value="0" />
+      </label>
       <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
       <p class="status" id="magnetStatus"></p>
+    </section>
+    <section>
+      <h2>Spule</h2>
+      <p class="status">Windungszahl</p>
+      <div class="segmented" role="group" aria-label="Windungszahl" id="turnsButtons"></div>
+      <p class="status" id="coilStatus"></p>
+      <label class="slider">
+        <span class="row">Drehung <output id="coilAngleOut">0°</output></span>
+        <input id="coilAngle" type="range" min="-180" max="180" step="1" value="0" />
+      </label>
+      <p class="status" id="blockedInfo" hidden>Magnet und Spule stoßen aneinander – erst auseinanderschieben.</p>
       <button id="resetBtn" type="button">Magnet und Spule zurück an den Start</button>
     </section>
     <section>
