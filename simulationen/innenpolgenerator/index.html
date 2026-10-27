@@ -46,6 +46,16 @@
       <label class="check"><input id="fieldCheck" type="checkbox" /> Magnetfeld (Feldlinien)</label>
       <label class="check"><input id="insideCheck" type="checkbox" /> <span class="farbe innen"></span>Feldlinien im
         Inneren der Spule färben</label>
+      <button id="holdBtn" class="state" type="button" aria-pressed="false">Magnet festhalten</button>
+      <div id="holdBox" hidden>
+        <p class="status">Der Magnet dreht sich nur, wenn du ihn mit dem Regler oder der Kurbel drehst – lässt du
+          los, bleibt er stehen.</p>
+        <label class="slider">
+          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
+          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
+        </label>
+      </div>
+      <button id="slowBtn" class="state" type="button" aria-pressed="false">Zeitlupe</button>
     </section>
     <section>
       <h2>Aufbau</h2>
@@ -78,15 +88,6 @@
       </div>
       <p class="status" id="crankInfo" hidden>Fasse die Kurbel vorne an der Welle an und drehe sie. Lässt du los,
         läuft der Magnet langsam aus.</p>
-      <button id="holdBtn" class="state" type="button">Magnet festhalten</button>
-      <div id="holdBox" hidden>
-        <p class="status">Der Magnet dreht sich nur, wenn du ihn mit der Kurbel oder dem Regler drehst.</p>
-        <label class="slider">
-          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
-          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
-        </label>
-      </div>
-      <label class="check"><input id="slowCheck" type="checkbox" /> Zeitlupe</label>
       <p class="status">Frequenz der Wechselspannung: <strong id="freqOut">–</strong></p>
     </section>
     <section>

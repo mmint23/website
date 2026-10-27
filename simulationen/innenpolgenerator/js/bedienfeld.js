@@ -1,5 +1,6 @@
 // ------------------------------------------------------------------
-// Bedienfeld: ganz oben reale Physik statt Feldlinienmodell, Feldlinien und ihre Färbung im Spuleninneren;
+// Bedienfeld: ganz oben reale Physik statt Feldlinienmodell, Feldlinien und ihre Färbung im Spuleninneren, Magnet
+// festhalten (mit Drehwinkel-Regler) und Zeitlupe;
 // Aufbau (eine oder zwei Spulen), Antrieb, Anzeigen, Messbereich
 // ------------------------------------------------------------------
 import { METER, SPEED_MAX } from './config.js';
@@ -15,7 +16,7 @@ const $ = id => document.getElementById(id);
 const DRIVES = [['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 const COILS = [['oneCoilBtn', 1], ['twoCoilsBtn', 2]];
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
-const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope'], ['slowCheck', 'slowMotion']];
+const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope']];
 
 const segment = (id, active) => {
   $(id).classList.toggle('active', active);
@@ -34,6 +35,7 @@ function updateUi() {
   $('crankInfo').hidden = state.drive !== 'crank' || state.hold;
   $('speedOut').textContent = (state.speed < 0 ? '−' : '') + formatNumber(Math.abs(state.speed), 1) + ' U/s';
   $('holdBtn').setAttribute('aria-pressed', String(state.hold));
+  $('slowBtn').setAttribute('aria-pressed', String(state.slowMotion));
   $('holdBox').hidden = !state.hold;
   for (const button of $('rangeButtons').children) segment(button.id, Number(button.dataset.range) === state.range);
   for (const [id, key] of CHECKS) $(id).checked = state[key];
@@ -115,6 +117,7 @@ export function initUi() {
     updateUi();
   });
   $('holdBtn').addEventListener('click', () => { setHold(!state.hold); updateUi(); });
+  $('slowBtn').addEventListener('click', () => { state.slowMotion = !state.slowMotion; updateUi(); });
   const holdSlider = $('holdSlider');
   holdSlider.addEventListener('input', () => holdTo(Number(holdSlider.value) * Math.PI / 180));
   holdSlider.addEventListener('pointerdown', () => { holdSliderActive = true; });
