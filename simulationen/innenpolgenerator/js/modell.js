@@ -1,6 +1,7 @@
 // ------------------------------------------------------------------
 // Innenpolgenerator (freischwebend): In der Mitte dreht sich ein Stabmagnet (Polrad) auf der Welle, außen
-// stehen Spulen mit Eisenkern fest – Spule 1 oben, bei zwei Spulen Spule 2 unten, dann mit Eisenjoch (Ring).
+// stehen Spulen fest – Spule 1 oben, bei zwei Spulen Spule 2 unten. Wahlweise mit Eisenkern (und bei zwei Spulen
+// mit Eisenjoch, Ring) oder als Luftspulen (state.iron).
 // Was sich dreht, hängt in rotorGroup (Drehung um die z-Achse). Jede Spule hat zwei Anschlüsse: A (Anfang der
 // Wicklung, innen, rechts) und E (Ende der Wicklung, außen, links); dort beginnen die Kabel (messgeraet.js).
 // ------------------------------------------------------------------
@@ -152,7 +153,7 @@ COIL.THETA.forEach((theta, k) => {
   const name = makeTextSprite(`Spule ${k + 1}`, 1.8, '#4a5866');
   group.add(name);
   name.position.set(6.6, (COIL.WIND_IN + COIL.WIND_OUT) / 2, 0);
-  coils.push({ group, copper, iron, insulator, arrow, bLabel });
+  coils.push({ group, copper, iron, insulator, arrow, bLabel, ironParts: [shoe, core] });
   group.updateMatrixWorld(true);
   terminals.push({
     a: ends.a.getWorldPosition(new THREE.Vector3()),
@@ -185,7 +186,8 @@ export function syncModel() {
   rotorGroup.rotation.z = rotor.phi;
   const two = state.coils === 2;
   coils[1].group.visible = two;
-  yoke.visible = two;
+  yoke.visible = two && state.iron;   // Joch nur mit Eisenkernen
+  for (const coil of coils) for (const part of coil.ironParts) part.visible = state.iron;
   // Spulen durchsichtig für den B-Pfeil und die Feldlinien; Magnet und Joch nur für die Feldlinien
   const durchsichtig = state.showB || state.showField;
   if (seeThrough !== durchsichtig) {

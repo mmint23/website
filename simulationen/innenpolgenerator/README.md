@@ -1,8 +1,8 @@
 # Innenpolgenerator
 
 Interaktive 3D-Simulation für den Physikunterricht (Jahrgangsstufe 10, elektromagnetische Induktion; Tablet
-geeignet). In der Mitte dreht sich ein Magnet (Polrad), außen stehen Spulen mit Eisenkern fest – so sind echte
-Kraftwerksgeneratoren und viele Windkraftgeneratoren aufgebaut.
+geeignet). In der Mitte dreht sich ein Magnet (Polrad), außen stehen Spulen fest – zu Beginn als Luftspulen, auf
+Knopfdruck mit Eisenkern. Mit Eisenkern sind echte Kraftwerksgeneratoren und viele Windkraftgeneratoren aufgebaut.
 
 Die Simulation setzt beim Induktionsgesetz in der Form an, die die Schüler kennen: **Ändert sich das Magnetfeld
 im Inneren einer Spule, wird an ihren Enden eine Spannung induziert.** Sie braucht keine Lorentzkraft (anders als
@@ -15,7 +15,9 @@ Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wi
 
 - Die Spannung ist **nicht** am größten, wenn ein Pol auf die Spule zeigt (B am größten) – dort ändert sich B
   gerade nicht, also ist U = 0.
-- Sie ist am größten, wenn sich B am schnellsten ändert: beim Nulldurchgang von B (Magnet quer zur Spule).
+- Sie ist am größten, wenn sich B am schnellsten ändert. Mit Eisenkern ist das beim Nulldurchgang von B (Magnet
+  quer zur Spule); ohne Eisenkern schon früher, etwa 25° nach der Stellung „Pol auf die Spule“ – dort fällt B am
+  steilsten ab.
 - Steht der Magnet still, ist U = 0 – auch wenn B groß ist.
 
 **Feldlinienmodell** (Standard, wie bei `induktion-spule`): Die Feldlinien des Magneten lassen sich einblenden,
@@ -28,6 +30,11 @@ induziert.* Der Knopf **„Reale Physik“** oben im Bedienfeld schaltet auf das
 nochmal gedrückt geht es zurück. Weil die Linien so gebaut sind, dass ihre Zahl fast wie cos verläuft, stimmen
 beide Modelle annähernd überein (Abweichung von B höchstens etwa 10 %).
 
+**Ohne / mit Eisenkern** (Standard: ohne): Ohne Eisen gehen bei „Nordpol auf die Spule“ knapp 2 der 10 Feldlinien
+durch die Spule, mit Eisenkern gut 6 – der Kern bündelt die Feldlinien, B und U werden etwa dreimal so groß. So
+lässt sich begründen, warum Generatorspulen einen Eisenkern haben. Ohne Eisen hängt B nicht wie cos vom Drehwinkel
+ab: Der Magnet ist kaum kürzer als sein Abstand zur Spule, B fällt beim Wegdrehen schnell ab.
+
 Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung für Stellung durchgehen),
 **Zeitlupe** und **Änderung von B (Tangente)** an die B-Kurve im aktuellen Punkt.
 
@@ -37,9 +44,11 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
 - **Ganz oben im Bedienfeld:** „Reale Physik“ (statt Feldlinienmodell), **Magnetfeld (Feldlinien)** (10 Linien in
   der Bildebene mit Pfeilen; Spulen, Magnet und Joch werden dafür durchsichtig) und **Feldlinien im Inneren der
-  Spule färben** (violett; nur mit eingeblendeten Feldlinien). Zu Beginn: Feldlinienmodell, Feldlinien aus.
+  Spule färben** (violett; nur mit eingeblendeten Feldlinien). Zu Beginn: Feldlinienmodell, Feldlinien aus,
+  ohne Eisenkern.
   Darunter „Magnet festhalten“ (mit Drehwinkel-Regler) und „Zeitlupe“.
 - **Aufbau**
+  - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh, bei zwei Spulen mit Joch).
   - **1 Spule** (oben): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
   - **2 Spulen**: zweite Spule unten, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator
     eines echten Generators. Die Spulen sind in Reihe geschaltet; zwei Möglichkeiten zum Verbinden:
@@ -73,9 +82,13 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   U = N · A · B_max · ω · sin(φ − θ). Bei 1 Umdrehung pro Sekunde ist der Scheitelwert einer Spule etwa 0,29 V.
 - Zwei Spulen: Wendet der Magnet Spule 1 den Nordpol zu, wendet er Spule 2 den Südpol zu – also B₂ = −B₁ und
   U₂ = −U₁. Ende – Ende ergibt U = U₁ − U₂ = 2 · U₁, Ende – Anfang U = U₁ + U₂ = 0.
+- **Ohne Eisenkern, reale Physik** (`luftfeld.js`): Der Magnet ist räumlich aus seinen Polflächen zusammengesetzt;
+  gemittelt wird die Feldkomponente entlang der Spulenachse über das Innere der Wicklung. Der Höchstwert von B ist
+  so gewählt, dass er zum Feldlinienmodell passt (Verhältnis der Linienzahlen ohne/mit Eisen, etwa 29 mT). Bei
+  1 Umdrehung pro Sekunde: Scheitelwert etwa 0,1 V, größte Spannung bei etwa 23°.
 - **Feldlinienmodell** (`feldlinienModell.js`, ebenes Modell in der Bildebene): Der Magnet besteht aus zwei
   Polflächen mit gleichmäßig verteilter Polstärke, innen gleichmäßig magnetisiert. Jeder Eisenkern wird vom Magneten
-  magnetisiert und wirkt selbst wie ein Stabmagnet entlang der Spulenachse, mit der Stärke 0,3 · cos(φ − θ) (Anteil
+  magnetisiert (nur „Mit Eisenkern“) und wirkt selbst wie ein Stabmagnet entlang der Spulenachse, mit der Stärke 0,3 · cos(φ − θ) (Anteil
   der Polstärke des Magneten) – so bündelt der Kern die Linien, wenn ein Pol auf ihn zeigt. Die 10 gezeichneten
   Linien verlassen den Nordpol in gleichen Flussabständen. Weil Feldlinien Höhenlinien einer Stromfunktion ψ sind,
   ist die Zahl der Linien durch die Spule = Fluss durch den Querschnitt (Mitte der Wicklung, ganze Breite) / Fluss
@@ -120,6 +133,7 @@ innenpolgenerator/
 │   ├── state.js        # Zustand (Aufbau, Antrieb, Anzeigen, Messbereich)
 │   ├── physik.js       # Drehung, B in den Spulen (real oder Feldlinienmodell), Induktionsspannung, Zeiger (ohne 3D, testbar)
 │   ├── feldlinienModell.js  # Feldlinien als Punktfolgen, Zahl der Linien durch eine Spule (ohne 3D, testbar)
+│   ├── luftfeld.js     # reale Physik ohne Eisenkern: räumliches Feld des Magneten in der Luftspule
 │   ├── feldlinien.js   # Darstellung der Feldlinien, violette Abschnitte im Spuleninneren
 │   ├── szene.js        # Renderer, Kamera, Licht, Startansicht einpassen
 │   ├── modell.js       # Polrad mit Kurbel, Spulen mit Eisenkern, Joch, B-Pfeile

@@ -8,6 +8,7 @@
 // - Eisenkern jeder Spule: wird vom Magneten magnetisiert und wirkt dann selbst wie ein Stabmagnet entlang der
 //   Spulenachse (innere Stirnfläche am Polschuh, äußere Stirnfläche am Joch). Seine Stärke folgt der Stellung des
 //   Magneten, KERN · cos(φ − θ) – so bündelt der Kern die Feldlinien, wenn ein Pol auf ihn zeigt.
+// Ohne Eisenkern (eisen = false) bleibt nur das Feld des Magneten.
 // Vereinfachung: Das Joch lenkt die Linien hier nicht um.
 //
 // Gezeichnet werden FIELD_LINES Feldlinien, die den Nordpol in gleichen Flussabständen verlassen. Weil die
@@ -69,8 +70,8 @@ const imKern = (a, q) => Math.abs(q) < COIL.CORE_R && a > COIL.CORE_IN && a < CO
 const hinein = (x, y, w) => [x * Math.cos(w) + y * Math.sin(w), -x * Math.sin(w) + y * Math.cos(w)];
 const heraus = (x, y, w) => [x * Math.cos(w) - y * Math.sin(w), x * Math.sin(w) + y * Math.cos(w)];
 
-// Stärke der Kerne bei Drehwinkel phi; theta: Lagen der vorhandenen Spulen
-const kerne = (phi, thetas) => thetas.map(theta => ({ theta, s: CORE_STRENGTH * Math.cos(phi - theta) }));
+// Stärke der Kerne bei Drehwinkel phi; theta: Lagen der vorhandenen Spulen; ohne Eisen keine Kerne
+const kerne = (phi, thetas, eisen) => (eisen ? thetas.map(theta => ({ theta, s: CORE_STRENGTH * Math.cos(phi - theta) })) : []);
 
 // Feld B in der Bildebene (Welt) – außen H, im Magneten und in den Kernen kommt die Magnetisierung dazu
 function feld(x, y, phi, ks) {
@@ -113,8 +114,8 @@ export const spulenLagen = coils => COIL.THETA.slice(0, coils);
 
 // ---------------- Feldlinienmodell: Zahl der Feldlinien durch Spule k (mit Vorzeichen, nach außen positiv)
 
-export function linienInSpule(k, phi, coils) {
-  const ks = kerne(phi, spulenLagen(coils));
+export function linienInSpule(k, phi, coils, eisen = true) {
+  const ks = kerne(phi, spulenLagen(coils), eisen);
   const theta = COIL.THETA[k], mitte = (COIL.WIND_IN + COIL.WIND_OUT) / 2;
   const links = heraus(-COIL.WIND_R, mitte, theta), rechts = heraus(COIL.WIND_R, mitte, theta);
   return (psi(...links, phi, ks) - psi(...rechts, phi, ks)) / FLUSS_JE_LINIE;
@@ -159,8 +160,8 @@ function aufPolflaeche(wert, yPol, phi, ks) {
 }
 
 // Alle Feldlinien bei Drehwinkel phi als Punktfolgen [x, y] (Welt), in Feldrichtung durchlaufen
-export function linien(phi, coils) {
-  const ks = kerne(phi, spulenLagen(coils));
+export function linien(phi, coils, eisen = true) {
+  const ks = kerne(phi, spulenLagen(coils), eisen);
   const ergebnis = [];
   const AUSSEN = 0.02;
   for (let j = 0; j < FIELD_LINES; j++) {

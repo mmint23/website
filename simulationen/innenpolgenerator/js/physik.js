@@ -19,6 +19,7 @@ import {
 } from './config.js';
 import { state } from './state.js';
 import { linienInSpule } from './feldlinienModell.js';
+import { luftAnteil, luftAenderung } from './luftfeld.js';
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const TWO_PI = 2 * Math.PI;
@@ -33,20 +34,30 @@ export const clock = { t: 0 };
 
 // ---------------- Feld und Spannung
 
-// Feldlinienmodell: Zahl der Feldlinien durch Spule k und Bezugswert n₀ (Nordpol auf Spule 1), je Aufbau
+// Feldlinienmodell: Zahl der Feldlinien durch Spule k und Bezugswert n₀ (Nordpol auf Spule 1, mit Eisenkern) je
+// Aufbau. Ohne Eisen gehen weniger Linien durch die Spule – B ist entsprechend kleiner.
 const n0 = {};
-export const linesInCoil = (k, phi = rotor.phi) => linienInSpule(k, phi, state.coils);
-const linesMax = () => (n0[state.coils] ??= linienInSpule(0, COIL.THETA[0], state.coils));
+export const linesInCoil = (k, phi = rotor.phi) => linienInSpule(k, phi, state.coils, state.iron);
+const linesMax = () => (n0[state.coils] ??= linienInSpule(0, COIL.THETA[0], state.coils, true));
+// Reale Physik ohne Eisen: Höchstwert von B so, dass er zum Feldlinienmodell passt (etwa 30 % von B_MAX)
+let luftMax = null;
+const airMax = () => (luftMax ??= B_MAX * linienInSpule(0, 0, 1, false) / linienInSpule(0, 0, 1, true));
 
-// Flussdichte im Kern von Spule k in T (positiv: nach außen, vom Magneten weg)
-export const coilField = (k, phi = rotor.phi) => state.lineModel
-  ? B_MAX * linesInCoil(k, phi) / linesMax()
-  : B_MAX * Math.cos(phi - COIL.THETA[k]);
+// Flussdichte im Spuleninneren von Spule k in T (positiv: nach außen, vom Magneten weg). Real mit Eisenkern
+// B_MAX · cos(φ − θ), ohne Eisen das räumliche Feld des Magneten (luftfeld.js)
+export function coilField(k, phi = rotor.phi) {
+  if (state.lineModel) return B_MAX * linesInCoil(k, phi) / linesMax();
+  const alpha = phi - COIL.THETA[k];
+  return state.iron ? B_MAX * Math.cos(alpha) : airMax() * luftAnteil(alpha);
+}
 
-// Änderung der Flussdichte in T/s: real dB/dt = −B_MAX · sin(φ − θ) · ω; im Feldlinienmodell aus der Änderung der
-// Linienzahl beim Weiterdrehen
+// Änderung der Flussdichte in T/s: real mit Eisen dB/dt = −B_MAX · sin(φ − θ) · ω; ohne Eisen und im
+// Feldlinienmodell aus der Änderung beim Weiterdrehen
 export function coilFieldRate(k, phi = rotor.phi, omega = rotor.omega) {
-  if (!state.lineModel) return -B_MAX * Math.sin(phi - COIL.THETA[k]) * omega;
+  if (!state.lineModel) {
+    const alpha = phi - COIL.THETA[k];
+    return state.iron ? -B_MAX * Math.sin(alpha) * omega : airMax() * luftAenderung(alpha) * omega;
+  }
   if (omega === 0) return 0;
   const h = 1e-4;
   return (coilField(k, phi + h) - coilField(k, phi - h)) / (2 * h) * omega;

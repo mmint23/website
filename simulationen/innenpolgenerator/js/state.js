@@ -8,6 +8,7 @@ export const state = {
   showField: false,   // Feldlinien in der Bildebene; auch im Feldlinienmodell erst auf Knopfdruck – gerechnet wird dort
                       // trotzdem mit den Feldlinien
   colorInside: false, // Abschnitte der Feldlinien im Inneren der Spulen violett färben (nur bei eingeblendeten Feldlinien)
+  iron: false,        // Spulen mit Eisenkern (und bei zwei Spulen mit Joch); false: Luftspulen
   coils: 1,           // 1: eine Spule (oben); 2: zweite Spule unten, mit Eisenjoch, in Reihe geschaltet
   reversed: false,    // zwei Spulen: false „Ende – Ende“ (Spannungen addieren sich), true „Ende – Anfang“ (heben sich auf)
   drive: 'speed',     // Antrieb: 'speed' (Drehzahl-Regler) oder 'crank' (Handkurbel)

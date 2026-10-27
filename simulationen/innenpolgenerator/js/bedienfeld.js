@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // Bedienfeld: ganz oben reale Physik statt Feldlinienmodell, Feldlinien und ihre Färbung im Spuleninneren, Magnet
 // festhalten (mit Drehwinkel-Regler) und Zeitlupe;
-// Aufbau (eine oder zwei Spulen), Antrieb, Anzeigen, Messbereich
+// Aufbau (mit oder ohne Eisenkern, eine oder zwei Spulen), Antrieb, Anzeigen, Messbereich
 // ------------------------------------------------------------------
 import { METER, SPEED_MAX } from './config.js';
 import { state } from './state.js';
@@ -15,6 +15,7 @@ import { showLink } from '../../../gemeinsam/link.js';
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 const COILS = [['oneCoilBtn', 1], ['twoCoilsBtn', 2]];
+const IRON = [['airBtn', false], ['ironBtn', true]];
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
 const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope']];
 
@@ -25,6 +26,10 @@ const segment = (id, active) => {
 
 function updateUi() {
   for (const [id, n] of COILS) segment(id, state.coils === n);
+  for (const [id, iron] of IRON) segment(id, state.iron === iron);
+  $('ironStatus').textContent = state.iron
+    ? 'Der Eisenkern bündelt die Feldlinien: Mehr Linien gehen durch die Spule.'
+    : 'Luftspule: Nur ein Teil der Feldlinien geht durch die Spule.';
   for (const [id, reversed] of WIRING) segment(id, state.reversed === reversed);
   $('wiringBox').hidden = state.coils === 1;
   $('wiringStatus').textContent = state.reversed
@@ -100,6 +105,7 @@ export function initUi() {
     $('rangeButtons').append(button);
   }
   for (const [id, n] of COILS) $(id).addEventListener('click', () => { state.coils = n; updateUi(); });
+  for (const [id, iron] of IRON) $(id).addEventListener('click', () => { state.iron = iron; updateUi(); });
   for (const [id, reversed] of WIRING) $(id).addEventListener('click', () => { state.reversed = reversed; updateUi(); });
   for (const [id, drive] of DRIVES) {
     $(id).addEventListener('click', () => {
