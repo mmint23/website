@@ -6,9 +6,10 @@ import { renderer, scene, camera, controls } from './szene.js';
 import { stepPhysics } from './physik.js';
 import { syncModel } from './modell.js';
 import { syncFeld } from './feldlinien.js';
-import { syncMeter, syncCables } from './messgeraet.js';
+import { syncMeter } from './messgeraet.js';
+import { syncCables } from './kabel.js';
 import { updatePlot } from './diagramm.js';
-import { initUi } from './bedienfeld.js';
+import { initUi, updateReadout } from './bedienfeld.js';
 import './ziehen.js';
 
 initUi();
@@ -21,6 +22,7 @@ renderer.setAnimationLoop(() => {
   syncFeld();
   syncCables();
   syncMeter();
+  updateReadout();
   updatePlot();
   controls.update();
   renderer.render(scene, camera);

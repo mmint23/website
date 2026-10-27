@@ -1,19 +1,20 @@
 // ------------------------------------------------------------------
-// Bedienfeld: Messgerät (Zeigermessgerät oder Multimeter, Messbereich), Magnet umdrehen, Lagen zurücksetzen,
-// Anzeigen (Feldlinien, B im Spuleninneren, Diagramme)
+// Bedienfeld: ganz oben reale Physik statt Feldlinienmodell; Messgerät (Zeiger mit oder ohne Skala oder Multimeter,
+// Messbereich, Kabel abziehen), Magnet (Stärke, Drehung, umdrehen), Spule (Windungszahl bzw. einzelne
+// Leiterschleife, Drehung), Lagen zurücksetzen, Anzeigen (Feldlinien, B im Spuleninneren, Diagramme)
 // ------------------------------------------------------------------
-import { METER } from './config.js';
+import { METER, STRENGTHS, TURNS, rangeText } from './config.js';
 import { state } from './state.js';
-import { fluxChanged, resetPhysics } from './physik.js';
+import { bodies, fluxChanged, resetPhysics, turnTo } from './physik.js';
 import { updateMeterFace } from './messgeraet.js';
+import { ausstecken } from './kabel.js';
 import { clearPlot } from './diagramm.js';
 import { fitView, controls } from './szene.js';
-import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
 
 const $ = id => document.getElementById(id);
-const METERS = [['pointerBtn', 'pointer'], ['multiBtn', 'multi']];
-const CHECKS = [['fieldCheck', 'showField'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
+const METERS = [['pointerBtn', 'pointer'], ['qualBtn', 'qual'], ['multiBtn', 'multi']];
+const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
 
 const segment = (id, active) => {
   $(id).classList.toggle('active', active);
@@ -24,10 +25,17 @@ function updateUi() {
   for (const [id, meter] of METERS) segment(id, state.meter === meter);
   $('rangeBox').hidden = state.meter !== 'pointer';
   $('multiInfo').hidden = state.meter !== 'multi';
+  $('qualInfo').hidden = state.meter !== 'qual';
   for (const button of $('rangeButtons').children) segment(button.id, Number(button.dataset.range) === state.range);
+  for (const button of $('strengthButtons').children) segment(button.id, button.dataset.strength === state.strength);
+  for (const button of $('turnsButtons').children) segment(button.id, Number(button.dataset.turns) === state.turns);
+  $('coilStatus').textContent = TURNS[state.turns].loop ? 'Einzelne Leiterschleife (1 Windung)' : `Spule mit ${state.turns} Windungen`;
   $('magnetStatus').textContent = state.northRight ? 'Nordpol (rot) rechts, Südpol (grün) links' : 'Nordpol (rot) links, Südpol (grün) rechts';
   for (const [id, key] of CHECKS) $(id).checked = state[key];
-  $('fieldLegend').hidden = !state.showField;
+  $('insideCheck').disabled = !state.showField;   // färben geht nur bei eingeblendeten Feldlinien
+  $('lineModelBtn').setAttribute('aria-pressed', String(!state.lineModel));   // gedrückt: reale Physik
+  $('lineModelInfo').hidden = !state.lineModel;
+  $('realInfo').hidden = state.lineModel;
   $('plotBox').hidden = !state.showPlot;   // gleich hier, damit resetView() den Platz schon richtig misst
   updateMeterFace();
 }
@@ -61,17 +69,73 @@ function resetView() {
   fitView(freieFlaeche(), INHALT);
 }
 
+// Knöpfe einer Auswahl anlegen: werte [[Wert, Text], …], beim Klick wählen(Wert)
+function auswahl(id, werte, attribut, waehlen) {
+  for (const [wert, text] of werte) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = id + '_' + String(wert).replace('.', '_');
+    button.dataset[attribut] = wert;
+    button.textContent = text;
+    button.addEventListener('click', () => { waehlen(wert); updateUi(); });
+    $(id).append(button);
+  }
+}
+
+// ---------------- Drehregler: folgen dem tatsächlichen Winkel, solange man sie nicht selbst bedient
+
+const REGLER = [['magnetAngle', 'magnet'], ['coilAngle', 'coil']];
+const bedient = new Set();
+const grad = rad => Math.round(rad * 180 / Math.PI);
+
+// Jedes Bild: Regler und Anzeige nachziehen; Hinweis, wenn eine Drehung an der Spule hängen bleibt
+export function updateReadout() {
+  let blockiert = false;
+  for (const [id, name] of REGLER) {
+    const body = bodies[name];
+    if (!bedient.has(id)) $(id).value = grad(body.angle);
+    $(id + 'Out').textContent = grad(body.angle) + '°';
+    if (Math.abs(body.angleTarget - body.angle) > 0.05) blockiert = true;
+  }
+  $('blockedInfo').hidden = !blockiert;
+}
+
 export function initUi() {
   for (const range of METER.RANGES) {
     const button = document.createElement('button');
     button.type = 'button';
     button.id = 'range' + String(range).replace('.', '_');
     button.dataset.range = range;
-    button.textContent = `±${formatNumber(range, range < 1 ? 1 : 0)} V`;
+    button.textContent = rangeText(range);
     button.addEventListener('click', () => { state.range = range; updateUi(); });
     $('rangeButtons').append(button);
   }
-  for (const [id, meter] of METERS) $(id).addEventListener('click', () => { state.meter = meter; updateUi(); });
+  for (const [id, meter] of METERS) {
+    $(id).addEventListener('click', () => {
+      if (state.meter !== meter) ausstecken();   // anderes Gerät: Stecker heraus
+      state.meter = meter;
+      updateUi();
+    });
+  }
+  $('unplugBtn').addEventListener('click', ausstecken);
+  auswahl('strengthButtons', Object.entries(STRENGTHS).map(([k, s]) => [k, s.label]), 'strength', wert => {
+    state.strength = wert;
+    fluxChanged();
+  });
+  auswahl('turnsButtons', Object.keys(TURNS).map(n => [Number(n), n]), 'turns', wert => {
+    state.turns = wert;
+    fluxChanged();
+  });
+  for (const [id, name] of REGLER) {
+    const regler = $(id);
+    regler.addEventListener('input', () => turnTo(name, Number(regler.value) * Math.PI / 180));
+    regler.addEventListener('pointerdown', () => bedient.add(id));
+    regler.addEventListener('focus', () => bedient.add(id));
+    regler.addEventListener('blur', () => bedient.delete(id));
+  }
+  window.addEventListener('pointerup', () => {
+    for (const [id] of REGLER) if (document.activeElement !== $(id)) bedient.delete(id);
+  });
   $('flipBtn').addEventListener('click', () => {
     state.northRight = !state.northRight;
     fluxChanged();
@@ -88,6 +152,13 @@ export function initUi() {
       if (key === 'showPlot' && !verschoben) resetView();   // mehr bzw. weniger Platz für das Modell
     });
   }
+  // Knopf „Reale Physik“: wechselt zwischen echtem Feld und Feldlinienmodell (Standard). Ob die Feldlinien zu
+  // sehen sind, bleibt davon unberührt.
+  $('lineModelBtn').addEventListener('click', () => {
+    state.lineModel = !state.lineModel;
+    fluxChanged();
+    updateUi();
+  });
   $('resetView').addEventListener('click', resetView);
   $('linkBtn').addEventListener('click', () => showLink());
   controls.addEventListener('start', () => { verschoben = true; });
