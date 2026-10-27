@@ -125,6 +125,14 @@ export function initUi() {
   }
   $('resetView').addEventListener('click', resetView);
   $('linkBtn').addEventListener('click', () => showLink());
+  // Aus dem Windpark gekommen (?von=windpark): Knopf zurück, mit Wind und Uhrzeit, damit der Windpark wieder so aussieht
+  const parameter = new URLSearchParams(location.search);
+  if (parameter.get('von') === 'windpark') {
+    const zurueck = new URLSearchParams();
+    for (const name of ['wind', 'zeit']) if (parameter.has(name)) zurueck.set(name, parameter.get(name));
+    $('windparkLink').href = '../generator-windpark/' + (zurueck.size ? '?' + zurueck : '');
+    $('windparkLink').hidden = false;
+  }
   onCrankGrab(updateUi);
   controls.addEventListener('start', () => { verschoben = true; });
   window.addEventListener('resize', () => { if (!verschoben) resetView(); });

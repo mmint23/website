@@ -32,8 +32,11 @@ Leiterschleife im Magnetfeld.
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator
   (Schild „Generator“). Dargestellt ist ein Generator ohne Getriebe: Ein Ringgenerator sitzt direkt auf der
   Rotorwelle, sein kupferfarbener Läufer dreht mit dem Rotor im fest stehenden Ständer. Die Ansicht
-  bleibt stehen, bis noch einmal getippt wird (Hinweis unten); dann fliegt die Kamera zurück in den Windpark.
-  (Hier soll später ein eigenes Modell der Windkraftanlage anschließen.) Antippen während der Fahrt überspringt sie.
+  bleibt stehen, bis noch einmal getippt wird (Hinweis unten); dann wird ausgeblendet und die Simulation
+  **Innenpolgenerator** geöffnet (eigene Seite; so sind getriebelose Windkraftgeneratoren gebaut: das Magnetfeld
+  dreht sich innen, die Spulen stehen außen fest). Wind und Uhrzeit gehen in der Adresse mit; „Zurück zum
+  Windpark“ im Innenpolgenerator bringt in denselben Windpark zurück. Antippen während der Fahrt überspringt sie.
+  Der Windpark übernimmt `?wind=…&zeit=…` aus der Adresse auch sonst (z. B. für einen Link mit Abendstimmung).
 - **Haus „Generator-Modell“ antippen** (im Dorf, Schild darüber): Kamerafahrt vor die Haustür, Überblendung ins
   Generator-Modell (Antrieb „Wind“), kurz erscheint „Vereinfachtes Modell des Generators“. „Direkt zum
   Generator-Modell“ im Bedienfeld wechselt ohne Kamerafahrt.

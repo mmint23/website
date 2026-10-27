@@ -23,6 +23,8 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 ## Funktionen
 
+- **Aus dem Windpark** (Windrad antippen in der Simulation Generator-Windpark, Adresse `?von=windpark&wind=…&zeit=…`):
+  Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
 - **Aufbau**
   - **1 Spule** (oben): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
   - **2 Spulen**: zweite Spule unten, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator

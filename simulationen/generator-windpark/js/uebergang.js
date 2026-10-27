@@ -4,8 +4,9 @@
 //    (raum.js) bzw. ins Generator-Modell (Antrieb „Wind“, Hinweis „Vereinfachtes Modell“). Antippen während der
 //    Fahrt springt direkt zur Überblendung.
 //  · Windrad antippen → Kamerafahrt zur Gondel → Gondel wird durchsichtig (Welle und Generator) → die Ansicht
-//    bleibt stehen, bis noch einmal getippt wird → Rückflug in den Windpark. (Hier soll später ein eigenes Modell
-//    der Windkraftanlage anschließen.) Antippen während der Fahrt springt zum Blick in die Gondel.
+//    bleibt stehen, bis noch einmal getippt wird → Ausblenden und Wechsel zur Simulation Innenpolgenerator (eigene
+//    Seite; Wind und Uhrzeit gehen in der Adresse mit, dort führt „Zurück zum Windpark“ wieder her). Antippen
+//    während der Fahrt springt zum Blick in die Gondel.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { TRANSITION } from './config.js';
@@ -21,8 +22,8 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
 // Ablauf Haus: idle → fly → fadeOut → (Ansicht wechseln) → fadeIn → idle
-// Ablauf Windrad: idle → fly → reveal → back → idle
-const run = { phase: 'idle', t: 0, turbine: null, house: null, hintText: '', fromPos: new THREE.Vector3(), fromTarget: new THREE.Vector3(),
+// Ablauf Windrad: idle → fly → reveal → fadeOut → (Seite Innenpolgenerator)
+const run = { phase: 'idle', t: 0, turbine: null, house: null, fromPos: new THREE.Vector3(), fromTarget: new THREE.Vector3(),
   toPos: new THREE.Vector3(), toTarget: new THREE.Vector3() };
 let enterModel = () => {};
 let enterRoom = () => {};
@@ -89,12 +90,19 @@ function startFlight(turbine) {
 
 const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
-// Kamera steht an der Gondel: Gondel durchsichtig machen, Hinweis zum Zurückfliegen
+// Kamera steht an der Gondel: Gondel durchsichtig machen, Hinweis zum Weitergehen
 function zurGondel() {
   camera.position.copy(run.toPos);
   controls.target.copy(run.toTarget);
-  Object.assign(run, { phase: 'reveal', t: 0, hintText: hint.textContent });
-  hint.textContent = 'Tippe noch einmal, um zurück in den Windpark zu fliegen';
+  Object.assign(run, { phase: 'reveal', t: 0 });
+  hint.textContent = 'Tippe noch einmal, um zum Innenpolgenerator zu wechseln';
+}
+
+// Zur Simulation Innenpolgenerator (Nachbarordner); Wind und Uhrzeit für den Rückweg in der Adresse
+function zumInnenpolgenerator() {
+  const ziel = new URL('../innenpolgenerator/', location.href);
+  ziel.search = new URLSearchParams({ von: 'windpark', wind: state.wind, zeit: state.time }).toString();
+  location.href = ziel.href;
 }
 
 // Jedes Bild (dt in s Echtzeit)
@@ -118,22 +126,13 @@ export function updateTransition(dt) {
     // Gondel wird durchsichtig; danach bleibt die Ansicht stehen, bis noch einmal getippt wird
     revealNacelle(run.turbine, Math.min(1, run.t / TRANSITION.REVEAL));
     camera.lookAt(controls.target);
-  } else if (run.phase === 'back') {
-    // Rückflug an die Stelle, von der aus das Windrad angetippt wurde; die Gondel wird wieder undurchsichtig
-    const k = ease(Math.min(1, run.t / TRANSITION.BACK));
-    camera.position.lerpVectors(run.toPos, run.fromPos, k);
-    controls.target.lerpVectors(run.toTarget, run.fromTarget, k);
-    camera.lookAt(controls.target);
-    revealNacelle(run.turbine, 1 - k);
-    if (run.t >= TRANSITION.BACK) {
-      revealNacelle(null, 0);
-      controls.minDistance = 60;   // wie sonst im Windpark (szene.js)
-      controls.enabled = true;
-      hint.textContent = run.hintText;
-      run.phase = 'idle';
-    }
   } else if (run.phase === 'fadeOut') {
     fade.style.opacity = Math.min(1, run.t / TRANSITION.FADE_OUT);
+    if (run.t >= TRANSITION.FADE_OUT && !run.house) {
+      zumInnenpolgenerator();
+      run.phase = 'weg';   // Seite wird gewechselt; bleibt ausgeblendet
+      return;
+    }
     if (run.t >= TRANSITION.FADE_OUT) {
       revealNacelle(null, 0);
       controls.enabled = true;
@@ -158,7 +157,7 @@ canvas.addEventListener('pointerdown', event => {
   // Haus: während der Fahrt gleich hinein; Windrad: Fahrt überspringen bzw. beim Blick in die Gondel zurückfliegen
   if (run.phase === 'fly' && run.house) Object.assign(run, { phase: 'fadeOut', t: 0 });
   else if (run.phase === 'fly') zurGondel();
-  else if (run.phase === 'reveal') Object.assign(run, { phase: 'back', t: 0 });
+  else if (run.phase === 'reveal') Object.assign(run, { phase: 'fadeOut', t: 0 });
 });
 canvas.addEventListener('pointerup', event => {
   if (!down || state.view !== 'park' || transitionActive()) return;
@@ -180,6 +179,22 @@ canvas.addEventListener('pointermove', event => {
   highlightHouse(house);
   canvas.style.cursor = turbine || house ? 'pointer' : '';
 });
+
+// Mit der Zurück-Taste des Browsers vom Innenpolgenerator zurück: Die Seite kommt dann ggf. aus dem Zwischenspeicher,
+// noch ausgeblendet an der Gondel – wieder in die Startansicht des Windparks
+let zurueckInDenPark = () => {};
+addEventListener('pageshow', event => {
+  if (!event.persisted || run.phase !== 'weg') return;
+  revealNacelle(null, 0);
+  fade.style.opacity = 0;
+  controls.minDistance = 60;   // wie sonst im Windpark (szene.js)
+  controls.enabled = true;
+  run.phase = 'idle';
+  zurueckInDenPark();
+});
+export function onBackToPark(callback) {
+  zurueckInDenPark = callback;
+}
 
 // Was beim Wechsel ins Modell bzw. in den Raum passiert (setzt das Bedienfeld)
 export function onEnterModel(callback) {

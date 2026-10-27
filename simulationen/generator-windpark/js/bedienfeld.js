@@ -10,7 +10,7 @@ import { onCrankGrab } from './ziehen.js';
 import { explainView } from './erklaerung.js';
 import { resetView as resetModelView, controls, camera, applyViewSettings } from './szene.js';
 import { parkView } from './landschaft.js';
-import { onEnterModel, onEnterRoom, transitionActive } from './uebergang.js';
+import { onEnterModel, onEnterRoom, onBackToPark, transitionActive } from './uebergang.js';
 import { raumView } from './raum.js';
 import { formatNumber } from './hilfen.js';
 import { uhrText } from './tageszeit.js';
@@ -165,6 +165,7 @@ export function initUi() {
   modelWind.addEventListener('input', () => { state.wind = Number(modelWind.value); wind.value = state.wind; updateUi(); });
   // Haus im Dorf: hinein (nach der Kamerafahrt) und wieder hinaus bzw. weiter zum Generator-Modell
   onEnterRoom(() => setView('room'));
+  onBackToPark(() => setView('park'));   // Zurück-Taste des Browsers vom Innenpolgenerator
   $('roomToParkBtn').addEventListener('click', () => setView('park'));
   $('roomToModelBtn').addEventListener('click', () => {
     state.drive = 'wind';
