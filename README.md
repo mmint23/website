@@ -13,8 +13,12 @@ gemeinsam/            gemeinsame Bausteine für alle Simulationen
   config.js           öffentliche Einstellungen (Website-Adresse, Supabase-URL, publishable-Schlüssel)
   link.js             „Link / QR-Code zeigen“
   tafel/              Zeichentafel mit Abgabe an die Lehrkraft (Anleitung: gemeinsam/tafel/README.md)
+  live/               Live-Steuerung: Schülergerät steuert die Simulation am Beamer (gemeinsam/live/README.md)
+  verbindung.js       Verbindung zum Abgabe-Server (von tafel/ und live/ genutzt)
 simulationen/<name>/  je eine Simulation mit eigener index.html
 server/               Abgabe-Server für das Klassenzimmer (Node.js, läuft auf dem Lehrer-Laptop)
+downloads/            Offline-Versionen einzelner Simulationen (erzeugt mit npm run downloads)
+werkzeuge/            downloads.mjs: erzeugt die Offline-Versionen
 ```
 
 ## Lokal ansehen
@@ -34,6 +38,22 @@ npm start
 ```
 
 Einzelheiten (WLAN, Firewall, Hotspot, Datenschutz): `gemeinsam/tafel/README.md`.
+
+## Offline-Versionen zum Herunterladen
+
+Für ausgewählte Simulationen gibt es eine einzige HTML-Datei, die per Doppelklick im Browser läuft – ohne
+Webserver und ohne Internet (three.js, Stylesheets, Bilder und QR-Code-Bibliothek stecken in der Datei). Sie liegt
+in `downloads/` und ist auf der Übersichtsseite an der Karte verlinkt („Offline-Version herunterladen“).
+
+```sh
+npm install          # einmalig: Werkzeuge (esbuild, three.js, qrcode-generator) nach node_modules/
+npm run downloads    # alle Offline-Versionen neu erzeugen (Liste in werkzeuge/downloads.mjs)
+```
+
+**Nach Änderungen an einer solchen Simulation neu erzeugen und mit committen** – sonst veraltet die
+Offline-Version. Teilen und Live-Steuerung sind darin ausgeblendet (sie brauchen den Abgabe-Server). Auf dem iPad
+startet eine heruntergeladene HTML-Datei nicht (die Dateivorschau führt kein JavaScript aus) – gedacht ist sie für
+Laptops. Weitere Simulation: Namen in `SIMULATIONEN` in `werkzeuge/downloads.mjs` ergänzen, Link an der Karte.
 
 ## Tests
 

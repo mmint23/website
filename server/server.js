@@ -5,6 +5,8 @@
 //   http://<Laptop-IP>:<Port> öffnen – die GitHub-Pages-Seite (HTTPS) dürfte diesen Server nicht ansprechen
 // - nimmt Tafelzeichnungen der Schüler als Vektordaten an und meldet sie per WebSocket live an die Lehrerseite
 //   (Zeichentafel und Abgabe im Browser: gemeinsam/tafel/). Jede Simulation hat eigene Räume.
+// - Live-Steuerung (gemeinsam/live/): ein Schülergerät steuert die Simulation am Beamer; der Server reicht den
+//   Zustand der Simulation zwischen Schüler- und Lehrergerät weiter.
 // - hält alles nur im Arbeitsspeicher; beim Beenden ist alles weg. Keine Abhängigkeiten außer Node.js (≥ 18).
 //
 // Start:  npm start   bzw.  node server/server.js      Umgebungsvariablen: PORT (8080), PIN (sonst ohne PIN)
@@ -33,11 +35,17 @@ const LIMITS = {
   RAEUME: 20,
   RAUM_LEERLAUF: 12 * 3600_000, // Raum ohne Lehrerseite und ohne Aktivität wird nach 12 h gelöscht
   ANMELDUNG: 12 * 3600_000,     // so lange gilt eine Anmeldung mit PIN
+  ZUSTAND_ABSTAND: 20,          // Live-Steuerung: höchstens ein Zustand je 20 ms und Verbindung weiterreichen (50 pro Sekunde)
+  ZUSTAND_GROESSE: 64 * 1024,   // ... mit höchstens 64 KB
 };
 
 // ---------------- Speicher (nur im Arbeitsspeicher)
 
-const raeume = new Map();         // 'Simulation/Raumcode' → { abgaben: Map(Geräte-ID → { id, name, zeit, striche }), zuletzt }
+const raeume = new Map();         // 'Simulation/Raumcode' → { abgaben: Map(Geräte-ID → { id, name, zeit, striche }), zuletzt, live }
+// live: Live-Steuerung des Raums – code: gültiger Code aus dem QR-Code (oder null), schueler: Verbindung des
+// Schülergeräts, quelle: wer gerade steuert ('schueler' oder die Verbindung einer Lehrerseite), letzter: zuletzt
+// gesendeter Zustand der Simulation (bekommt ein Gerät, das neu dazukommt)
+const neuesLive = () => ({ code: null, schueler: null, quelle: null, letzter: null });
 const tokens = new Map();         // Anmeldung der Lehrerseite: Token → Ablaufzeit
 const verbindungen = new Set();   // offene WebSockets; jede mit rolle ('schueler' | 'lehrer'), raum, geraet
 
@@ -166,14 +174,20 @@ async function api(req, res, url) {
 //   { typ: 'hallo', rolle: 'lehrer', sim, raum, token }     Token aus POST /api/login (nur mit PIN); legt den Raum an
 //   { typ: 'hallo', rolle: 'schueler', sim, raum, geraet }  Geräte-ID: zufällig, im Browser gespeichert
 //                                                           sim: Kennung der Simulation (initTafel({ id }))
+//                                                           steuern: Code aus dem QR-Code der Live-Steuerung (optional)
 //   Schüler: { typ: 'abgabe', name, striche }               ersetzt die vorige Abgabe dieses Geräts
 //   Lehrer:  { typ: 'loeschen', id }  { typ: 'alle-loeschen' }
+//   Live:    Lehrer { typ: 'live-abgeben' }                 neuer Code (der alte und sein Schülergerät gelten nicht mehr)
+//            Lehrer { typ: 'live-umschalten', an }          an: 'schueler' oder 'lehrer' (diese Lehrerseite steuert)
+//            Lehrer { typ: 'live-trennen' }                 Code ungültig, Schülergerät getrennt
+//            { typ: 'zustand', daten }                      nur vom Gerät, das gerade steuert
 // Server → Gerät
 //   Schüler: { typ: 'geteilt' }  { typ: 'fehler', text }
 //   Lehrer:  { typ: 'willkommen', adressen, port }  { typ: 'liste', abgaben }  { typ: 'abgabe', abgabe }
 //            { typ: 'geloescht', id }  { typ: 'geleert' }  { typ: 'online', anzahl }  { typ: 'fehler', code, text }
-// Für einen späteren Live-Modus (Simulation eines Schülers spiegeln) kann der Server hier weitere Nachrichten
-// zwischen einer Schüler- und den Lehrer-Verbindungen eines Raums weiterreichen (z. B. zustandAlsDaten()).
+//   Live:    Lehrer { typ: 'live-code', code }  { typ: 'live-status', aktiv, verbunden, quelle, ich }
+//            Schülergerät mit Code { typ: 'live-status', quelle }  { typ: 'live-ende' }
+//            { typ: 'zustand', daten }                      an alle, die gerade zuschauen
 
 function verbunden(v) {
   const ip = ipVon(v.req);
@@ -181,6 +195,11 @@ function verbunden(v) {
   v.on('ende', () => {
     verbindungen.delete(v);
     if (v.rolle === 'schueler') onlineMelden(v.raum);
+    const live = raeume.get(v.raum)?.live;
+    if (live?.schueler === v) {
+      live.schueler = null;
+      liveMelden(v.raum);
+    }
   });
   v.on('nachricht', nachricht => {
     try {
@@ -206,18 +225,27 @@ function bearbeiten(v, ip, nachricht) {
           v.senden({ typ: 'fehler', code: 'raeume', text: 'Zu viele offene Räume auf dem Server' });
           return v.schliessen(4003);
         }
-        raeume.set(raum, { abgaben: new Map(), zuletzt: Date.now() });
+        raeume.set(raum, { abgaben: new Map(), zuletzt: Date.now(), live: neuesLive() });
       }
       v.rolle = 'lehrer';
+      // Steuerte eine Lehrerseite, die inzwischen weg ist (z. B. neu geladen), steuert jetzt diese
+      const live = raeume.get(raum).live;
+      if (live.quelle && live.quelle !== 'schueler' && !verbindungen.has(live.quelle)) live.quelle = v;
       v.senden({ typ: 'willkommen', adressen: lanAdressen(), port: PORT });
       v.senden({ typ: 'liste', abgaben: abgabenListe(raum) });
-      return onlineMelden(raum);
+      onlineMelden(raum);
+      return liveMelden(raum);
     }
     const geraet = String(nachricht.geraet ?? '');
     if (!/^[a-z0-9]{8,40}$/i.test(geraet)) return v.schliessen(4000);
     Object.assign(v, { rolle: 'schueler', geraet });
-    return onlineMelden(raum);
+    onlineMelden(raum);
+    if (nachricht.steuern !== undefined) liveSchuelerKommt(v, String(nachricht.steuern));
+    return;
   }
+
+  if (nachricht.typ === 'zustand') return liveZustand(v, nachricht.daten);
+  if (v.rolle === 'lehrer' && nachricht.typ?.startsWith('live-')) return liveLehrer(v, nachricht);
 
   if (v.rolle === 'schueler' && nachricht.typ === 'abgabe') {
     const fehler = text => v.senden({ typ: 'fehler', text });
@@ -255,6 +283,95 @@ function bearbeiten(v, ip, nachricht) {
   if (v.rolle === 'lehrer' && nachricht.typ === 'alle-loeschen') {
     raeume.get(v.raum)?.abgaben.clear();
     anLehrer(v.raum, { typ: 'geleert' });
+  }
+}
+
+// ---------------- Live-Steuerung: ein Schülergerät steuert die Simulation am Beamer
+
+// Stand an alle Lehrerseiten des Raums (jede erfährt, ob sie selbst gerade steuert) und an das Schülergerät
+function liveMelden(raum) {
+  const live = raeume.get(raum)?.live;
+  if (!live) return;
+  const verbunden = Boolean(live.schueler);
+  const quelle = live.quelle === 'schueler' ? 'schueler' : live.quelle ? 'lehrer' : null;
+  for (const v of verbindungen) {
+    if (v.rolle === 'lehrer' && v.raum === raum) {
+      v.senden({ typ: 'live-status', aktiv: Boolean(live.code), verbunden, quelle, ich: live.quelle === v });
+    }
+  }
+  live.schueler?.senden({ typ: 'live-status', quelle });
+}
+
+// Schülergerät meldet sich mit dem Code aus dem QR-Code: bekommt zuerst den aktuellen Zustand (damit am Beamer
+// nichts springt) und steuert dann – nach dem ersten Scannen sofort, nach einem Neuladen wie zuvor
+function liveSchuelerKommt(v, code) {
+  const live = raeume.get(v.raum)?.live;
+  if (!live?.code || !code || code !== live.code) return v.senden({ typ: 'live-ende' });
+  const zuerst = !live.schueler && live.quelle !== 'schueler';
+  if (live.schueler && live.schueler !== v) live.schueler.live = false;
+  live.schueler = v;
+  v.live = true;
+  if (live.letzter) v.senden({ typ: 'zustand', daten: live.letzter });
+  if (zuerst) live.quelle = 'schueler';
+  liveMelden(v.raum);
+}
+
+function liveLehrer(v, nachricht) {
+  const live = raeume.get(v.raum)?.live;
+  if (!live) return;
+  if (nachricht.typ === 'live-abgeben') {
+    // neuer Code: das bisherige Schülergerät steuert nicht mehr, bis ein Gerät den neuen Code scannt steuert diese Seite
+    if (live.schueler) {
+      live.schueler.live = false;
+      live.schueler.senden({ typ: 'live-ende' });
+    }
+    Object.assign(live, { code: crypto.randomBytes(9).toString('base64url'), schueler: null, quelle: v });
+    v.senden({ typ: 'live-code', code: live.code });
+  } else if (nachricht.typ === 'live-umschalten' && live.code) {
+    live.quelle = nachricht.an === 'schueler' ? 'schueler' : v;
+  } else if (nachricht.typ === 'live-trennen') {
+    if (live.schueler) {
+      live.schueler.live = false;
+      live.schueler.senden({ typ: 'live-ende' });
+    }
+    Object.assign(live, neuesLive());
+  }
+  liveMelden(v.raum);
+}
+
+// Steuert dieses Gerät gerade die Live-Steuerung seines Raums? (Dann gibt es dessen live zurück.)
+function steuertLive(v) {
+  const live = raeume.get(v.raum)?.live;
+  if (!live?.code) return null;
+  const steuert = live.quelle === 'schueler' ? v.live && live.schueler === v : live.quelle === v;
+  return steuert ? live : null;
+}
+
+// Zustand nur vom Gerät annehmen, das gerade steuert, und an alle anderen des Raums weiterreichen
+// (Lehrerseiten und das Schülergerät mit Code). Kommen Zustände schneller als ZUSTAND_ABSTAND (iPads schicken im
+// WLAN oft zwei auf einmal), wird nichts verworfen, sondern der neueste kurz zurückgehalten und dann weitergereicht.
+function liveZustand(v, daten) {
+  const live = steuertLive(v);
+  if (!live || !daten || typeof daten !== 'object') return;
+  if (JSON.stringify(daten).length > LIMITS.ZUSTAND_GROESSE) return;
+  live.letzter = daten;
+  v.zustandWartet = daten;
+  if (v.zustandTimer) return;   // wird ohnehin gleich weitergereicht – dann schon mit diesem neuesten Zustand
+  const warten = LIMITS.ZUSTAND_ABSTAND - (Date.now() - (v.zustandZeit ?? 0));
+  if (warten > 0) v.zustandTimer = setTimeout(() => zustandWeiter(v), warten);
+  else zustandWeiter(v);
+}
+
+function zustandWeiter(v) {
+  v.zustandTimer = null;
+  const daten = v.zustandWartet;
+  v.zustandWartet = null;
+  const live = steuertLive(v);   // inzwischen umgeschaltet oder getrennt? Dann nicht mehr weiterreichen
+  if (!daten || !live) return;
+  v.zustandZeit = Date.now();
+  for (const andere of verbindungen) {
+    if (andere === v || andere.raum !== v.raum) continue;
+    if (andere.rolle === 'lehrer' || andere === live.schueler) andere.senden({ typ: 'zustand', daten });
   }
 }
 

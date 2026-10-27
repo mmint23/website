@@ -20,8 +20,10 @@ const isLocal = () => location.protocol === 'file:'
   || ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
 
 // Öffentliche Adresse dieser Seite: der Teil ab „simulationen/“ an die Website-Adresse gehängt
+// (Offline-Version: Pfad der Simulation steht in globalThis.OFFLINE.seite)
 function oeffentlicheUrl() {
-  const teil = location.pathname.match(/simulationen\/.*$/)?.[0].replace(/index\.html$/, '') ?? '';
+  const teil = globalThis.OFFLINE?.seite
+    ?? location.pathname.match(/simulationen\/.*$/)?.[0].replace(/index\.html$/, '') ?? '';
   return WEBSITE_URL + teil;
 }
 
@@ -31,8 +33,10 @@ export function setLinkUrl(url) {
   linkUrl = url;
 }
 
+// Bibliothek erst bei Bedarf aus dem Internet laden (in der Offline-Version ist sie schon da)
 let library = null;
 function loadLibrary() {
+  if (window.qrcode) library ??= Promise.resolve(window.qrcode);
   library ??= new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = QR_LIBRARY;
@@ -101,7 +105,9 @@ export async function showLink(url = pageUrl(), hinweis = '') {
   }
 }
 
-function hideLink() {
+// Fenster schließen (auch von außen, z. B. wenn der QR-Code der Live-Steuerung gescannt wurde)
+export function hideLink() {
+  if (!$('linkOverlay') || $('linkOverlay').hidden) return;
   $('linkOverlay').hidden = true;
   vorher?.focus?.();
 }

@@ -14,6 +14,8 @@ import { TAFEL_BREITE, GRENZEN, zeichneStrich, zeichneStueck, zeichneAlle, getro
 import { stilLaden } from '../stil.js';
 
 const $ = id => document.getElementById(id);
+// Bild aus der Offline-Version (eingebettet, globalThis.OFFLINE.dateien) oder wie angegeben
+const datei = pfad => globalThis.OFFLINE?.dateien?.[pfad] ?? pfad;
 const RADIERER = 18;          // Radius des Radierers in Tafeleinheiten
 const MIN_ABSTAND = 1.2;      // Punkte eines Strichs mindestens so weit auseinander (spart Daten)
 
@@ -368,7 +370,7 @@ function fensterAnlegen() {
 
 function bildZeigen() {
   const img = blatt.querySelector('img');
-  img.src = optionen.seiten[seite].bild;
+  img.src = datei(optionen.seiten[seite].bild);
   img.alt = optionen.seiten[seite].bildText ?? '';
 }
 
@@ -397,7 +399,7 @@ export function initTafel(neu) {
   if (optionen.seitenverhaeltnis) hoehe = TAFEL_BREITE / optionen.seitenverhaeltnis;
   seiten.forEach((s, i) => {
     seitenBilder[i] ??= neuesBild();
-    seitenBilder[i].src = s.bild;
+    seitenBilder[i].src = datei(s.bild);
   });
   bildGeladen.then(() => {
     if (!optionen.seitenverhaeltnis && tafelBild.naturalWidth) {
