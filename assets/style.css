@@ -164,6 +164,18 @@ h2 {
   color: var(--warm);
 }
 .karte--bald { opacity: .85; }
+/* Download der Offline-Version: liegt über dem Link der ganzen Karte */
+.karte__download {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  margin-top: .4rem;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.karte__download::before { content: "↓ "; }
+.karte__download:hover, .karte__download:focus-visible { text-decoration: underline; }
 
 /* Fußzeile */
 .fuss {
