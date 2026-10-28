@@ -11,13 +11,15 @@ import {
 
 const TWO_PI = 2 * Math.PI;
 
-// Die bisherigen Tests prüfen die reale Physik (cos-Modell); das Feldlinienmodell hat eigene Tests am Ende
+// Die bisherigen Tests prüfen die reale Physik mit Eisenkern (cos-Modell); Feldlinienmodell und Luftspule haben
+// eigene Tests am Ende
 state.lineModel = false;
+state.iron = true;
 const near = (a, b, tol, text) => assert.ok(Math.abs(a - b) <= tol, `${text ?? ''} ${a} vs. ${b}`);
 
 // Gleichmäßig drehen und Höchst- und Tiefstwert der Messgerätspannung nach dem Anlaufen bestimmen
 function spin(speed, seconds, setup = {}) {
-  Object.assign(state, { coils: 1, reversed: false, drive: 'speed', hold: false, speed, range: 1, lineModel: false, ...setup });
+  Object.assign(state, { coils: 1, reversed: false, drive: 'speed', hold: false, speed, range: 1, lineModel: false, iron: true, ...setup });
   resetPhysics();
   let max = -Infinity, min = Infinity;
   for (let i = 0; i < seconds * 600; i++) {
@@ -142,7 +144,7 @@ test('Feldlinienmodell: Zahl der Linien durch die Spule folgt etwa cos, stetig',
 });
 
 test('Feldlinienmodell: |U| am größten, wenn der Magnet quer steht; 0, wenn ein Pol auf die Spule zeigt', () => {
-  Object.assign(state, { lineModel: true, coils: 1 });
+  Object.assign(state, { lineModel: true, coils: 1, iron: true });
   const u = d => Math.abs(coilVoltage(0, d * Math.PI / 180, TWO_PI));
   near(u(0), 0, 1e-6, 'Nordpol auf Spule');
   for (const d of [10, 30, 50, 70]) assert.ok(u(d) < u(90), `${d}°: ${u(d)} < ${u(90)}`);
@@ -160,4 +162,27 @@ test('Feldlinien: geschlossen durch den Magneten, gefärbte Stücke liegen in de
   assert.ok(innen.every(([x, y]) => Math.abs(x) < 2.4 && y > 8.8 && y < 14.1));
   const quer = linien(Math.PI / 2, 1).flat().filter(([x, y]) => imInneren(x, y, 0)).length;
   assert.ok(quer < innen.length / 4, `quer: höchstens kurze Stücke quer durch die Wicklung (${quer})`);
+});
+
+// ---------------- Ohne Eisenkern
+
+test('ohne Eisenkern: weniger Feldlinien und kleineres B, beide Modelle passen zueinander', () => {
+  const mit = linienInSpule(0, 0, 1, true), ohne = linienInSpule(0, 0, 1, false);
+  assert.ok(ohne > 0.5 && ohne < 0.5 * mit, `ohne: ${ohne}, mit: ${mit}`);
+  near(linienInSpule(0, Math.PI / 2, 1, false), 0, 1e-9, 'quer: keine Linie');
+  Object.assign(state, { iron: false, coils: 1 });
+  for (const lineModel of [true, false]) {
+    state.lineModel = lineModel;
+    const b0 = coilField(0, 0);
+    near(b0, B_MAX * ohne / mit, 1e-6, `B bei Nordpol auf Spule (lineModel ${lineModel})`);
+    near(coilField(0, Math.PI), -b0, 1e-6, 'Südpol: andersherum');
+    near(coilField(1, 0.4), -coilField(0, 0.4), 1e-6, 'Spule 2 sieht den anderen Pol');
+    // B fällt schneller als cos: bei 45° deutlich weniger als 71 %
+    assert.ok(coilField(0, Math.PI / 4) < 0.6 * b0, `45°: ${coilField(0, Math.PI / 4) / b0}`);
+    // größte Spannung nicht bei 90°, sondern weit davor
+    const u = d => Math.abs(coilVoltage(0, d * Math.PI / 180, TWO_PI));
+    assert.ok(u(25) > 2 * u(90), `U(25°) = ${u(25)}, U(90°) = ${u(90)}`);
+    near(coilVoltage(0, 0, TWO_PI), 0, 1e-3, 'Nordpol auf Spule: U ≈ 0');
+  }
+  Object.assign(state, { iron: true, lineModel: false });
 });

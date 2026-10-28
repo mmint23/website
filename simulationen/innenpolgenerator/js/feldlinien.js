@@ -40,7 +40,7 @@ function eintrag(i) {
 const innen = (x, y) => state.colorInside && (imInneren(x, y, 0) || (state.coils === 2 && imInneren(x, y, 1)));
 
 function aufbauen(phi) {
-  const alle = linien(phi, state.coils);
+  const alle = linien(phi, state.coils, state.iron);
   alle.forEach((punkte, i) => {
     const { line, pfeile } = eintrag(i);
     line.visible = true;
@@ -75,8 +75,8 @@ export function syncFeld() {
   material.resolution.set(renderer.domElement.clientWidth, renderer.domElement.clientHeight);
   const phi = rotor.phi;
   const gleich = stand && Math.abs(phi - stand.phi) < 0.004 && stand.coils === state.coils
-    && stand.colorInside === state.colorInside;
+    && stand.colorInside === state.colorInside && stand.iron === state.iron;
   if (gleich) return;
-  stand = { phi, coils: state.coils, colorInside: state.colorInside };
+  stand = { phi, coils: state.coils, colorInside: state.colorInside, iron: state.iron };
   aufbauen(phi);
 }
