@@ -17,15 +17,24 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
   Mitte, Messbereiche ±3 / ±10 / ±30 mV).
 - **Antrieb:**
   - **Wind:** Statt der Kurbel sitzt ein kleiner Rotor am Wellenende. Rotor und Schleife drehen auf derselben
-    Welle genau so schnell wie die Windräder im Windpark (Generator ohne Getriebe), Wind-Regler auch hier.
-    Bei Nenndrehzahl 14 U/min sind das 0,23 Umdrehungen pro Sekunde, im Modell also etwa 1,2 mV –
-    der Zeiger pendelt langsam mit, das Diagramm zeigt dann 12 s statt 4 s. Nach dem Antippen eines
+    Welle (Generator ohne Getriebe), Wind-Regler auch hier. **Didaktisch vereinfacht:** Ab 3 m/s dreht der Rotor
+    proportional zur Windgeschwindigkeit – doppelter Wind, doppelte Drehzahl, doppelte Spannung, über den ganzen
+    Regler bis 20 m/s (siehe „Antrieb Wind: vereinfacht“ unten). Bei 12 m/s sind das wie im Windpark 14 U/min
+    (0,23 Umdrehungen pro Sekunde, Scheitelwert etwa 1,2 mV), bei 20 m/s gut 23 U/min (etwa 2 mV). Die neue
+    Drehzahl stellt sich nach wenigen Sekunden ein (Zeitkonstante 1,5 s). Der Zeiger pendelt langsam mit, das
+    Diagramm zeigt 12 s statt 4 s. Nach dem Antippen eines
     Windrads ist dieser Antrieb eingestellt.
   - **Drehzahl-Regler** −3 … +3 Umdrehungen pro Sekunde (rückwärts, Stillstand, vorwärts), „Anhalten“.
   - **Kurbel:** Kurbel am linken Wellenende mit Maus oder Finger drehen. Wer die Kurbel greift, schaltet
     automatisch auf diesen Antrieb. Lässt man los, läuft die Schleife durch Reibung langsam aus.
-- **U-t-Diagramm** (einblendbar): schreibt die Spannung der letzten 4 s mit – die Sinuskurve der
-  Wechselspannung wird sichtbar. Die U-Achse folgt dem Messbereich.
+- **U-t-Diagramm** (Knopf „U-t-Diagramm“, zu Beginn aus; im Erklärmodus ebenso): Es lässt sich überall anfassen und
+  mit Maus oder Finger verschieben, mit dem Griff unten rechts vergrößern (bis
+  fensterfüllend; am Rand weicht es aus), mit ⤢ fast bildschirmgroß machen (nochmal: zurück), mit × schließen. Schrift,
+  Achsen und Kurve wachsen mit der Größe mit (bis dreifach), damit es am Beamer lesbar bleibt. Die **U-Achse** folgt
+  zunächst dem Messbereich; an der Achse (links, Zahlen) nach unten ziehen staucht die Kurve (größerer Bereich, z. B.
+  bei hoher Drehzahl), nach oben ziehen streckt sie. Am Laptop geht das auch mit dem Mausrad über der Achse.
+  Doppeltippen auf die Achse oder ein anderer Messbereich stellt sie zurück. Es schreibt die
+  Spannung der letzten 4 s mit – die Sinuskurve der Wechselspannung wird sichtbar. Die U-Achse folgt dem Messbereich.
 - **Leiterschleife festhalten:** Die Schleife bleibt in ihrer Stellung (auch wenn der Drehzahl-Regler
   läuft). Mit der Kurbel oder dem Regler „Drehwinkel“ (0°–360°) lässt sie sich in jede Stellung drehen;
   beim Loslassen bleibt sie stehen.
@@ -62,7 +71,7 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
   (größte Spannung) und wann parallel (keine Spannung). Nochmal gedrückt geht es zurück zur schrägen Ansicht;
   „Ansicht zurücksetzen“ bleibt in der gewählten Ansicht. Dreht man die Ansicht selbst, ist der Knopf wieder aus.
 
-Das U-t-Diagramm bleibt einblendbar, so lässt sich vergleichen: F_L am größten, wenn U am größten ist.
+Das U-t-Diagramm lässt sich auch hier per Knopf einblenden, so lässt sich vergleichen: F_L am größten, wenn U am größten ist.
 
 ### Tafel
 
@@ -105,6 +114,28 @@ Zeichnungen geteilt wurden (die Koordinaten beziehen sich auf das Bild).
   0,12 s Verzögerung – stark übertrieben; sie zeigt die Ladungstrennung (∝ Spannung) bei offenem Stromkreis.
 - Drehung als Bewegungsgleichung (Drehzahl-Regler stellt die Drehzahl mit 0,4 s Zeitkonstante ein, Kurbel
   folgt dem Finger, freies Auslaufen mit Reibung) – vorbereitet für ein späteres Gegenmoment bei Belastung.
+
+## Antrieb Wind: vereinfacht – wie es in echt ist
+
+In der Simulation gilt der Einfachheit halber: **mehr Wind → schnellere Drehung → größere Spannung**, über den
+ganzen Regler. Eine echte Windkraftanlage verhält sich anders:
+
+- **Unter etwa 3 m/s** steht sie (Einschaltgeschwindigkeit) – wie in der Simulation.
+- **Zwischen etwa 3 und 12 m/s** dreht sie mit wachsendem Wind schneller. Die Leistung des Windes wächst dabei mit
+  der dritten Potenz der Windgeschwindigkeit (doppelter Wind: achtfache Leistung).
+- **Ab etwa 12 m/s (Nennwind)** erreicht sie ihre **Nenndrehzahl** (große Anlagen etwa 10–15 U/min) und ihre
+  **Nennleistung**. Mehr Wind würde Rotor und Generator überlasten. Deshalb werden die Rotorblätter etwas aus
+  dem Wind gedreht (Pitch-Regelung): Drehzahl und Leistung bleiben gleich, obwohl der Wind weiter zunimmt.
+- **Ab etwa 25 m/s (Sturm)** wird die Anlage abgeschaltet: Blätter ganz aus dem Wind, Rotor steht.
+- **Spannung:** Sie hängt bei echten Anlagen kaum vom Wind ab. Der Generator speist über Umrichter und
+  Transformator ins Netz ein, dessen Spannung (z. B. 230 V im Haus, 20 000 V im Mittelspannungsnetz) und Frequenz
+  (50 Hz) fest sind. Mit dem Wind ändert sich vor allem der **Strom**, also die eingespeiste Leistung.
+- **Getriebe:** Viele Anlagen haben ein Getriebe (etwa 1 : 100), das die langsame Rotordrehung für den Generator
+  stark beschleunigt; andere haben einen großen, langsam drehenden Ringgenerator mit vielen Polen ohne Getriebe.
+  Hier sitzt die Leiterschleife direkt auf der Rotorwelle – deshalb ist die Spannung so klein.
+
+Die Simulation **Generator-Windpark** bildet die echte Kennlinie mit Nenndrehzahl ab; dort dreht sich ein Windrad
+bei mehr als 12 m/s also nicht mehr schneller als hier bei 12 m/s.
 
 ## Starten
 

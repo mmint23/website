@@ -143,17 +143,16 @@ test('Erklärmodus: Elektronen pendeln im Takt der Spannung entlang der Längsse
   assert.equal(electrons.shift, 0, 'ohne Erklärmodus bleiben sie in Ruhe');
 });
 
-test('Windpark: Drehzahl der Windräder hängt vom Wind ab, mit Trägheit', async () => {
+test('Antrieb Wind (vereinfacht): Drehzahl proportional zum Wind, mit Trägheit', async () => {
   const { turbineTargetRpm, park, stepPark } = await import('../js/physik.js');
-  assert.equal(turbineTargetRpm(2), 0, 'unter 3 m/s stehen sie');
-  assert.equal(turbineTargetRpm(3), 6);
-  assert.ok(turbineTargetRpm(8) > 6 && turbineTargetRpm(8) < 14);
-  assert.equal(turbineTargetRpm(12), 14);
-  assert.equal(turbineTargetRpm(20), 14, 'Nenndrehzahl');
+  assert.equal(turbineTargetRpm(2), 0, 'unter 3 m/s steht der Rotor');
+  assert.ok(Math.abs(turbineTargetRpm(3) - 3.5) < 1e-9);
+  assert.ok(Math.abs(turbineTargetRpm(12) - 14) < 1e-9, 'bei 12 m/s wie im Windpark');
+  assert.ok(Math.abs(turbineTargetRpm(20) / turbineTargetRpm(10) - 2) < 1e-9, 'doppelter Wind, doppelte Drehzahl');
   park.rpm = 0;
   state.wind = 12;
   stepPark(1);
-  assert.ok(park.rpm > 3 && park.rpm < 6, `läuft träge an: ${park.rpm}`);
+  assert.ok(park.rpm > 6 && park.rpm < 11, `läuft träge an: ${park.rpm}`);
   for (let i = 0; i < 300; i++) stepPark(0.1);
   assert.ok(Math.abs(park.rpm - 14) < 0.01);
   state.wind = 0;

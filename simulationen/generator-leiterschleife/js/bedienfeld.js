@@ -17,7 +17,7 @@ const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
 const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'],
-  ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'],
+  ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'], ['plotBtn', 'showPlot'], ['explainPlotBtn', 'showPlot'],
   ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
 
 // Startansicht: im Erklärmodus nah an der Schleife (schräg von vorne oder von rechts)
@@ -51,7 +51,6 @@ function updateUi() {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   }
-  $('plotCheck').checked = state.showPlot;
   $('slowCheck').checked = state.slowMotion;
   updateMeterFace();
 }
@@ -117,7 +116,7 @@ export function initUi() {
     applyMagnetPoles();
     updateUi();
   });
-  $('plotCheck').addEventListener('change', e => { state.showPlot = e.target.checked; });
+  $('plotCloseBtn').addEventListener('click', () => { state.showPlot = false; updateUi(); });
   $('explainBtn').addEventListener('click', () => setExplain(!state.explain));
   const modelWind = $('modelWindSlider');
   Object.assign(modelWind, { min: 0, max: WIND_MAX, step: 0.5, value: state.wind });
