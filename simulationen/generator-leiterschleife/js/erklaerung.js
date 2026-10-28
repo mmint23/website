@@ -114,7 +114,9 @@ const POLE_SHIFT = 1;          // ab dieser Verschiebung der Elektronen (cm) ers
 // ---------------- Pfeile (Weltkoordinaten), je Längsseite einer für v und einer für F_L
 
 function makeArrow(color, label) {
-  const material = new THREE.MeshBasicMaterial({ color, depthTest: false });
+  // transparent (bei voller Deckkraft): kommt so in denselben Durchgang wie die durchsichtige Schleife und wird
+  // wegen renderOrder nach ihr gezeichnet – sonst legt sich die Schleife über die Pfeile
+  const material = new THREE.MeshBasicMaterial({ color, depthTest: false, transparent: true });
   const group = new THREE.Group();
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1, 10), material);
   const head = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1, 16), material);

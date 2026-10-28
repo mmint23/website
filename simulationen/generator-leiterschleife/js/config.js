@@ -71,14 +71,13 @@ export const METER = {
   RANGES: [3, 10, 30],        // Messbereiche ±3, ±10, ±30 mV
 };
 
-// Antrieb „Wind“: Rotor einer Windkraftanlage wie in der Simulation Windpark – läuft ab CUT_IN an, dreht mit
-// wachsendem Wind schneller und ab RATED mit Nenndrehzahl (drehzahlvariabler Betrieb, ohne Abschaltung bei Sturm)
+// Antrieb „Wind“, didaktisch vereinfacht: Der Rotor läuft ab CUT_IN an und dreht dann proportional zur
+// Windgeschwindigkeit – über den ganzen Regler, ohne Nenndrehzahl (echte Anlagen: siehe README, „Antrieb Wind:
+// vereinfacht“). Bei 12 m/s dreht er wie die Windräder im Windpark mit 14 U/min, bei 20 m/s mit gut 23 U/min.
 export const TURBINE = {
   CUT_IN: 3,                  // Einschaltgeschwindigkeit in m/s
-  RATED: 12,                  // ab hier Nenndrehzahl
-  RPM_MIN: 6,                 // Drehzahl beim Anlaufen in U/min
-  RPM_RATED: 14,              // Nenndrehzahl in U/min
-  SPIN_TIME: 3,               // Trägheit: Drehzahl folgt mit dieser Zeitkonstante (s)
+  RPM_PER_WIND: 14 / 12,      // Drehzahl in U/min je m/s Wind
+  SPIN_TIME: 1.5,             // Trägheit: Drehzahl folgt mit dieser Zeitkonstante (s)
 };
 export const WIND_MAX = 20;   // Wind-Regler bis 20 m/s
 

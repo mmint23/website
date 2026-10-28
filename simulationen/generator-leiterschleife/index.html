@@ -16,10 +16,17 @@
     <p id="subtitle">Dreht sich die Leiterschleife im Magnetfeld, entsteht eine Wechselspannung.</p>
   </div>
 
-  <!-- U-t-Diagramm -->
-  <div class="plot-box" id="plotBox">
-    <div class="plot-title">U in mV</div>
+  <!-- U-t-Diagramm (per Knopf): überall anfassen und verschieben, unten rechts vergrößern -->
+  <div class="plot-box" id="plotBox" title="Ziehen: verschieben" hidden>
+    <div class="plot-title" id="plotHandle">
+      <span>U in mV</span>
+      <span class="plot-tools">
+        <button id="plotBigBtn" class="plot-close" type="button" aria-pressed="false" aria-label="Diagramm groß" title="Groß / zurück">⤢</button>
+        <button id="plotCloseBtn" class="plot-close" type="button" aria-label="Diagramm schließen">×</button>
+      </span>
+    </div>
     <canvas id="plot"></canvas>
+    <div class="plot-resize" id="plotResize" title="Ziehen: Größe ändern" aria-hidden="true"></div>
   </div>
 
   <div class="hint">
@@ -47,6 +54,7 @@
     <button id="explainHoldBtn" class="state" type="button">Festhalten</button>
     <button id="sideViewBtn" class="state" type="button">Ansicht von rechts</button>
     <button id="magnetGlassBtn" class="state" type="button">Magnet durchsichtig</button>
+    <button id="explainPlotBtn" class="state" type="button">U-t-Diagramm</button>
     <button id="tafelBtn" class="tafel-btn" type="button">Tafel öffnen (zeichnen)</button>
   </aside>
 
@@ -103,7 +111,7 @@
       <h2>Messgerät</h2>
       <p class="status">Messbereich</p>
       <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
-      <label class="check"><input id="plotCheck" type="checkbox" /> U-t-Diagramm</label>
+      <button id="plotBtn" class="state" type="button">U-t-Diagramm</button>
     </section>
   </aside>
 

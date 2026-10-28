@@ -82,7 +82,7 @@ function stepRotor(dt) {
     if (rotor.dragging) rotor.holdTarget = rotor.target;
     rotor.omega = clamp((rotor.holdTarget - rotor.phi) / CRANK_TIME, -CRANK_MAX_OMEGA, CRANK_MAX_OMEGA);
   } else if (state.drive === 'wind') {
-    // Wind: Rotor und Schleife sitzen auf derselben Welle (Generator ohne Getriebe) – Drehzahl wie im Windpark
+    // Wind: Rotor und Schleife sitzen auf derselben Welle (Generator ohne Getriebe); Drehzahl proportional zum Wind
     rotor.omega = TWO_PI * park.rpm / 60;
   } else if (state.drive === 'speed') {
     // Drehzahl-Regler: wie ein geregelter Antrieb, die Drehzahl stellt sich gleichmäßig ein
@@ -196,14 +196,14 @@ export function stepPhysics(dt) {
   clock.t += dt;
 }
 
-// ---------------- Rotor einer Windkraftanlage (Antrieb „Wind“; so dreht er sich auch in der Simulation Windpark)
+// ---------------- Rotor einer Windkraftanlage (Antrieb „Wind“; bis 12 m/s wie in der Simulation Windpark)
 
 // Drehzahl der Windräder in U/min (0 unterhalb der Einschaltgeschwindigkeit)
 export const park = { rpm: 0 };
+// (vereinfacht: proportional zum Wind, ohne Nenndrehzahl – mehr Wind heißt immer schneller und mehr Spannung)
 export function turbineTargetRpm(wind) {
   if (wind < TURBINE.CUT_IN) return 0;
-  if (wind >= TURBINE.RATED) return TURBINE.RPM_RATED;
-  return TURBINE.RPM_MIN + (TURBINE.RPM_RATED - TURBINE.RPM_MIN) * (wind - TURBINE.CUT_IN) / (TURBINE.RATED - TURBINE.CUT_IN);
+  return TURBINE.RPM_PER_WIND * wind;
 }
 
 // Windräder sind träge: Drehzahl folgt dem Wind verzögert (dt in s, Echtzeit)

@@ -8,7 +8,7 @@ export const state = {
   northUp: true,      // Nordpol oben, Südpol unten
   range: 3,           // Messbereich ±3 mV
   slowMotion: false,
-  showPlot: true,     // U-t-Diagramm einblenden
+  showPlot: false,    // U-t-Diagramm einblenden (per Knopf, rechts und im Erklärmodus)
   hold: false,        // Schleife festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen
   paused: false,      // Bewegung angehalten (Pfeile zeigen den Augenblick)
   explain: false,     // Erklärmodus: Elektronen in der Schleife, einblendbare Größen
