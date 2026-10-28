@@ -21,8 +21,11 @@ export const MAGNET = {
   DEPTH: 13,                  // Ausdehnung nach vorne/hinten
 };
 
-// Welle, Schleifringe, Bürsten, Kurbel
-export const SHAFT = { R: 0.4, X_MIN: -15, X_MAX: 15 };
+// Tisch: Oberkante unter dem Magneten (der Hufeisenmagnet steht mit dem unteren Polblock auf dem Tisch)
+export const TABLE_TOP = -(MAGNET.GAP / 2 + MAGNET.THICK);
+
+// Welle (liegt in zwei Lagerböcken), Schleifringe, Bürsten, Kurbel
+export const SHAFT = { R: 0.4, X_MIN: -15, X_MAX: 15, BEARINGS: [-9.5, 13.6] };   // BEARINGS: x der Lagerböcke
 export const RINGS = { X: [9, 11.5], R: 1.3, WIDTH: 0.9, SLEEVE_R: 1.0, LEAD_R: 1.15 };   // LEAD_R: Zuleitungen liegen auf der Hülse
 export const RINGS_ANIM = 1.8;   // Erklärmodus: Dauer des An- bzw. Abbaus der Schleifringe in s
 export const CRANK = { X: -13, ARM: 5, KNOB_LEN: 3.5 };

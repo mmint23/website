@@ -1,12 +1,12 @@
 // ------------------------------------------------------------------
-// Innenpolgenerator (freischwebend): In der Mitte dreht sich ein Stabmagnet (Polrad) auf der Welle, außen
+// Innenpolgenerator auf einem Ständer auf dem Tisch: In der Mitte dreht sich ein Stabmagnet (Polrad) auf der Welle, außen
 // stehen Spulen fest – Spule 1 oben, bei zwei Spulen Spule 2 unten. Wahlweise mit Eisenkern (und bei zwei Spulen
 // mit Eisenjoch, Ring) oder als Luftspulen (state.iron).
 // Was sich dreht, hängt in rotorGroup (Drehung um die z-Achse). Jede Spule hat zwei Anschlüsse: A (Anfang der
 // Wicklung, innen, rechts) und E (Ende der Wicklung, außen, links); dort beginnen die Kabel (messgeraet.js).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW } from './config.js';
+import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND } from './config.js';
 import { state } from './state.js';
 import { rotor, coilField } from './physik.js';
 import { addMesh, makeLabel, makeTextSprite } from './hilfen.js';
@@ -153,6 +153,10 @@ COIL.THETA.forEach((theta, k) => {
   const name = makeTextSprite(`Spule ${k + 1}`, 1.8, '#4a5866');
   group.add(name);
   name.position.set(6.6, (COIL.WIND_IN + COIL.WIND_OUT) / 2, 0);
+  // Halter: verbindet den äußeren Flansch der Spule mit dem Ständer hinten
+  const halterZ0 = -2.6, halterZ1 = STAND.Z + STAND.DEPTH / 2;
+  const halter = addMesh(new THREE.BoxGeometry(1.6, 0.8, halterZ0 - halterZ1), mat.stand, group);
+  halter.position.set(0, COIL.WIND_OUT + 0.45, (halterZ0 + halterZ1) / 2);
   coils.push({ group, copper, iron, insulator, arrow, bLabel, ironParts: [shoe, core] });
   group.updateMatrixWorld(true);
   terminals.push({
@@ -160,6 +164,18 @@ COIL.THETA.forEach((theta, k) => {
     e: ends.e.getWorldPosition(new THREE.Vector3()),
   });
 });
+
+// Ständer: Fußplatte auf dem Tisch, senkrechte Platte hinter dem Polrad bis über Spule 1, Lager für die Welle
+{
+  const foot = addMesh(new THREE.BoxGeometry(16, 1, 12), mat.stand, scene);
+  foot.position.set(0, TABLE_TOP + 0.5, STAND.Z + 1.5);
+  const height = STAND.TOP - TABLE_TOP - 1;
+  const plate = addMesh(new THREE.BoxGeometry(STAND.WIDTH, height, STAND.DEPTH), mat.stand, scene);
+  plate.position.set(0, TABLE_TOP + 1 + height / 2, STAND.Z);
+  const lager = addMesh(new THREE.CylinderGeometry(1.3, 1.3, 0.8, 28), mat.stand, scene);
+  lager.rotation.x = Math.PI / 2;
+  lager.position.z = STAND.Z + STAND.DEPTH / 2 + 0.4;
+}
 
 // Eisenjoch: Ring außen um die Spulen (bei zwei Spulen), schließt den magnetischen Kreis
 const yoke = (() => {

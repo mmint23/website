@@ -110,7 +110,7 @@ function bladeGeometry() {
 }
 const BLADE = bladeGeometry();
 
-// Schild „Generator“ (zeigt immer zur Kamera), erscheint beim Blick in die Gondel
+// Schild (zeigt immer zur Kamera), z. B. „Innenpolgenerator“ beim Blick in die Gondel
 function makeTag(text) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -135,36 +135,48 @@ function makeTag(text) {
   return sprite;
 }
 
-// Innenleben der Gondel (nur beim Blick hinein sichtbar): Rotorwelle und Ringgenerator direkt dahinter
-// (Generator ohne Getriebe). Läufer und Welle drehen mit dem Rotor, der Ständer ist fest.
+// Innenleben der Gondel (nur beim Blick hinein sichtbar): Rotorwelle und direkt dahinter ein Innenpolgenerator wie in
+// der Simulation Innenpolgenerator (Generator ohne Getriebe): Auf der Welle dreht sich mit dem Rotor ein Stabmagnet
+// (Polrad, Nordpol rot, Südpol grün), außen stehen sechs Spulen mit Eisenkern auf einem Eisenring fest.
 const copperMat = new THREE.MeshStandardMaterial({ color: 0xc46a2b, metalness: 0.8, roughness: 0.35 });
 const statorMat = new THREE.MeshStandardMaterial({ color: 0x6b7480, metalness: 0.6, roughness: 0.4 });
 const shaftMat = new THREE.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 1, roughness: 0.3 });
+const northMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.45 });
+const southMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.45 });
+const GEN = { Z: 1.4, Y: 1.6, MAGNET: 1.8, KERN_INNEN: 1.05, KERN_AUSSEN: 1.85, SPULEN: 6 };   // in der Gondel, m
 function buildInterior(nacelle, rotor) {
   const inside = new THREE.Group();
   inside.visible = false;
   nacelle.add(inside);
-  // Ständer als oben offener Ring, damit man den drehenden Läufer darin sieht
-  const stator = add(new THREE.CylinderGeometry(1.95, 1.95, 1.4, 40, 1, true, 0.75 * Math.PI, 1.5 * Math.PI), statorMat, inside, false);
-  stator.rotation.x = Math.PI / 2;
-  stator.position.set(0, 1.6, 1.4);
-  stator.material.side = THREE.DoubleSide;
-  const spin = new THREE.Group();          // dreht mit dem Rotor
+  // Ständer: Spulen mit Eisenkern, radial zur Welle, auf einem dünnen Eisenring (fest in der Gondel)
+  const staender = new THREE.Group();
+  staender.position.set(0, GEN.Y, GEN.Z);
+  inside.add(staender);
+  const ring = add(new THREE.TorusGeometry(GEN.KERN_AUSSEN + 0.08, 0.1, 10, 48), statorMat, staender, false);
+  ring.scale.z = 3;   // flaches Band statt dünnem Ring
+  const kernLaenge = GEN.KERN_AUSSEN - GEN.KERN_INNEN;
+  for (let k = 0; k < GEN.SPULEN; k++) {
+    const spule = new THREE.Group();
+    spule.rotation.z = k * 2 * Math.PI / GEN.SPULEN;
+    staender.add(spule);
+    const kern = add(new THREE.CylinderGeometry(0.17, 0.17, kernLaenge, 12), statorMat, spule, false);
+    kern.position.y = GEN.KERN_INNEN + kernLaenge / 2;
+    const wicklung = add(new THREE.CylinderGeometry(0.3, 0.3, kernLaenge * 0.6, 16), copperMat, spule, false);
+    wicklung.position.y = GEN.KERN_INNEN + kernLaenge * 0.55;
+  }
+  // Polrad: dreht mit dem Rotor (in dessen Koordinaten; die Gondel-Mitte des Generators liegt bei z = GEN.Z)
+  const spin = new THREE.Group();
   spin.visible = false;
   rotor.add(spin);
-  const shaft = add(new THREE.CylinderGeometry(0.35, 0.35, 9, 16), shaftMat, spin, false);
+  const shaft = add(new THREE.CylinderGeometry(0.22, 0.22, 9, 16), shaftMat, spin, false);
   shaft.rotation.x = Math.PI / 2;
   shaft.position.z = -5;
-  const runner = add(new THREE.CylinderGeometry(1.65, 1.65, 1.2, 40), copperMat, spin, false);
-  runner.rotation.x = Math.PI / 2;
-  runner.position.z = -2.8;
-  for (let k = 0; k < 6; k++) {            // Speichen, damit man die Drehung sieht
-    const spoke = add(new THREE.BoxGeometry(0.25, 2.9, 0.3), statorMat, spin, false);
-    spoke.rotation.z = k * Math.PI / 3;
-    spoke.position.z = -2.1;
+  const z = GEN.Z - rotor.position.z, halb = GEN.MAGNET / 2;
+  for (const [material, y] of [[northMat, halb / 2], [southMat, -halb / 2]]) {
+    add(new THREE.BoxGeometry(0.55, halb, 0.55), material, spin, false).position.set(0, y, z);
   }
-  const tag = makeTag('Generator');
-  tag.position.set(0, 4.3, 1.4);
+  const tag = makeTag('Innenpolgenerator');
+  tag.position.set(0, 5, GEN.Z);
   inside.add(tag);
   return { inside, spin };
 }

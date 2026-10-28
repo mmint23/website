@@ -9,6 +9,8 @@ export const mat = {
   yoke: new THREE.MeshStandardMaterial({ color: 0x55595e, metalness: 0.6, roughness: 0.4 }),
   copper: new THREE.MeshStandardMaterial({ color: 0xc46a2b, metalness: 1, roughness: 0.3 }),
   brass: new THREE.MeshStandardMaterial({ color: 0xc9a64b, metalness: 1, roughness: 0.35 }),
+  table: new THREE.MeshStandardMaterial({ color: 0xc8a27a, roughness: 0.8 }),
+  stand: new THREE.MeshStandardMaterial({ color: 0x6b7480, metalness: 0.5, roughness: 0.45 }),
   steel: new THREE.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 1, roughness: 0.3 }),
   insulator: new THREE.MeshStandardMaterial({ color: 0xf2f0e8, roughness: 0.5 }),
   carbon: new THREE.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.8 }),

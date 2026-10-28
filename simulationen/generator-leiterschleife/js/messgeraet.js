@@ -3,7 +3,7 @@
 // von den Bürsten des Generators
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { METER } from './config.js';
+import { METER, TABLE_TOP } from './config.js';
 import { state } from './state.js';
 import { needle } from './physik.js';
 import { addMesh, makeLabel, formatNumber } from './hilfen.js';
@@ -13,7 +13,7 @@ import { brushTerminals } from './modell.js';
 
 // Das Messgerät schwebt rechts neben dem Modell (verkleinert), leicht zum Betrachter gedreht
 const meter = new THREE.Group();
-meter.position.set(27, -13, 3);
+meter.position.set(27, TABLE_TOP - 0.8 * 0.55, 3);   // steht auf dem Tisch (Gehäuse beginnt 0,8 über dem Ursprung)
 meter.rotation.y = -0.3;
 meter.scale.setScalar(0.55);
 scene.add(meter);
@@ -171,7 +171,7 @@ function cablePoints(terminal, socketLocal) {
   const socket = meter.localToWorld(socketLocal.clone()).addScaledVector(front, 1.2);
   const at = d => socket.clone().addScaledVector(front, d).toArray();
   const t = terminal;
-  return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 7, t.z + 3], at(5).map((v, i) => (i === 1 ? v - 2 : v)), at(2), socket.toArray()];
+  return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 6, t.z + 3], at(5).map((v, i) => (i === 1 ? v - 1.5 : v)), at(2), socket.toArray()];
 }
 
 const cables = [
