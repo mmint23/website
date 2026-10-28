@@ -158,6 +158,9 @@ export const SINGLE_REST = (() => {
   return s;
 })();
 
+// Zweites Elektron („2 e⁻“) in Ruhe: Mitte der Längsseite B – der Weg ist spiegelbildlich, also gleich weit vom Ende B
+export const SECOND_REST = PATH_LENGTH - SINGLE_REST;
+
 // Viele Elektronen: gleichmäßig verteilt (zugleich Plätze der Atomrümpfe)
 export function manyRestPositions() {
   const n = EXPLAIN.MANY_COUNT, m = EXPLAIN.MANY_MARGIN;

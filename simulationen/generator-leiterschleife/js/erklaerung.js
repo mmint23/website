@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { EXPLAIN, RINGS, LOOP } from './config.js';
 import { state } from './state.js';
 import {
-  electrons, sidePosition, sideVelocity, electronForce, pathPoint, SINGLE_REST, manyRestPositions, manyPositions,
+  electrons, sidePosition, sideVelocity, electronForce, pathPoint, SINGLE_REST, SECOND_REST, manyRestPositions, manyPositions,
   manyShiftLimit,
 } from './physik.js';
 import { rotorGroup, ringsAttached } from './modell.js';
@@ -82,12 +82,15 @@ const sprite = (material, radius, order, parent = rotorGroup) => {
   return s;
 };
 const single = sprite(singleMaterial, EXPLAIN.ELECTRON_R * 1.25, 10);
+const second = sprite(singleMaterial, EXPLAIN.ELECTRON_R * 1.25, 10);   // „2 e⁻“: in Längsseite B
 
 // Viele Elektronen (etwas unterhalb der Drahtmitte) und Atomrümpfe (etwas oberhalb, fest an ihrem Platz);
 // das Elektron nahe der Mitte von Seite A ist das hervorgehobene, wenn auch „e⁻“ an ist
 const MANY_Y = 0.28;
 const rest = manyRestPositions();
-const highlighted = rest.reduce((best, s, i) => (Math.abs(s - SINGLE_REST) < Math.abs(rest[best] - SINGLE_REST) ? i : best), 0);
+const naechstes = ziel => rest.reduce((best, s, i) => (Math.abs(s - ziel) < Math.abs(rest[best] - ziel) ? i : best), 0);
+const highlighted = naechstes(SINGLE_REST);
+const highlightedB = naechstes(SECOND_REST);   // bei „2 e⁻“ zusätzlich hervorgehoben (Seite B)
 const manyElectrons = rest.map(() => sprite(plainMaterial, EXPLAIN.ELECTRON_R * 0.8, 9));
 const ions = rest.map(s => {
   const ion = sprite(ionMaterial, EXPLAIN.ELECTRON_R * 0.65, 8);
@@ -154,21 +157,26 @@ export function syncExplain() {
   const on = state.explain;
   // einzelnes Elektron: auf dem Weg entlang der Schleife um die Verschiebung versetzt
   const many = on && state.showManyElectrons;
+  // „2 e⁻“ zeigt das Elektron in Seite A und dazu eines in Seite B (beide in derselben Umlaufrichtung verschoben)
+  const two = state.showTwoElectrons, showA = state.showElectron || two;
   if (many) {
     const p = manyPositions();
     manyElectrons.forEach((e, i) => {
       const q = pathPoint(p[i]);
       e.position.set(q.x, -MANY_Y, q.z);
-      e.visible = !(state.showElectron && i === highlighted);
+      e.visible = !((showA && i === highlighted) || (two && i === highlightedB));
     });
-    const q = pathPoint(p[highlighted]);
+    const q = pathPoint(p[highlighted]), qB = pathPoint(p[highlightedB]);
     single.position.set(q.x, -MANY_Y, q.z);
+    second.position.set(qB.x, -MANY_Y, qB.z);
   } else {
     for (const e of manyElectrons) e.visible = false;
-    const q = pathPoint(SINGLE_REST + electrons.shift);
+    const q = pathPoint(SINGLE_REST + electrons.shift), qB = pathPoint(SECOND_REST + electrons.shift);
     single.position.set(q.x, 0, q.z);
+    second.position.set(qB.x, 0, qB.z);
   }
-  single.visible = on && state.showElectron;
+  single.visible = on && showA;
+  second.visible = on && two;
   for (const ion of ions) ion.visible = many;
   // Pole: Verschiebung in Laufrichtung (> 0) ⇒ Elektronen bei Ende B / Ring 2 ⇒ dort „−“, bei A / Ring 1 „+“
   const shown = many && Math.abs(electrons.shift) > POLE_SHIFT;

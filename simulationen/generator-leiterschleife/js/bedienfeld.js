@@ -16,7 +16,7 @@ import { showLink } from '../../../gemeinsam/link.js';
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
-const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'],
+const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'], ['showTwoBtn', 'showTwoElectrons'],
   ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'], ['plotBtn', 'showPlot'], ['explainPlotBtn', 'showPlot'],
   ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
 
@@ -69,7 +69,7 @@ function setExplain(on) {
   state.explain = on;
   state.paused = false;
   state.sideView = false;
-  if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showManyElectrons: false, showRings: false, magnetGlass: false });
+  if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showTwoElectrons: false, showManyElectrons: false, showRings: false, magnetGlass: false });
   setRingsInstant();
   electrons.shift = 0;
   setMeterVisible(!on);

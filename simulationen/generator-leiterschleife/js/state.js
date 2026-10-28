@@ -18,6 +18,7 @@ export const state = {
   showV: false,
   showF: false,
   showElectron: false,       // einzelnes Elektron (vordere Längsseite)
+  showTwoElectrons: false,   // zwei Elektronen: je eines in der Mitte von Längsseite A und B (beim Drehen oben/unten)
   showManyElectrons: false,  // viele Elektronen über die ganze Schleife (von Ende zu Ende), mit Atomrümpfen
   showRings: false,          // Erklärmodus: Schleifringe mit Bürsten (zu Beginn offene Enden)
 };

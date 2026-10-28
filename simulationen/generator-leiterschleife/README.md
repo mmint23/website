@@ -57,6 +57,9 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
 - **F_L:** Lorentzkraft auf die Elektronen in den beiden Längsseiten
 - **e⁻:** ein einzelnes Elektron in der Mitte der vorderen Längsseite (weißer Rand). Es pendelt im Takt der
   Wechselspannung entlang des Drahts.
+- **2 e⁻:** zwei hervorgehobene Elektronen, je eines in der Mitte von Längsseite A und B – beim Drehen liegt eines
+  oben, eines unten. Beide werden von der Lorentzkraft in dieselbe Umlaufrichtung geschoben: So sieht man, dass sich
+  die Spannungen der beiden Längsseiten addieren. Zusammen mit „viele e⁻“ bleiben beide hervorgehoben.
 - **viele e⁻:** Elektronen (blau, „−“) und ortsfeste Atomrümpfe (rot, „+“) über die ganze Schleife, von Ende
   zu Ende. Die Lorentzkraft schiebt die Elektronen in beiden Längsseiten in dieselbe Umlaufrichtung; sie
   drängen sich an einem Ende zusammen, am anderen bleiben nur die Atomrümpfe. An den Enden zeigen „−“
