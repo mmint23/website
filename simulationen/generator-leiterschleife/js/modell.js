@@ -8,6 +8,7 @@ import { LOOP, MAGNET, SHAFT, RINGS, CRANK, EXPLAIN, RINGS_ANIM } from './config
 import { state } from './state.js';
 import { rotor } from './physik.js';
 import { addMesh, makeLabel, textTexture } from './hilfen.js';
+import { PATH } from './physik.js';
 import { mat } from './materialien.js';
 import { scene } from './szene.js';
 
@@ -98,14 +99,24 @@ const loopNormal = buildLoop(LOOP.WIRE_R, mat.copper);
 lead(1, R, 0, LOOP.WIRE_R * 0.6, loopNormal);     // Seite A → Ring 1
 lead(-1, R, 1, LOOP.WIRE_R * 0.6, loopNormal);    // Seite B → Ring 2
 const glassCopper = new THREE.MeshStandardMaterial({
-  color: 0xd9874a, metalness: 0.3, roughness: 0.3, transparent: true, opacity: 0.75, depthWrite: false,
+  color: 0xd9874a, metalness: 0.3, roughness: 0.3, transparent: true, opacity: EXPLAIN.OPACITY, depthWrite: false,
 });
-const loopExplain = buildLoop(EXPLAIN.WIRE_R, glassCopper);
+// Ein durchgehendes Rohr von Ende A bis Ende B mit gerundeten Ecken (derselbe Weg wie die Elektronen, PATH in
+// physik.js) – keine überlappenden Stücke, die an den Ecken doppelt durchscheinen
+const loopExplain = new THREE.Group();
+rotorGroup.add(loopExplain);
 loopExplain.visible = false;
-for (const sign of [1, -1]) {   // offene Enden mit Endkappe
-  wire([[L2, 0, sign * R], [L2, 0, sign * OPEN]], EXPLAIN.WIRE_R, glassCopper, loopExplain);
-  const cap = addMesh(new THREE.SphereGeometry(EXPLAIN.WIRE_R, 20, 14), glassCopper, loopExplain);
+{
+  const path = new THREE.CurvePath();
+  for (let i = 1; i < PATH.length; i++) {
+    path.add(new THREE.LineCurve3(new THREE.Vector3(PATH[i - 1][0], 0, PATH[i - 1][1]), new THREE.Vector3(PATH[i][0], 0, PATH[i][1])));
+  }
+  addMesh(new THREE.TubeGeometry(path, 12 * PATH.length, EXPLAIN.WIRE_R, 24, false), glassCopper, loopExplain);
+}
+for (const sign of [1, -1]) {   // offene Enden: halbe Kugel als Kappe, nach innen (zur Welle) gewölbt
+  const cap = addMesh(new THREE.SphereGeometry(EXPLAIN.WIRE_R, 24, 12, 0, 2 * Math.PI, 0, Math.PI / 2), glassCopper, loopExplain);
   cap.position.set(L2, 0, sign * OPEN);
+  cap.rotation.x = -sign * Math.PI / 2;
 }
 // Zuleitungen von den offenen Enden zu den Schleifringen (Ende A → Ring 1, Ende B → Ring 2)
 const explainLeads = new THREE.Group();
@@ -224,8 +235,24 @@ export function setRingsInstant() {
   ringsProgress = !state.explain || state.showRings ? 1 : 0;
 }
 
+// Magnet durchsichtig (nur im Erklärmodus): Polblöcke, Joch und Beschriftungen
+let magnetGlass = null;
+function syncMagnetGlass() {
+  const on = state.explain && state.magnetGlass;
+  if (on === magnetGlass) return;
+  magnetGlass = on;
+  for (const material of [mat.north, mat.south, mat.yoke]) {
+    material.transparent = on;
+    material.opacity = on ? EXPLAIN.MAGNET_OPACITY : 1;
+    material.depthWrite = !on;
+    material.needsUpdate = true;
+  }
+  for (const label of [...upperLabels, ...lowerLabels]) label.material.opacity = on ? EXPLAIN.MAGNET_OPACITY : 1;
+}
+
 export function syncModel(dt = 0) {
   rotorGroup.rotation.x = rotor.phi;
+  syncMagnetGlass();
   crank.visible = state.drive !== 'wind';
   windRotor.visible = state.drive === 'wind';
   loopNormal.visible = !state.explain;

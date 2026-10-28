@@ -43,6 +43,9 @@ export const FRICTION_STOP = 0.15;                            // darunter (rad/s
 // mit kurzer Verzögerung (ELECTRON_TIME) – im Takt der Wechselspannung (Ladungstrennung ∝ Spannung).
 export const EXPLAIN = {
   WIRE_R: 0.6,                // Radius des Drahts im Erklärmodus
+  CORNER_R: 1.1,              // Ecken der Schleife im Erklärmodus: Biegeradius (Mitte des Drahts)
+  MAGNET_OPACITY: 0.3,        // Deckkraft des Magneten mit „Magnet durchsichtig“
+  OPACITY: 0.88,              // Deckkraft der Schleife im Erklärmodus (Elektronen bleiben sichtbar)
   OPEN_END: 1.4,              // offene Enden der Schleife: so weit von der Achse (ohne Schleifringe)
   ELECTRON_R: 0.42,
   ELECTRON_SHIFT: 120,        // in cm pro V/m

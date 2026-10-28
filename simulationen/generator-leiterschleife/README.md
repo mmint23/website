@@ -55,6 +55,12 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
   die Bürsten von unten (beim Abnehmen rückwärts, insgesamt 1,8 s).
   Die Pole „−“ und „+“ stehen dann über den Ringen – so sieht man, welcher Pol an welchem Ring liegt.
 - **Pause / Weiter, Zeitlupe, Festhalten** (dieselben Schalter wie rechts)
+- **Magnet durchsichtig:** Polblöcke und Joch werden durchsichtig (Deckkraft 0,3), so sieht man die Schleife auch
+  von oben oder unten durch den Magneten. Beim Verlassen des Erklärmodus wieder aus.
+- **Ansicht von rechts:** Blick genau entlang der Welle, von der Seite der Schleifringe. Die Schleife erscheint als
+  Strich, der sich dreht, die Längsseiten laufen auf einem Kreis – so sieht man gut, wann v senkrecht zu B steht
+  (größte Spannung) und wann parallel (keine Spannung). Nochmal gedrückt geht es zurück zur schrägen Ansicht;
+  „Ansicht zurücksetzen“ bleibt in der gewählten Ansicht. Dreht man die Ansicht selbst, ist der Knopf wieder aus.
 
 Das U-t-Diagramm bleibt einblendbar, so lässt sich vergleichen: F_L am größten, wenn U am größten ist.
 
@@ -70,8 +76,8 @@ lässt sich die Sinuskurve punktweise einzeichnen.
 **Seite 2** (Knopf „Seite 2: 3D-Modell“ in der Werkzeugleiste, `bilder/tafel2.svg`): dieselbe Aufteilung, oben
 aber Screenshots des 3D-Modells im Erklärmodus in den fünf Stellungen – nur mit dem einzelnen Elektron in
 Längsseite A (weißer Rand), ohne Feldlinien und Pfeile. So lassen sich B, v und die Lorentzkraft direkt an das
-Elektron zeichnen. Die Bilder stecken als JPEG in der SVG-Datei (Kamera schräg von links oben vorne, Elektron in der
-Mitte der Seite). Beide Seiten werden zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite.
+Elektron zeichnen. Die Bilder stecken als JPEG in der SVG-Datei: Nahaufnahmen der Schleife mit gerundeten Ecken (Elektron in der
+Mitte der Längsseite A; 90° von der anderen Seite aufgenommen; für 360° steht dasselbe Bild wie für 0°). Beide Seiten werden zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite.
 
 Zeichnen mit Apple Pencil, Finger oder Maus; über den
 Abgabe-Server können Schüler ihre Zeichnung an die Lehrkraft schicken (gemeinsamer Baustein der Website,

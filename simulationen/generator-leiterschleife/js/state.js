@@ -12,6 +12,8 @@ export const state = {
   hold: false,        // Schleife festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen
   paused: false,      // Bewegung angehalten (Pfeile zeigen den Augenblick)
   explain: false,     // Erklärmodus: Elektronen in der Schleife, einblendbare Größen
+  magnetGlass: false, // Erklärmodus: Magnet durchsichtig (Schleife auch von oben zu sehen)
+  sideView: false,    // Erklärmodus: Ansicht von rechts (entlang der Welle); aus, sobald man die Ansicht selbst dreht
   showB: false,       // Erklärmodus: Feldlinien, Pfeile v und F_L, Elektronen (zu Beginn aus)
   showV: false,
   showF: false,
