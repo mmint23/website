@@ -33,8 +33,9 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   Windpark“ und „Zum Generator-Modell“ (dort die Antwort; eigene Simulation).
 - **Windrad antippen** (jedes der fünf; mit der Maus wird es beim Darüberfahren hervorgehoben): Die Kamera
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator
-  (Schild „Generator“). Dargestellt ist ein Generator ohne Getriebe: Ein Ringgenerator sitzt direkt auf der
-  Rotorwelle, sein kupferfarbener Läufer dreht mit dem Rotor im fest stehenden Ständer. Die Ansicht
+  (Schild „Innenpolgenerator“). Dargestellt ist ein Generator ohne Getriebe wie in der Simulation
+  Innenpolgenerator: Auf der Rotorwelle dreht sich mit dem Rotor ein Stabmagnet (Polrad, Nordpol rot, Südpol grün),
+  außen stehen sechs Spulen mit Eisenkern auf einem Eisenring fest. Die Ansicht
   bleibt stehen, bis noch einmal getippt wird (Hinweis unten); dann wird ausgeblendet und die Simulation
   **Innenpolgenerator** geöffnet (eigene Seite; so sind getriebelose Windkraftgeneratoren gebaut: das Magnetfeld
   dreht sich innen, die Spulen stehen außen fest). Wind und Uhrzeit gehen in der Adresse mit; „Zurück zum

@@ -55,7 +55,7 @@ function updateUi() {
 // ---------------- Startansicht
 
 // Modell mit Kabeln und Messgerät (Bildebene, cm)
-const INHALT = { x: 7.5, y: -0.5, w: 62, h: 50 };
+const INHALT = { x: 7.5, y: -2, w: 62, h: 46 };
 let verschoben = false;   // hat jemand die Ansicht gedreht oder gezoomt? Dann beim Größenwechsel nicht neu einpassen
 
 // Freie Fläche zwischen Überschrift, Bedienfeld, Diagrammen und Hinweis. Neben den Diagrammen (Querformat) oder

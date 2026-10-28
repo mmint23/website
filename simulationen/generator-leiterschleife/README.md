@@ -11,7 +11,9 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
 
 ## Funktionen
 
-- Freischwebendes Modell: Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit rechteckiger
+- Modell auf einem Tisch (wie bei der Leiterschaukel, mit Schatten): Der Hufeisenmagnet steht mit dem unteren
+  Polblock auf dem Tisch, die Welle liegt in zwei Lagerböcken, das Messgerät steht daneben. Im Erklärmodus sind Tisch
+  und Lagerböcke ausgeblendet (dann lässt sich die Ansicht auch von unten drehen). Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit rechteckiger
   Leiterschleife, zwei Schleifringe mit Kohlebürsten (die Zuleitungen liegen sichtbar auf der Isolierhülse:
   von der vorderen Längsseite zu Ring 1, von der hinteren unter Ring 1 hindurch zu Ring 2, je mit Lötpunkt), Kabel zu einem Zeigermessgerät (Nullpunkt in der
   Mitte, Messbereiche ±3 / ±10 / ±30 mV).

@@ -9,7 +9,7 @@ import { applyMagnetPoles, setRingsInstant } from './modell.js';
 import { updateMeterFace, setMeterVisible } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { explainView, sideView } from './erklaerung.js';
-import { resetView as resetModelView, controls } from './szene.js';
+import { resetView as resetModelView, controls, setTable } from './szene.js';
 import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
 
@@ -73,6 +73,7 @@ function setExplain(on) {
   setRingsInstant();
   electrons.shift = 0;
   setMeterVisible(!on);
+  setTable(!on);
   resetView();
   updateUi();
 }

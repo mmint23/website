@@ -4,7 +4,7 @@
 // „vertauscht“ ist Spule 2 andersherum angeschlossen – die Kabel liegen dann sichtbar anders.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { METER } from './config.js';
+import { METER, TABLE_TOP } from './config.js';
 import { state } from './state.js';
 import { needle } from './physik.js';
 import { addMesh, makeLabel, formatNumber } from './hilfen.js';
@@ -14,7 +14,7 @@ import { terminals } from './modell.js';
 
 // Das Messgerät schwebt rechts neben dem Modell (verkleinert), leicht zum Betrachter gedreht
 const meter = new THREE.Group();
-meter.position.set(30, -14, 3);
+meter.position.set(30, TABLE_TOP - 0.8 * 0.55, 3);   // steht auf dem Tisch (Gehäuse beginnt 0,8 über dem Ursprung)
 meter.rotation.y = -0.3;
 meter.scale.setScalar(0.55);
 scene.add(meter);
@@ -177,13 +177,13 @@ const sag = (p, dy) => [p[0], p[1] + dy, p[2]];
 function toMeter(terminal, socketLocal, via) {
   const out = Math.sign(terminal.y);
   const t = terminal.toArray();
-  return [t, [t[0], t[1] + out * 2.5, t[2] + 1], ...via, sag(socketPoint(socketLocal, 5), -2), socketPoint(socketLocal, 2), socketPoint(socketLocal)];
+  return [t, [t[0], t[1] + out * 2.5, t[2] + 1], ...via, sag(socketPoint(socketLocal, 5), -1.2), socketPoint(socketLocal, 2), socketPoint(socketLocal)];
 }
 
 // Verbindung zwischen den Spulen: links außen um das Joch herum, unten zum Anschluss von Spule 2
 function bridge(from, to) {
   const f = from.toArray(), t = to.toArray();
-  return [f, [f[0], f[1] + 2.6, f[2] + 1], [-12, 19.5, 4.5], [-21.5, 0, 5], [-13, -19.5, 4.5], [t[0], t[1] - 2.8, t[2] + 1.2], t];
+  return [f, [f[0], f[1] + 2.6, f[2] + 1], [-12, 19.5, 4.5], [-21.5, 0, 5], [-13, -18.4, 4.5], [t[0], t[1] - 2.8, t[2] + 1.2], t];
 }
 
 let cables = [];
@@ -200,10 +200,10 @@ function layCables() {
     cables.push(makeCable(toMeter(s1.e, SOCKET_COM, [[6, 23, 7], [22, 12, 8]]), mat.cableBlack));
   } else if (!state.reversed) {
     cables.push(makeCable(bridge(s1.e, s2.e), mat.cableBlack));
-    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[10, -21, 5]]), mat.cableBlack));
+    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[10, -18.4, 5]]), mat.cableBlack));
   } else {
     cables.push(makeCable(bridge(s1.e, s2.a), mat.cableBlack));
-    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[2, -22, 7], [12, -21, 7]]), mat.cableBlack));
+    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[2, -18.6, 7], [12, -18.4, 7]]), mat.cableBlack));
   }
 }
 

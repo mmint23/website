@@ -1,10 +1,10 @@
 // ------------------------------------------------------------------
-// Generator-Modell (freischwebend): Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit
-// rechteckiger Leiterschleife, zwei Schleifringe mit Bürsten und eine Kurbel am linken Wellenende.
+// Generator-Modell auf dem Tisch: Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit
+// rechteckiger Leiterschleife in zwei Lagerböcken, zwei Schleifringe mit Bürsten und eine Kurbel am linken Wellenende.
 // Alles, was sich dreht, hängt in der Gruppe rotorGroup (Drehung um die x-Achse).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { LOOP, MAGNET, SHAFT, RINGS, CRANK, EXPLAIN, RINGS_ANIM } from './config.js';
+import { LOOP, MAGNET, SHAFT, RINGS, CRANK, EXPLAIN, RINGS_ANIM, TABLE_TOP } from './config.js';
 import { state } from './state.js';
 import { rotor } from './physik.js';
 import { addMesh, makeLabel, textTexture } from './hilfen.js';
@@ -66,6 +66,19 @@ export function applyMagnetPoles() {
 // ---------------- Welle (fest) und drehende Teile
 
 cylinderX(SHAFT.R, SHAFT.X_MAX - SHAFT.X_MIN, mat.steel, scene).position.x = (SHAFT.X_MIN + SHAFT.X_MAX) / 2;
+
+// Lagerböcke: Fußplatte auf dem Tisch, Pfosten bis zur Welle, Lagerauge um die Welle (im Erklärmodus ausgeblendet)
+export const standGroup = new THREE.Group();
+scene.add(standGroup);
+for (const x of SHAFT.BEARINGS) {
+  const foot = addMesh(new THREE.BoxGeometry(3.2, 0.6, 5), mat.stand, standGroup);
+  foot.position.set(x, TABLE_TOP + 0.3, 0);
+  const postH = -TABLE_TOP - 1.2;   // von der Fußplatte bis knapp unter die Welle (das Lagerauge deckt den Rest)
+  const post = addMesh(new THREE.BoxGeometry(0.9, postH, 1.6), mat.stand, standGroup);
+  post.position.set(x, TABLE_TOP + 0.6 + postH / 2, 0);
+  const eye = cylinderX(1.1, 1.0, mat.stand, standGroup);
+  eye.position.x = x;
+}
 
 export const rotorGroup = new THREE.Group();
 scene.add(rotorGroup);
@@ -252,6 +265,7 @@ function syncMagnetGlass() {
 
 export function syncModel(dt = 0) {
   rotorGroup.rotation.x = rotor.phi;
+  standGroup.visible = !state.explain;
   syncMagnetGlass();
   crank.visible = state.drive !== 'wind';
   windRotor.visible = state.drive === 'wind';

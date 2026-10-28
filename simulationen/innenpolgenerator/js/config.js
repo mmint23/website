@@ -26,6 +26,10 @@ export const COIL = {
 // Eisenjoch (Stator-Ring, nur bei zwei Spulen): verbindet die Kerne außen
 export const YOKE = { R_IN: 15.5, R_OUT: 17, DEPTH: 4 };
 
+// Tisch (Oberkante knapp unter dem Joch) und Ständer: senkrechte Platte hinter dem Polrad, hält Welle und Spulen
+export const TABLE_TOP = -(YOKE.R_OUT + 2.5);
+export const STAND = { Z: -5, DEPTH: 1, WIDTH: 4, TOP: 15.6 };   // Mitte der Platte in z, Dicke, Breite, Oberkante
+
 // Welle und Kurbel (vorne auf der Welle; der Arm steht 90° neben dem Nordpol, damit er den Magneten nicht verdeckt)
 export const SHAFT = { R: 0.5, Z_MIN: -4.5, Z_MAX: 5.9 };
 export const CRANK = { Z: 5.2, ARM: 5, KNOB_LEN: 3.5, OFFSET: Math.PI / 2 };

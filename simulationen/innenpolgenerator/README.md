@@ -3,6 +3,8 @@
 Interaktive 3D-Simulation für den Physikunterricht (Jahrgangsstufe 10, elektromagnetische Induktion; Tablet
 geeignet). In der Mitte dreht sich ein Magnet (Polrad), außen stehen Spulen fest – zu Beginn als Luftspulen, auf
 Knopfdruck mit Eisenkern. Mit Eisenkern sind echte Kraftwerksgeneratoren und viele Windkraftgeneratoren aufgebaut.
+Der Aufbau steht auf einem Tisch (mit Schatten): Ein schmaler Ständer hinter dem Polrad trägt die Welle und hält die
+Spulen an ihrem äußeren Flansch; das Messgerät steht daneben.
 
 Die Simulation setzt beim Induktionsgesetz in der Form an, die die Schüler kennen: **Ändert sich das Magnetfeld
 im Inneren einer Spule, wird an ihren Enden eine Spannung induziert.** Sie braucht keine Lorentzkraft (anders als
