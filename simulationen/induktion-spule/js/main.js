@@ -11,8 +11,10 @@ import { syncCables } from './kabel.js';
 import { updatePlot } from './diagramm.js';
 import { initUi, updateReadout } from './bedienfeld.js';
 import './ziehen.js';
+import { initLiveSteuerung, zuschauen, ansichtUebernehmen } from './live.js';
 
 initUi();
+initLiveSteuerung();   // Live-Steuerung (nur über den Abgabe-Server; sonst unsichtbar)
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
@@ -24,6 +26,9 @@ renderer.setAnimationLoop(() => {
   syncMeter();
   updateReadout();
   updatePlot();
-  controls.update();
+  // Live-Steuerung: Beim Zuschauen kommen Lagen und Ansicht vom steuernden Gerät (live.js); die Physik rechnet
+  // daraus nur Spannung, Zeiger und Diagramme
+  if (zuschauen()) ansichtUebernehmen();
+  else controls.update();
   renderer.render(scene, camera);
 });

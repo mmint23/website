@@ -72,6 +72,19 @@ ausgeblendet („Magnetfeld (Feldlinien)“ blendet sie ein) – gerechnet wird 
 - **Anzeigen:** B im Spuleninneren (Pfeil entlang der Achse, Länge ∝ mittlere Flussdichte), Diagramme B–t und U–t
   auf derselben Zeitachse (letzte 6 s; U in mV beim Messbereich ±1 mV).
 
+## Live-Steuerung: Schüler steuert am Beamer
+
+Über den Abgabe-Server (im Ordner `website/` `npm start`, Lehrerseite <http://localhost:8080/lehrer/induktion-spule>):
+Unten links steht das Feld **„Live-Steuerung“**. „Steuerung abgeben“ zeigt einen QR-Code; ein Schüler scannt ihn
+und bedient die Simulation auf seinem iPad – der Beamer zeigt genau das: Lage und Drehung von Magnet und Spule,
+Stecker (auch während des Ziehens), Messgerät und seine Lage, alle Einstellungen und die Ansicht. „Ich steuere“ /
+„Schüler steuert“ schaltet ohne neues Scannen hin und her, „Trennen“ beendet. Einzelheiten:
+[`gemeinsam/live/README.md`](../../gemeinsam/live/README.md).
+
+Technik (`js/live.js`): Übertragen werden Einstellungen und Lagen, geglättet beim Zuschauen; Spannung, Zeiger,
+Multimeter und Diagramme rechnet der Beamer daraus selbst, so passen sie genau zur Bewegung. Ohne Server (GitHub
+Pages) ist davon nichts zu sehen.
+
 ## Physikalisches Modell
 
 - Magnet: 10 cm lang, Querschnitt 2 cm × 2 cm, Flussdichte im Magneten 0,15 / 0,3 / 0,6 T. Spule: 300 / 600 /
@@ -114,6 +127,7 @@ js/feldlinien.js     Darstellung der Feldlinien je Stärke, Hervorhebung im Spul
 js/messgeraet.js     Zeigermessgerät, Multimeter mit Drehschalter und vier Buchsen
 js/kabel.js          Kabel mit Steckern: lose hängen, an Buchsen ziehen, einrasten
 js/ziehen.js         Maus und Finger: Stecker, Drehschalter, Magnet und Spule
+js/live.js           Live-Steuerung: Zustand senden bzw. übernehmen (gemeinsam/live/)
 js/diagramm.js       Diagramme B–t und U–t
 js/bedienfeld.js     Bedienfeld und Startansicht
 js/szene.js, js/materialien.js, js/hilfen.js   wie beim Innenpolgenerator

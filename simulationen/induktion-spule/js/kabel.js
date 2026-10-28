@@ -108,6 +108,18 @@ export function ausstecken() {
   multimeterRefresh();
 }
 
+// ---------------- Live-Steuerung: lose Stecker (Koordinaten der Spule) und ein gerade gezogener Stecker
+
+export const kabelDaten = () => ({
+  lose: Object.fromEntries(Object.entries(plugs).map(([farbe, p]) => [farbe, p.lose.toArray()])),
+  gezogen: gezogen && { farbe: gezogen.farbe, buchse: gezogen.buchse, punkt: gezogen.punkt.toArray() },
+});
+export function kabelUebernehmen(daten) {
+  for (const [farbe, p] of Object.entries(plugs)) if (daten?.lose?.[farbe]) p.lose.fromArray(daten.lose[farbe]);
+  gezogen = daten?.gezogen ? { ...daten.gezogen, punkt: new THREE.Vector3().fromArray(daten.gezogen.punkt) } : null;
+}
+export const steckerAbbrechen = () => { gezogen = null; };
+
 // ---------------- Ziehen (von ziehen.js aufgerufen; raycaster ist schon auf den Finger gerichtet)
 
 const ebene = new THREE.Plane(), treffer = new THREE.Vector3(), blick = new THREE.Vector3();

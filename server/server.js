@@ -449,7 +449,8 @@ server.on('upgrade', (req, socket) => {
   if (v) verbunden(v);
 });
 
-// Simulationen mit Zeichentafel (binden gemeinsam/tafel/ ein) – für die Übersicht beim Start
+// Simulationen mit Zeichentafel oder Live-Steuerung (binden gemeinsam/tafel/ bzw. gemeinsam/live/ ein) – für die
+// Übersicht beim Start
 function mitTafel() {
   const ordner = path.join(ROOT, 'simulationen');
   const liste = [];
@@ -457,7 +458,7 @@ function mitTafel() {
     const js = path.join(ordner, name, 'js');
     if (!fs.existsSync(js)) continue;
     const dateien = fs.readdirSync(js).filter(d => d.endsWith('.js'));
-    if (dateien.some(d => fs.readFileSync(path.join(js, d), 'utf8').includes('gemeinsam/tafel/'))) liste.push(name);
+    if (dateien.some(d => /gemeinsam\/(tafel|live)\//.test(fs.readFileSync(path.join(js, d), 'utf8')))) liste.push(name);
   }
   return liste;
 }
