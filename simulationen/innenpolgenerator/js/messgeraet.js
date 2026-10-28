@@ -173,17 +173,23 @@ function socketPoint(socketLocal, d = 0) {
 }
 const sag = (p, dy) => [p[0], p[1] + dy, p[2]];
 
-// Vom Anschluss erst ein Stück nach außen (oben bzw. unten), dann in weitem Bogen zur Buchse
-function toMeter(terminal, socketLocal, via) {
-  const out = Math.sign(terminal.y);
+// Erstes Stück vom Anschluss: nach außen (rechts bzw. links) und nach oben (A) bzw. unten (E), etwas nach vorne
+function weg(terminal) {
   const t = terminal.toArray();
-  return [t, [t[0], t[1] + out * 2.5, t[2] + 1], ...via, sag(socketPoint(socketLocal, 5), -1.2), socketPoint(socketLocal, 2), socketPoint(socketLocal)];
+  return [t, [t[0] + Math.sign(t[0]) * 2, t[1] + Math.sign(t[1]) * 2, t[2] + 1]];
 }
 
-// Verbindung zwischen den Spulen: links außen um das Joch herum, unten zum Anschluss von Spule 2
+// Vom Anschluss in weitem Bogen zur Buchse
+function toMeter(terminal, socketLocal, via) {
+  return [...weg(terminal), ...via, sag(socketPoint(socketLocal, 5), -1.2), socketPoint(socketLocal, 2), socketPoint(socketLocal)];
+}
+
+// Verbindung zwischen den Spulen: von E₁ (rechts unten) vorne unten um das Joch herum nach links, zu E₂ (links
+// unten) bzw. außen links hoch zu A₂ (links oben)
 function bridge(from, to) {
-  const f = from.toArray(), t = to.toArray();
-  return [f, [f[0], f[1] + 2.6, f[2] + 1], [-12, 19.5, 4.5], [-21.5, 0, 5], [-13, -18.4, 4.5], [t[0], t[1] - 2.8, t[2] + 1.2], t];
+  const unten = [[12, -14.5, 5.5], [0, -18.6, 5.5], [-12, -14.5, 5.5]];
+  const ende = weg(to).reverse();
+  return to.y < 0 ? [...weg(from), ...unten, ...ende] : [...weg(from), ...unten, [-20, -4, 5], ...ende];
 }
 
 let cables = [];
@@ -195,15 +201,17 @@ function layCables() {
     scene.remove(cable);
   }
   const [s1, s2] = terminals;
-  cables = [makeCable(toMeter(s1.a, SOCKET_PLUS, [[10, 21, 5], [26, 10, 6]]), mat.cableRed)];
+  cables = [makeCable(toMeter(s1.a, SOCKET_PLUS, [[21, 5, 6], [27, 0, 7]]), mat.cableRed)];
   if (state.coils === 1) {
-    cables.push(makeCable(toMeter(s1.e, SOCKET_COM, [[6, 23, 7], [22, 12, 8]]), mat.cableBlack));
+    cables.push(makeCable(toMeter(s1.e, SOCKET_COM, [[20, -7, 6]]), mat.cableBlack));
   } else if (!state.reversed) {
     cables.push(makeCable(bridge(s1.e, s2.e), mat.cableBlack));
-    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[10, -18.4, 5]]), mat.cableBlack));
+    // A₂ (links oben) über das Joch hinweg nach rechts zum Messgerät
+    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[-18, 9, 5], [-9, 18.8, 5], [9, 18.8, 5], [18.5, 9, 5.5], [23, -3, 7.5]]), mat.cableBlack));
   } else {
     cables.push(makeCable(bridge(s1.e, s2.a), mat.cableBlack));
-    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[2, -18.6, 7], [12, -18.4, 7]]), mat.cableBlack));
+    // E₂ (links unten) unter dem Joch hindurch (weiter vorne als die Verbindung) zum Messgerät
+    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[-14, -15, 8], [0, -19.5, 8.5], [14, -17, 8]]), mat.cableBlack));
   }
 }
 

@@ -1,12 +1,13 @@
 // ------------------------------------------------------------------
-// Innenpolgenerator auf einem Ständer auf dem Tisch: In der Mitte dreht sich ein Stabmagnet (Polrad) auf der Welle, außen
-// stehen Spulen fest – Spule 1 oben, bei zwei Spulen Spule 2 unten. Wahlweise mit Eisenkern (und bei zwei Spulen
-// mit Eisenjoch, Ring) oder als Luftspulen (state.iron).
+// Innenpolgenerator auf einem Ständer auf dem Tisch, waagrecht: In der Mitte dreht sich ein Stabmagnet (Polrad) auf
+// der Welle, außen stehen Spulen fest – Spule 1 rechts, bei zwei Spulen Spule 2 links. Wahlweise mit Eisenkern (und
+// bei zwei Spulen mit Eisenjoch, Ring) oder als Luftspulen (state.iron).
+// Gebaut ist der Generator „stehend“ (Spule 1 oben) in der Gruppe generator, die als Ganzes um GEN_ROT gedreht ist.
 // Was sich dreht, hängt in rotorGroup (Drehung um die z-Achse). Jede Spule hat zwei Anschlüsse: A (Anfang der
-// Wicklung, innen, rechts) und E (Ende der Wicklung, außen, links); dort beginnen die Kabel (messgeraet.js).
+// Wicklung, innen, oben) und E (Ende der Wicklung, außen, unten); dort beginnen die Kabel (messgeraet.js).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND } from './config.js';
+import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND, GEN_ROT } from './config.js';
 import { state } from './state.js';
 import { rotor, coilField } from './physik.js';
 import { addMesh, makeLabel, makeTextSprite } from './hilfen.js';
@@ -15,10 +16,16 @@ import { scene } from './szene.js';
 
 const B_COLOR = '#1565c0';
 
+// Der ganze Generator (Polrad, Spulen, Joch, Feldlinien), waagrecht gelegt
+export const generator = new THREE.Group();
+generator.rotation.z = GEN_ROT;
+scene.add(generator);
+generator.updateMatrixWorld(true);
+
 // ---------------- Polrad: Stabmagnet auf der Welle, Kurbel vorne
 
 export const rotorGroup = new THREE.Group();
-scene.add(rotorGroup);
+generator.add(rotorGroup);
 
 const shaft = addMesh(new THREE.CylinderGeometry(SHAFT.R, SHAFT.R, SHAFT.Z_MAX - SHAFT.Z_MIN, 24), mat.steel, rotorGroup);
 shaft.rotation.x = Math.PI / 2;
@@ -34,11 +41,12 @@ const magnetMat = { north: mat.north.clone(), south: mat.south.clone() };
   for (const [text, y] of [['N', half * 0.6], ['S', -half * 0.6]]) {
     const label = makeLabel(text, 2.6);
     label.position.set(0, y, MAGNET.DEPTH / 2 + 0.02);
+    label.rotation.z = -GEN_ROT;   // bei φ = 0 aufrecht lesbar
     rotorGroup.add(label);
   }
 }
 
-// Kurbel: Arm 90° neben dem Nordpol (nach links bei φ = 0), Griff nach vorne
+// Kurbel: Arm 90° neben dem Nordpol (nach oben bei φ = 0), Griff nach vorne
 const crank = new THREE.Group();
 crank.position.z = CRANK.Z;
 crank.rotation.z = CRANK.OFFSET;
@@ -109,7 +117,7 @@ const coils = [];
 COIL.THETA.forEach((theta, k) => {
   const group = new THREE.Group();
   group.rotation.z = theta;
-  scene.add(group);
+  generator.add(group);
   // eigene Materialien, damit Wicklung und Kern für den B-Pfeil durchsichtig werden können
   const copper = mat.copper.clone();
   const iron = mat.iron.clone();
@@ -117,20 +125,21 @@ COIL.THETA.forEach((theta, k) => {
 
   // Eisenkern mit Polschuh zum Magneten hin
   const shoeH = 0.9;
-  const shoe = addMesh(new THREE.BoxGeometry(5.4, shoeH, 3.8), iron, group);
+  const shoe = addMesh(new THREE.BoxGeometry(6.6, shoeH, 4.8), iron, group);
   shoe.position.y = COIL.CORE_IN + shoeH / 2;
   const coreLength = COIL.CORE_OUT - COIL.CORE_IN - shoeH;
   const core = addMesh(new THREE.CylinderGeometry(COIL.CORE_R, COIL.CORE_R, coreLength, 28), iron, group);
   core.position.y = COIL.CORE_IN + shoeH + coreLength / 2;
   // Spulenkörper (Flansche) und Wicklung
   for (const y of [COIL.WIND_IN - 0.45, COIL.WIND_OUT + 0.45]) {
-    addMesh(new THREE.CylinderGeometry(3.1, 3.1, 0.3, 32), insulator, group).position.y = y;
+    addMesh(new THREE.CylinderGeometry(COIL.WIND_R + 0.8, COIL.WIND_R + 0.8, 0.3, 32), insulator, group).position.y = y;
   }
-  addMesh(new THREE.TubeGeometry(new Wendel(), COIL.TURNS_SHOWN * 40, 0.24, 8, false), copper, group);
+  addMesh(new THREE.TubeGeometry(new Wendel(), COIL.TURNS_SHOWN * 40, 0.3, 8, false), copper, group);
   // Zuleitungen vom Anfang der Wicklung (innen) zu A und vom Ende (außen) zu E; Anschlüsse als Messingknöpfe
-  // mit Schild. Bei Spule 2 (gedreht um 180°) liegen A und E in Weltkoordinaten wieder rechts bzw. links.
-  const flip = Math.cos(theta) < 0 ? -1 : 1;
-  const tx = flip * COIL.TERMINAL_X, ty = COIL.TERMINAL_Y, tz = COIL.TERMINAL_Z;
+  // mit Schild. up: Richtung (±x in der Spule), die nach dem Drehen des Generators nach oben zeigt – A liegt bei
+  // beiden Spulen oben, E unten.
+  const up = Math.sin(theta + GEN_ROT) > 0 ? 1 : -1;
+  const tx = up * COIL.TERMINAL_X, ty = COIL.TERMINAL_Y, tz = COIL.TERMINAL_Z;
   const front = COIL.WIND_R + 0.55;
   wire([[0, COIL.WIND_IN, COIL.WIND_R], [0, COIL.WIND_IN, front], [tx, COIL.WIND_OUT + 0.2, front], [tx, ty, tz]], 0.16, copper, group);
   wire([[0, COIL.WIND_OUT, COIL.WIND_R], [-tx, COIL.WIND_OUT + 0.4, tz], [-tx, ty, tz]], 0.16, copper, group);
@@ -149,11 +158,11 @@ COIL.THETA.forEach((theta, k) => {
   group.add(arrow);
   const bLabel = makeTextSprite('B', 2.2, B_COLOR);
   group.add(bLabel);
-  bLabel.position.set(-4.4, arrow.position.y + 1.2, 0);
+  bLabel.position.set(up * (COIL.WIND_R + 2.4), arrow.position.y, 0);
   const name = makeTextSprite(`Spule ${k + 1}`, 1.8, '#4a5866');
   group.add(name);
-  name.position.set(6.6, (COIL.WIND_IN + COIL.WIND_OUT) / 2, 0);
-  // Halter: verbindet den äußeren Flansch der Spule mit dem Ständer hinten
+  name.position.set(-up * (COIL.WIND_R + 3.2), COIL.WIND_IN + 1, 0);
+  // Halter: verbindet den äußeren Flansch der Spule mit dem Balken des Ständers hinten
   const halterZ0 = -2.6, halterZ1 = STAND.Z + STAND.DEPTH / 2;
   const halter = addMesh(new THREE.BoxGeometry(1.6, 0.8, halterZ0 - halterZ1), mat.stand, group);
   halter.position.set(0, COIL.WIND_OUT + 0.45, (halterZ0 + halterZ1) / 2);
@@ -165,13 +174,22 @@ COIL.THETA.forEach((theta, k) => {
   });
 });
 
-// Ständer: Fußplatte auf dem Tisch, senkrechte Platte hinter dem Polrad bis über Spule 1, Lager für die Welle
+const bars = [];   // Balken des Ständers: rechte und linke Hälfte
+
+// Ständer: Fußplatte auf dem Tisch, Säule hinter dem Polrad bis zur Welle, darauf ein waagrechter Balken für beide
+// Spulen, Lager für die Welle
 {
   const foot = addMesh(new THREE.BoxGeometry(16, 1, 12), mat.stand, scene);
   foot.position.set(0, TABLE_TOP + 0.5, STAND.Z + 1.5);
-  const height = STAND.TOP - TABLE_TOP - 1;
-  const plate = addMesh(new THREE.BoxGeometry(STAND.WIDTH, height, STAND.DEPTH), mat.stand, scene);
-  plate.position.set(0, TABLE_TOP + 1 + height / 2, STAND.Z);
+  const height = STAND.BAR_H / 2 - TABLE_TOP - 1;
+  const post = addMesh(new THREE.BoxGeometry(STAND.WIDTH, height, STAND.DEPTH), mat.stand, scene);
+  post.position.set(0, TABLE_TOP + 1 + height / 2, STAND.Z);
+  // Balken in zwei Hälften: die linke (für Spule 2) nur bei zwei Spulen
+  for (const sign of [1, -1]) {
+    const bar = addMesh(new THREE.BoxGeometry(STAND.BAR_W / 2 + STAND.WIDTH / 2, STAND.BAR_H, STAND.DEPTH), mat.stand, scene);
+    bar.position.set(sign * STAND.BAR_W / 4 - sign * STAND.WIDTH / 4, 0, STAND.Z);
+    bars.push(bar);
+  }
   const lager = addMesh(new THREE.CylinderGeometry(1.3, 1.3, 0.8, 28), mat.stand, scene);
   lager.rotation.x = Math.PI / 2;
   lager.position.z = STAND.Z + STAND.DEPTH / 2 + 0.4;
@@ -183,7 +201,7 @@ const yoke = (() => {
   shape.holes.push(new THREE.Path().absarc(0, 0, YOKE.R_IN, 0, Math.PI * 2, true));
   const geometry = new THREE.ExtrudeGeometry(shape, { depth: YOKE.DEPTH, bevelEnabled: false, curveSegments: 72 });
   geometry.translate(0, 0, -YOKE.DEPTH / 2);
-  return addMesh(geometry, mat.yoke.clone(), scene);
+  return addMesh(geometry, mat.yoke.clone(), generator);
 })();
 
 // ---------------- Abgleich mit dem Zustand
@@ -201,7 +219,7 @@ let seeThrough = null, magnetSeeThrough = null;
 export function syncModel() {
   rotorGroup.rotation.z = rotor.phi;
   const two = state.coils === 2;
-  coils[1].group.visible = two;
+  coils[1].group.visible = bars[1].visible = two;
   yoke.visible = two && state.iron;   // Joch nur mit Eisenkernen
   for (const coil of coils) for (const part of coil.ironParts) part.visible = state.iron;
   // Spulen durchsichtig für den B-Pfeil und die Feldlinien; Magnet und Joch nur für die Feldlinien

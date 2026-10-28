@@ -3,7 +3,7 @@
 // Greift man daneben, dreht sich wie gewohnt die Ansicht.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { CRANK } from './config.js';
+import { CRANK, GEN_ROT } from './config.js';
 import { state } from './state.js';
 import { startCrank, crankTo, endCrank } from './physik.js';
 import { crankTargets } from './modell.js';
@@ -24,10 +24,10 @@ function setRay(event) {
 }
 
 // Stellung des Magneten, bei der der Kurbelgriff unter dem Finger liegt: Winkel des Punkts gegen den
-// Uhrzeigersinn von oben, abzüglich des Versatzes zwischen Kurbelarm und Nordpol
+// Uhrzeigersinn von oben, abzüglich des Versatzes zwischen Kurbelarm und Nordpol und der Drehung des Generators
 function angleAtPointer() {
   if (!raycaster.ray.intersectPlane(plane, hit)) return null;
-  return Math.atan2(-hit.x, hit.y) - CRANK.OFFSET;
+  return Math.atan2(-hit.x, hit.y) - CRANK.OFFSET - GEN_ROT;
 }
 
 const grabbed = () => raycaster.intersectObjects(crankTargets, false).length > 0;

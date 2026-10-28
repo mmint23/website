@@ -3,8 +3,8 @@
 Interaktive 3D-Simulation für den Physikunterricht (Jahrgangsstufe 10, elektromagnetische Induktion; Tablet
 geeignet). In der Mitte dreht sich ein Magnet (Polrad), außen stehen Spulen fest – zu Beginn als Luftspulen, auf
 Knopfdruck mit Eisenkern. Mit Eisenkern sind echte Kraftwerksgeneratoren und viele Windkraftgeneratoren aufgebaut.
-Der Aufbau steht auf einem Tisch (mit Schatten): Ein schmaler Ständer hinter dem Polrad trägt die Welle und hält die
-Spulen an ihrem äußeren Flansch; das Messgerät steht daneben.
+Der Aufbau liegt waagrecht und steht auf einem Tisch (mit Schatten): Eine Säule hinter dem Polrad trägt die Welle,
+ein waagrechter Balken darauf hält die Spulen an ihrem äußeren Flansch; das Messgerät steht daneben.
 
 Die Simulation setzt beim Induktionsgesetz in der Form an, die die Schüler kennen: **Ändert sich das Magnetfeld
 im Inneren einer Spule, wird an ihren Enden eine Spannung induziert.** Sie braucht keine Lorentzkraft (anders als
@@ -51,8 +51,8 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   Darunter „Magnet festhalten“ (mit Drehwinkel-Regler) und „Zeitlupe“.
 - **Aufbau**
   - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh, bei zwei Spulen mit Joch).
-  - **1 Spule** (oben): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
-  - **2 Spulen**: zweite Spule unten, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator
+  - **1 Spule** (rechts): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
+  - **2 Spulen**: zweite Spule links, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator
     eines echten Generators. Die Spulen sind in Reihe geschaltet; zwei Möglichkeiten zum Verbinden:
     **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
     **Ende – Anfang** (E₁ mit A₂): Spannungen heben sich auf, das Messgerät zeigt nichts.
@@ -75,7 +75,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 ## Physikalisches Modell
 
-- Magnet: Drehwinkel φ gegen den Uhrzeigersinn von vorne, φ = 0: Nordpol zeigt auf Spule 1 (oben).
+- Magnet: Drehwinkel φ gegen den Uhrzeigersinn von vorne, φ = 0: Nordpol zeigt auf Spule 1 (rechts).
 - Flussdichte im Kern einer Spule an der Lage θ (Spule 1: 0°, Spule 2: 180°), gezählt nach außen:
   **B = B_max · cos(φ − θ)** mit B_max = 100 mT. Das ist eine Vereinfachung – eine echte Feldberechnung wäre
   aufwendig und für das Verständnis nicht nötig. Echte Generatoren formen ihre Polschuhe aber genau so, dass B

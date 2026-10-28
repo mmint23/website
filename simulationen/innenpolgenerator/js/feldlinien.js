@@ -12,13 +12,14 @@ import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { state } from './state.js';
 import { rotor } from './physik.js';
 import { linien, imInneren } from './feldlinienModell.js';
-import { renderer, scene } from './szene.js';
+import { renderer } from './szene.js';
+import { generator } from './modell.js';
 
 const FARBE = new THREE.Color('#5c8fd6');        // Feldlinie außerhalb der Spulen
 const INNEN = new THREE.Color('#aa00ff');        // ... im Inneren einer Spule (violett: hebt sich vom Kupfer ab)
 
 const feldGroup = new THREE.Group();
-scene.add(feldGroup);
+generator.add(feldGroup);   // dreht mit dem (waagrecht gelegten) Generator
 // undurchsichtig: wird vor den (dann durchsichtigen) Spulen und dem Magneten gezeichnet und scheint durch sie hindurch
 const material = new LineMaterial({ linewidth: 2.6, vertexColors: true });
 const pfeilNormal = new THREE.MeshBasicMaterial({ color: FARBE });
