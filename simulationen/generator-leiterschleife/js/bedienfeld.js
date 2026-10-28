@@ -8,7 +8,7 @@ import { endCrank, setHold, holdTo, rotor, electrons, park } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
 import { updateMeterFace, setMeterVisible } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
-import { explainView } from './erklaerung.js';
+import { explainView, sideView } from './erklaerung.js';
 import { resetView as resetModelView, controls } from './szene.js';
 import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
@@ -20,9 +20,9 @@ const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'sho
   ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'],
   ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
 
-// Startansicht: im Erklärmodus nah an der Schleife
+// Startansicht: im Erklärmodus nah an der Schleife (schräg von vorne oder von rechts)
 const resetView = () => {
-  if (state.explain) explainView(controls);
+  if (state.explain) (state.sideView ? sideView : explainView)(controls);
   else resetModelView();
 };
 
@@ -33,6 +33,7 @@ function updateUi() {
   $('meterSection').hidden = state.explain;
   for (const [id, key] of TOGGLES) $(id).setAttribute('aria-pressed', String(state[key]));
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
+  $('sideViewBtn').setAttribute('aria-pressed', String(state.sideView));
   $('holdBox').hidden = !state.hold;
   for (const [id, drive] of DRIVES) {
     $(id).classList.toggle('active', state.drive === drive);
@@ -68,6 +69,7 @@ function setExplain(on) {
   endCrank();
   state.explain = on;
   state.paused = false;
+  state.sideView = false;
   if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showManyElectrons: false, showRings: false });
   setRingsInstant();
   electrons.shift = 0;
@@ -152,6 +154,17 @@ export function initUi() {
   window.addEventListener('pointerup', () => { if (document.activeElement !== holdSlider) holdSliderActive = false; });
   $('slowCheck').addEventListener('change', e => { state.slowMotion = e.target.checked; updateUi(); });
   $('resetView').addEventListener('click', resetView);
+  // Ansicht von rechts ein/aus; dreht man die Ansicht selbst, ist sie nicht mehr „von rechts“
+  $('sideViewBtn').addEventListener('click', () => {
+    state.sideView = !state.sideView;
+    resetView();
+    updateUi();
+  });
+  controls.addEventListener('start', () => {
+    if (!state.sideView) return;
+    state.sideView = false;
+    updateUi();
+  });
   onCrankGrab(updateUi);
 
   applyMagnetPoles();

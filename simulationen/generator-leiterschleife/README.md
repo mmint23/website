@@ -55,6 +55,10 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
   die Bürsten von unten (beim Abnehmen rückwärts, insgesamt 1,8 s).
   Die Pole „−“ und „+“ stehen dann über den Ringen – so sieht man, welcher Pol an welchem Ring liegt.
 - **Pause / Weiter, Zeitlupe, Festhalten** (dieselben Schalter wie rechts)
+- **Ansicht von rechts:** Blick genau entlang der Welle, von der Seite der Schleifringe. Die Schleife erscheint als
+  Strich, der sich dreht, die Längsseiten laufen auf einem Kreis – so sieht man gut, wann v senkrecht zu B steht
+  (größte Spannung) und wann parallel (keine Spannung). Nochmal gedrückt geht es zurück zur schrägen Ansicht;
+  „Ansicht zurücksetzen“ bleibt in der gewählten Ansicht. Dreht man die Ansicht selbst, ist der Knopf wieder aus.
 
 Das U-t-Diagramm bleibt einblendbar, so lässt sich vergleichen: F_L am größten, wenn U am größten ist.
 

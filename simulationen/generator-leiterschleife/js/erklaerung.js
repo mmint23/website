@@ -194,3 +194,10 @@ export function explainView(controls) {
   camera.position.set(-42, 14, 46);
   controls.target.set(2, -2, 0);
 }
+
+// Ansicht von rechts: genau entlang der Welle (von der Seite der Schleifringe). Die Schleife erscheint als Strich,
+// der sich dreht; die Längsseiten laufen auf einem Kreis, B zeigt senkrecht, v tangential an diesen Kreis.
+export function sideView(controls) {
+  camera.position.set(52, -1, 0);
+  controls.target.set(0, -1, 0);
+}
