@@ -113,7 +113,24 @@ function stepNeedle(dt) {
 // s = 0 am offenen Ende A, s = PATH_LENGTH am offenen Ende B: Ende A → Seite A → Querseite → Seite B → Ende B
 
 const L2 = LOOP.LENGTH / 2, R = LOOP.RADIUS, OPEN = EXPLAIN.OPEN_END;
-const PATH = [[L2, OPEN], [L2, R], [-L2, R], [-L2, -R], [L2, -R], [L2, -OPEN]];   // Eckpunkte (x, z)
+// Eckpunkte (x, z); die vier Ecken sind mit dem Biegeradius CORNER_R gerundet (wie der Draht in modell.js), damit die
+// Elektronen auch in den Ecken mitten im Draht laufen
+const ECKEN = [[L2, OPEN], [L2, R], [-L2, R], [-L2, -R], [L2, -R], [L2, -OPEN]];
+export const PATH = (() => {
+  const cr = EXPLAIN.CORNER_R, punkte = [ECKEN[0]], STUECKE = 10;
+  for (let i = 1; i < ECKEN.length - 1; i++) {
+    const [px, pz] = ECKEN[i];
+    const einheit = ([x, z]) => { const l = Math.hypot(x - px, z - pz); return [(x - px) / l, (z - pz) / l]; };
+    const u = einheit(ECKEN[i - 1]), w = einheit(ECKEN[i + 1]);
+    const cx = px + cr * (u[0] + w[0]), cz = pz + cr * (u[1] + w[1]);   // Mittelpunkt des Bogens (rechte Winkel)
+    for (let k = 0; k <= STUECKE; k++) {
+      const t = k / STUECKE * Math.PI / 2;
+      punkte.push([cx - cr * (w[0] * Math.cos(t) + u[0] * Math.sin(t)), cz - cr * (w[1] * Math.cos(t) + u[1] * Math.sin(t))]);
+    }
+  }
+  punkte.push(ECKEN.at(-1));
+  return punkte;
+})();
 const PATH_PARTS = PATH.slice(1).map(([x, z], i) => Math.hypot(x - PATH[i][0], z - PATH[i][1]));
 export const PATH_LENGTH = PATH_PARTS.reduce((a, b) => a + b, 0);
 
@@ -129,8 +146,17 @@ export function pathPoint(s) {
   }
 }
 
-// Lage des einzelnen Elektrons in Ruhe: Mitte der Längsseite A
-export const SINGLE_REST = PATH_PARTS[0] + PATH_PARTS[1] / 2;
+// Lage des einzelnen Elektrons in Ruhe: Mitte der Längsseite A (von Ende A aus: Zuleitung bis zur Ecke, halber
+// Bogen, halbe gerade Länge der Längsseite – zusammen genau x = 0)
+export const SINGLE_REST = (() => {
+  let s = 0;
+  for (let i = 0; i < PATH_PARTS.length; i++) {
+    const [x0, z0] = PATH[i], [x1] = PATH[i + 1];
+    if (z0 === R && x1 <= 0 && x0 >= 0) return s + (x0 / (x0 - x1)) * PATH_PARTS[i];
+    s += PATH_PARTS[i];
+  }
+  return s;
+})();
 
 // Viele Elektronen: gleichmäßig verteilt (zugleich Plätze der Atomrümpfe)
 export function manyRestPositions() {
