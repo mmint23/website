@@ -4,9 +4,9 @@
 // Alles, was sich dreht, hängt in der Gruppe rotorGroup (Drehung um die x-Achse).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { LOOP, MAGNET, SHAFT, RINGS, CRANK, EXPLAIN, RINGS_ANIM, TABLE_TOP } from './config.js';
+import { LOOP, MAGNET, SHAFT, RINGS, CRANK, EXPLAIN, RINGS_ANIM, TABLE_TOP, COIL } from './config.js';
 import { state } from './state.js';
-import { rotor } from './physik.js';
+import { rotor, spule } from './physik.js';
 import { addMesh, makeLabel, textTexture } from './hilfen.js';
 import { PATH } from './physik.js';
 import { mat } from './materialien.js';
@@ -90,12 +90,12 @@ scene.add(rotorGroup);
 // mit offenen Enden (A vorne, B hinten); mit dem Knopf „Schleifringe“ kommen Zuleitungen zu den Ringen dazu.
 const L2 = LOOP.LENGTH / 2, R = LOOP.RADIUS, OPEN = EXPLAIN.OPEN_END;
 
-// Zuleitung vom Drahtende (Abstand fromZ von der Achse, vorne sign = +1 bzw. hinten −1) zum Schleifring:
-// erst zur Welle, dann sichtbar auf der Isolierhülse entlang bis an die Stirnseite des Rings (Lötpunkt).
+// Zuleitung vom Drahtende (Abstand fromZ von der Achse, vorne sign = +1 bzw. hinten −1, Höhe fromY bei der Spule) zum
+// Schleifring: erst zur Welle, dann sichtbar auf der Isolierhülse entlang bis an die Stirnseite des Rings (Lötpunkt).
 // Die Zuleitung zu Ring 2 läuft dabei unter Ring 1 hindurch.
-function lead(sign, fromZ, ringIndex, radius, parent) {
+function lead(sign, fromZ, ringIndex, radius, parent, fromY = 0) {
   const r = RINGS.LEAD_R, xEnd = RINGS.X[ringIndex] - RINGS.WIDTH / 2;
-  const mesh = wire([[L2, 0, sign * fromZ], [L2 + 0.4, 0, sign * r], [xEnd, 0, sign * r]], radius, mat.copper, parent);
+  const mesh = wire([[L2, fromY, sign * fromZ], [L2 + 0.4, 0, sign * r], [xEnd, 0, sign * r]], radius, mat.copper, parent);
   const solder = addMesh(new THREE.SphereGeometry(0.28, 14, 10), mat.brass, parent);
   solder.position.set(xEnd, 0, sign * r);
   return { mesh, solder };
@@ -109,8 +109,8 @@ function buildLoop(radius, material) {
   return group;
 }
 const loopNormal = buildLoop(LOOP.WIRE_R, mat.copper);
-lead(1, R, 0, LOOP.WIRE_R * 0.6, loopNormal);     // Seite A → Ring 1
-lead(-1, R, 1, LOOP.WIRE_R * 0.6, loopNormal);    // Seite B → Ring 2
+lead(1, R, 0, LOOP.WIRE_R * 0.6, loopNormal);                        // Seite A → Ring 1
+const loopLeadB = lead(-1, R, 1, LOOP.WIRE_R * 0.6, loopNormal);     // Seite B → Ring 2 (beim Umbau zur Spule ab)
 const glassCopper = new THREE.MeshStandardMaterial({
   color: 0xd9874a, metalness: 0.3, roughness: 0.3, transparent: true, opacity: EXPLAIN.OPACITY, depthWrite: false,
 });
@@ -126,15 +126,60 @@ loopExplain.visible = false;
   }
   addMesh(new THREE.TubeGeometry(path, 12 * PATH.length, EXPLAIN.WIRE_R, 24, false), glassCopper, loopExplain);
 }
-for (const sign of [1, -1]) {   // offene Enden: halbe Kugel als Kappe, nach innen (zur Welle) gewölbt
+const loopExplainTube = loopExplain.children[0];
+const loopExplainCaps = [1, -1].map(sign => {   // offene Enden: halbe Kugel als Kappe, nach innen (zur Welle) gewölbt
   const cap = addMesh(new THREE.SphereGeometry(EXPLAIN.WIRE_R, 24, 12, 0, 2 * Math.PI, 0, Math.PI / 2), glassCopper, loopExplain);
   cap.position.set(L2, 0, sign * OPEN);
   cap.rotation.x = -sign * Math.PI / 2;
-}
+  return cap;
+});
 // Zuleitungen von den offenen Enden zu den Schleifringen (Ende A → Ring 1, Ende B → Ring 2)
 const explainLeads = new THREE.Group();
 rotorGroup.add(explainLeads);
 const explainLeadParts = [lead(1, OPEN, 0, LOOP.WIRE_R * 0.7, explainLeads), lead(-1, OPEN, 1, LOOP.WIRE_R * 0.7, explainLeads)];
+// ---------------- Spule statt Leiterschleife (Knopf): Die Leiterschleife ist die erste Windung; weitere Windungen
+// liegen im Abstand DY darüber (quer zur Ebene der Schleife) und sind hintereinander verbunden: Vom Ende der Seite B
+// geht es rechts schräg hinauf zur nächsten Windung (Seite A → Querseite → Seite B) usw. Nur Ende A (erste Windung)
+// und Ende B (letzte Windung) führen zu den Schleifringen. Umbau (spule.fortschritt 0 … 1, physik.js): zuerst wird
+// die Zuleitung von Ende B der Schleife abgebaut, dann wickeln sich die weiteren Windungen, zuletzt wächst die
+// Zuleitung vom Ende der letzten Windung zum Ring – beim Abbau rückwärts.
+const OBEN = dy => (COIL.TURNS - 1) * dy;   // Höhe der letzten Windung über der Schleife
+function weitereWindungen(dy, start, offen) {
+  const punkte = [start];
+  for (let i = 1; i < COIL.TURNS; i++) {
+    const y = i * dy;
+    punkte.push([L2, y, R], [-L2, y, R], [-L2, y, -R], [L2, y, -R]);
+  }
+  if (offen) punkte.push([L2, OBEN(dy), -OPEN]);
+  return punkte;
+}
+const coilNormal = new THREE.Group();
+coilNormal.visible = false;
+rotorGroup.add(coilNormal);
+const coilWire = wire(weitereWindungen(COIL.DY, [L2, 0, -R], false), LOOP.WIRE_R, mat.copper, coilNormal);
+const coilLeadB = lead(-1, R, 1, LOOP.WIRE_R * 0.6, coilNormal, OBEN(COIL.DY));
+const coilExplain = new THREE.Group();
+coilExplain.visible = false;
+rotorGroup.add(coilExplain);
+// im Erklärmodus beginnt es am Ende des gerundeten Ecks der Schleife (dort endet das Rohr ohne seinen Endstummel)
+const coilExplainWire = wire(weitereWindungen(COIL.EXPLAIN_DY, [L2, 0, -R + EXPLAIN.CORNER_R], true), COIL.EXPLAIN_WIRE_R, glassCopper, coilExplain);
+const coilExplainCap = addMesh(new THREE.SphereGeometry(COIL.EXPLAIN_WIRE_R, 20, 10, 0, 2 * Math.PI, 0, Math.PI / 2), glassCopper, coilExplain);
+coilExplainCap.position.set(L2, OBEN(COIL.EXPLAIN_DY), -OPEN);
+coilExplainCap.rotation.x = Math.PI / 2;
+const coilExplainLeads = new THREE.Group();
+rotorGroup.add(coilExplainLeads);
+const coilExplainLeadB = lead(-1, OPEN, 1, LOOP.WIRE_R * 0.7, coilExplainLeads, OBEN(COIL.EXPLAIN_DY));
+// Endstummel der Schleife im Erklärmodus (letztes gerades Stück bis zum offenen Ende B) als Anteil des Rohrs
+const STUMMEL = Math.hypot(PATH.at(-1)[0] - PATH.at(-2)[0], PATH.at(-1)[1] - PATH.at(-2)[1]);
+const PATH_LAENGE = PATH.slice(1).reduce((s, [x, z], i) => s + Math.hypot(x - PATH[i][0], z - PATH[i][1]), 0);
+
+// Rohr nur bis zum Anteil anteil (0 … 1) zeichnen
+function zeichneBis(mesh, anteil) {
+  const count = mesh.geometry.index.count;
+  mesh.geometry.setDrawRange(0, Math.ceil(anteil * count / 6) * 6);
+  mesh.visible = anteil > 0;
+}
+
 const hub = cylinderX(SHAFT.R + 0.5, 1.4, mat.insulator, rotorGroup);
 hub.position.x = -L2;
 // Schleifringe auf einer Isolierhülse, dazu das Isolierstück, an dem die Zuleitungen an der Welle anliegen
@@ -271,6 +316,19 @@ export function syncModel(dt = 0) {
   windRotor.visible = state.drive === 'wind';
   loopNormal.visible = !state.explain;
   loopExplain.visible = state.explain;
+  // Umbau Leiterschleife ↔ Spule: Zuleitung B ab (ab), Windungen wickeln (wickeln), Zuleitung B an (an)
+  const f = spule.fortschritt, ab = part(f, 0, 0.15), wickeln = part(f, 0.15, 0.85), an = part(f, 0.85, 1);
+  coilNormal.visible = !state.explain && f > 0;
+  coilExplain.visible = state.explain && f > 0;
+  zeichneBis(loopLeadB.mesh, 1 - ab);
+  loopLeadB.solder.visible = ab === 0;
+  zeichneBis(loopExplainTube, 1 - ab * STUMMEL / PATH_LAENGE);
+  loopExplainCaps[1].visible = ab === 0;
+  zeichneBis(coilWire, wickeln);
+  zeichneBis(coilExplainWire, wickeln);
+  coilExplainCap.visible = wickeln >= 1;
+  zeichneBis(coilLeadB.mesh, an);
+  coilLeadB.solder.visible = an >= 1;
   // Schleifringe und Bürsten: im Modell immer, im Erklärmodus erst mit dem Knopf „Schleifringe“ (animiert)
   const target = !state.explain || state.showRings ? 1 : 0;
   if (!state.explain) ringsProgress = 1;
@@ -280,10 +338,12 @@ export function syncModel(dt = 0) {
   ringsGroup.visible = p > 0;
   ringsGroup.position.x = (1 - slide) * RING_SLIDE;
   explainLeads.visible = state.explain && grow > 0;
-  for (const { mesh, solder } of explainLeadParts) {
-    const count = mesh.geometry.index.count;
-    mesh.geometry.setDrawRange(0, Math.ceil(grow * count / 6) * 6);
-    solder.visible = grow >= 1;
+  coilExplainLeads.visible = state.explain && grow > 0 && f > 0;
+  // Zuleitungen im Erklärmodus: wachsen mit den Schleifringen; die zu Ende B je nach Umbau an der Schleife bzw. Spule
+  for (const [{ mesh, solder }, anteil] of [[explainLeadParts[0], grow], [explainLeadParts[1], grow * (1 - ab)],
+    [coilExplainLeadB, grow * an]]) {
+    zeichneBis(mesh, anteil);
+    solder.visible = anteil >= 1;
   }
   brushGroup.visible = brushes > 0;
   brushGroup.position.y = -(1 - brushes) * BRUSH_DROP;

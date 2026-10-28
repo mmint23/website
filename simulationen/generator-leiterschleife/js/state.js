@@ -6,6 +6,7 @@ export const state = {
   drive: 'speed',     // Antrieb: 'speed' (Drehzahl-Regler), 'crank' (Handkurbel) oder 'wind' (Rotor wie im Windpark)
   speed: 0.5,         // Drehzahl-Regler in Umdrehungen pro Sekunde (vorwärts positiv)
   northUp: true,      // Nordpol oben, Südpol unten
+  coil: false,        // Spule mit COIL.TURNS Windungen statt einer einzelnen Leiterschleife
   range: 3,           // Messbereich ±3 mV
   slowMotion: false,
   showPlot: false,    // U-t-Diagramm einblenden (per Knopf, rechts und im Erklärmodus)

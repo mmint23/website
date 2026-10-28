@@ -16,7 +16,7 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
   und Lagerböcke ausgeblendet (dann lässt sich die Ansicht auch von unten drehen). Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit rechteckiger
   Leiterschleife, zwei Schleifringe mit Kohlebürsten (die Zuleitungen liegen sichtbar auf der Isolierhülse:
   von der vorderen Längsseite zu Ring 1, von der hinteren unter Ring 1 hindurch zu Ring 2, je mit Lötpunkt), Kabel zu einem Zeigermessgerät (Nullpunkt in der
-  Mitte, Messbereiche ±3 / ±10 / ±30 mV).
+  Mitte, Messbereiche ±3 / ±10 / ±15 / ±30 mV).
 - **Antrieb:**
   - **Wind:** Statt der Kurbel sitzt ein kleiner Rotor am Wellenende. Rotor und Schleife drehen auf derselben
     Welle (Generator ohne Getriebe), Wind-Regler auch hier. **Didaktisch vereinfacht:** Ab 3 m/s dreht der Rotor
@@ -44,6 +44,26 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
 - Beobachtung: Bei langsamer Drehung pendelt der Zeiger mit. Ab etwa 2 Umdrehungen pro Sekunde kann der
   träge Zeiger (Eigenfrequenz 1,2 Hz) nicht mehr folgen und zittert nur um die Null – wie bei einem echten
   Demonstrations-Messgerät. Das Diagramm zeigt die Wechselspannung trotzdem.
+
+## Spule statt Leiterschleife
+
+Der Knopf **„Spule mit 5 Windungen“** (im Bedienfeld unter „Leiter“ und im Erklärmodus) ersetzt die Leiterschleife
+durch eine Spule: Die Leiterschleife ist die erste Windung, vier weitere liegen darüber (quer zur Ebene der Schleife),
+alle hintereinander verbunden – nur Anfang und Ende führen zu den Schleifringen. Die Spannung wird fünfmal so groß
+(U = −N · B · A · ω · sin φ).
+
+Der Umbau ist zu sehen (3 s): Die Zuleitung von Ende B zum Schleifring wird abgebaut, dann wickelt sich der Draht
+Windung für Windung weiter, zuletzt wächst vom Ende der letzten Windung die neue Zuleitung zum Ring; beim Zurück auf
+die Leiterschleife rückwärts. Solange Ende B nicht angeschlossen ist, ist der Kreis offen – keine Spannung (im
+Diagramm eine kurze Nulllinie). Der Umbau läuft auch in der Pause.
+
+- Beim Umschalten bleiben Messbereich und U-Achse, wie sie sind, und die Kurve von davor bleibt im Diagramm
+  stehen – so sieht man im selben Maßstab, dass die Spannung mit der Windungszahl wächst. Dafür gibt es den
+  Messbereich **±15 mV**: Bei 0,5 U/s liegt die Leiterschleife (etwa 2,5 mV) bei rund 17 %, die Spule (etwa
+  12,6 mV) bei rund 84 % der U-Achse. (Im Bereich ±3 mV schlägt die Spule über den Anschlag.)
+- Im Erklärmodus: dünnere, durchsichtige Windungen mit größerem Abstand; Elektron(en) und Pfeile v, F_L bleiben auf
+  der ersten Windung (der Leiterschleife). „Viele e⁻“ gibt es nur bei der Leiterschleife
+  (die Kette läuft von Ende zu Ende).
 
 ## Erklärmodus
 
