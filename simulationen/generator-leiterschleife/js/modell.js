@@ -235,8 +235,24 @@ export function setRingsInstant() {
   ringsProgress = !state.explain || state.showRings ? 1 : 0;
 }
 
+// Magnet durchsichtig (nur im Erklärmodus): Polblöcke, Joch und Beschriftungen
+let magnetGlass = null;
+function syncMagnetGlass() {
+  const on = state.explain && state.magnetGlass;
+  if (on === magnetGlass) return;
+  magnetGlass = on;
+  for (const material of [mat.north, mat.south, mat.yoke]) {
+    material.transparent = on;
+    material.opacity = on ? EXPLAIN.MAGNET_OPACITY : 1;
+    material.depthWrite = !on;
+    material.needsUpdate = true;
+  }
+  for (const label of [...upperLabels, ...lowerLabels]) label.material.opacity = on ? EXPLAIN.MAGNET_OPACITY : 1;
+}
+
 export function syncModel(dt = 0) {
   rotorGroup.rotation.x = rotor.phi;
+  syncMagnetGlass();
   crank.visible = state.drive !== 'wind';
   windRotor.visible = state.drive === 'wind';
   loopNormal.visible = !state.explain;

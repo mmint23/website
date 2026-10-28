@@ -17,7 +17,7 @@ const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
 const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'],
-  ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'],
+  ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'],
   ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
 
 // Startansicht: im Erklärmodus nah an der Schleife (schräg von vorne oder von rechts)
@@ -70,7 +70,7 @@ function setExplain(on) {
   state.explain = on;
   state.paused = false;
   state.sideView = false;
-  if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showManyElectrons: false, showRings: false });
+  if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showManyElectrons: false, showRings: false, magnetGlass: false });
   setRingsInstant();
   electrons.shift = 0;
   setMeterVisible(!on);
