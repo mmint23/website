@@ -9,7 +9,8 @@
 // dazukommen kann.
 // ------------------------------------------------------------------
 import {
-  TURBINE, LOOP, B_FIELD, SIDE_LENGTH, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER, EXPLAIN,
+  TURBINE, LOOP, B_FIELD, SIDE_LENGTH, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER,
+  EXPLAIN, COIL,
 } from './config.js';
 import { state } from './state.js';
 
@@ -54,9 +55,22 @@ export function sideEmf(side) {
   return SIDE_LENGTH * (v.y * B.z - v.z * B.y) * sideDirection(side);
 }
 
+// Umbau Leiterschleife ↔ Spule: fortschritt 0 (Leiterschleife) … 1 (Spule), folgt state.coil in COIL.ANIM Sekunden
+// (Darstellung: modell.js). Während des Umbaus ist Ende B nicht angeschlossen – der Kreis ist offen.
+export const spule = { fortschritt: 0 };
+export function stepSpule(dt) {
+  const ziel = state.coil ? 1 : 0;
+  spule.fortschritt += Math.sign(ziel - spule.fortschritt) * Math.min(Math.abs(ziel - spule.fortschritt), dt / COIL.ANIM);
+}
+
+// Wirksame Windungszahl: 1 (Leiterschleife) oder COIL.TURNS (Spule), hintereinander geschaltet; während des Umbaus 0
+export const windungen = () => (spule.fortschritt <= 0 ? 1 : spule.fortschritt >= 1 ? COIL.TURNS : 0);
+
 // Induktionsspannung in Laufrichtung (Ende A → Ende B) in V; die Querseiten tragen nichts bei
-// (dort steht v × B senkrecht zum Draht). Positiv: positive Ladungen werden zu Ring 2 geschoben.
-export const emf = () => sideEmf(0) + sideEmf(1);
+// (dort steht v × B senkrecht zum Draht). Bei der Spule addieren sich die Spannungen aller Windungen.
+// Positiv: positive Ladungen werden zu Ring 2 geschoben.
+export const emf = () => windungen() * (sideEmf(0) + sideEmf(1));
+
 
 // Spannung zwischen den Schleifringen U = φ(Ring 1) − φ(Ring 2) in V (offener Kreis): Die Umlaufspannung
 // schiebt positive Ladungen zu Ende B (Ring 2), also U = −emf. Positiv: Ring 1 (rotes Kabel) ist Pluspol.
@@ -158,6 +172,9 @@ export const SINGLE_REST = (() => {
   return s;
 })();
 
+// Zweites Elektron („2 e⁻“) in Ruhe: Mitte der Längsseite B – der Weg ist spiegelbildlich, also gleich weit vom Ende B
+export const SECOND_REST = PATH_LENGTH - SINGLE_REST;
+
 // Viele Elektronen: gleichmäßig verteilt (zugleich Plätze der Atomrümpfe)
 export function manyRestPositions() {
   const n = EXPLAIN.MANY_COUNT, m = EXPLAIN.MANY_MARGIN;
@@ -253,4 +270,5 @@ export function resetPhysics() {
   electrons.shift = 0;
   Object.assign(needle, { pos: 0, vel: 0 });
   clock.t = 0;
+  spule.fortschritt = state.coil ? 1 : 0;
 }

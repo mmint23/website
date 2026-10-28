@@ -13,6 +13,16 @@ export const LOOP = {
   WIRE_R: 0.22,
 };
 
+// Spule statt Leiterschleife (Knopf): TURNS Windungen, im Abstand DY übereinander gewickelt (quer zur Ebene der
+// Schleife, die Leiterschleife ist die erste Windung) und hintereinander verbunden – nur der Anfang (Ende A) und das
+// Ende (Ende B) führen zu den Schleifringen. Umbau in ANIM Sekunden: Zuleitung von Ende B ab, weitere Windungen
+// wickeln, Zuleitung von der letzten Windung an (beim Abbau rückwärts); solange ist der Kreis offen.
+// Die Spannung wird TURNS-mal so groß. Im Messbereich ±15 mV sind bei 0,5 U/s beide Kurven im selben Maßstab gut zu
+// sehen (Leiterschleife etwa 17 %, Spule etwa 84 % der U-Achse).
+// Im Erklärmodus dünnerer, durchsichtiger Draht mit größerem Abstand; Elektronen und Pfeile bleiben auf der ersten
+// Windung (der Leiterschleife).
+export const COIL = { TURNS: 5, DY: 1.0, EXPLAIN_DY: 1.2, EXPLAIN_WIRE_R: 0.4, ANIM: 3 };
+
 // Magnet: zwei Polblöcke über (Nordpol) und unter (Südpol) der Schleife, dazwischen ein gleichmäßiges Feld
 export const MAGNET = {
   GAP: 14,                    // Abstand der Polflächen (die Schleife dreht sich frei dazwischen)
@@ -71,7 +81,7 @@ export const METER = {
   DAMPING: 0.55,              // leicht unterkritisch
   FULL_ANGLE: 50,             // Vollausschlag nach jeder Seite in Grad
   STOP: 1.08,                 // Anschlag knapp hinter dem Skalenende
-  RANGES: [3, 10, 30],        // Messbereiche ±3, ±10, ±30 mV
+  RANGES: [3, 10, 15, 30],    // Messbereiche ±3, ±10, ±15, ±30 mV (±15: Leiterschleife und Spule im selben Maßstab)
 };
 
 // Antrieb „Wind“, didaktisch vereinfacht: Der Rotor läuft ab CUT_IN an und dreht dann proportional zur

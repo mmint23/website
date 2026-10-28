@@ -134,3 +134,11 @@ function loslassen(event) {
 }
 canvas.addEventListener('pointerup', loslassen);
 canvas.addEventListener('pointercancel', loslassen);
+
+// Laufendes Ziehen beenden (Live-Steuerung: Wechsel zwischen Steuern und Zuschauen)
+export function cancelDrag() {
+  if (aktiv?.name) endDrag(aktiv.name);
+  aktiv = null;
+  controls.enabled = true;
+  canvas.style.cursor = '';
+}

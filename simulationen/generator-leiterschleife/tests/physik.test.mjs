@@ -206,3 +206,15 @@ test('viele Elektronen: drängen sich am einen Ende zusammen, am anderen bleibt 
   assert.ok(checked > 50);
   Object.assign(state, { explain: false, showManyElectrons: false });
 });
+
+test('Spule mit COIL.TURNS Windungen: Spannung COIL.TURNS-mal so groß; bei 0,5 U/s passen beide in ±15 mV', async () => {
+  const { COIL } = await import('../js/config.js');
+  state.coil = false;
+  const schleife = spin(0.5, 4);
+  state.coil = true;
+  const spule = spin(0.5, 4);
+  state.coil = false;
+  assert.ok(Math.abs(spule.max - COIL.TURNS * schleife.max) < 0.01 * spule.max, `${spule.max} vs. ${schleife.max}`);
+  const anteil = u => 1000 * u / 15;   // Anteil der U-Achse im Messbereich ±15 mV
+  assert.ok(anteil(schleife.max) > 0.15 && anteil(spule.max) < 0.9, `${anteil(schleife.max)} / ${anteil(spule.max)}`);
+});

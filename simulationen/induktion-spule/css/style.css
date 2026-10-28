@@ -143,3 +143,10 @@ html, body {
 #rangeBox .segmented { margin-top: 6px; }
 /* Umschalter Feldlinienmodell / reale Physik ganz oben im Bedienfeld */
 .panel button.modell-btn { margin-top: 0; font-weight: 600; }
+/* Lehrerseite (Abgabe-Server): Bedienfeld der Live-Steuerung unten links (gemeinsam/live/) – Hinweiszeile weg,
+   Diagramme darüber */
+body.lehrer .hint { display: none; }
+body.lehrer .plot-box { bottom: 230px; }
+@media (max-width: 700px) {
+  body.lehrer .plot-box { bottom: calc(45% + 16px); }
+}

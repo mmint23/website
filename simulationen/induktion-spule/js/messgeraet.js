@@ -347,6 +347,12 @@ export function moveMeter(x, y) {
   group.position.y = clamp(y, GRENZEN.y);
 }
 
+// Lagen aller drei Geräte (Live-Steuerung): { pointer: [x, y], qual: [x, y], multi: [x, y] }
+export const meterLagen = () => Object.fromEntries(Object.entries(GERAETE).map(([name, g]) => [name, [g()[0].position.x, g()[0].position.y]]));
+export function meterLagenSetzen(lagen) {
+  for (const [name, g] of Object.entries(GERAETE)) if (lagen?.[name]) g()[0].position.set(lagen[name][0], lagen[name][1], g()[0].position.z);
+}
+
 export function sockets() {
   const [group, liste, rand] = GERAETE[state.meter]();
   group.updateMatrixWorld();

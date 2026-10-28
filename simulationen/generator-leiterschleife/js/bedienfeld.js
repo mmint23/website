@@ -2,7 +2,7 @@
 // Bedienfeld: Antrieb, Magnet, Messbereich, Anzeigen, Erklärmodus. Aus dem Windpark gekommen (?von=windpark):
 // Knopf „Zurück zum Windpark“ (mit Wind und Uhrzeit) und kurz der Hinweis „Vereinfachtes Modell des Generators“.
 // ------------------------------------------------------------------
-import { METER, SPEED_MAX, WIND_MAX } from './config.js';
+import { METER, SPEED_MAX, WIND_MAX, COIL } from './config.js';
 import { state, ausWindpark } from './state.js';
 import { endCrank, setHold, holdTo, rotor, electrons, park } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
@@ -16,7 +16,7 @@ import { showLink } from '../../../gemeinsam/link.js';
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
-const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'],
+const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'], ['showTwoBtn', 'showTwoElectrons'],
   ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'], ['plotBtn', 'showPlot'], ['explainPlotBtn', 'showPlot'],
   ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
 
@@ -27,6 +27,11 @@ const resetView = () => {
 };
 
 function updateUi() {
+  for (const id of ['coilBtn', 'explainCoilBtn']) $(id).setAttribute('aria-pressed', String(state.coil));
+  $('coilStatus').textContent = (state.coil
+    ? `${COIL.TURNS} Windungen hintereinander: ${COIL.TURNS}-fache Spannung.`
+    : 'Einzelne Leiterschleife (1 Windung).') + ' Zum Vergleich im U-t-Diagramm: Messbereich ±15 mV.';
+  $('showManyBtn').disabled = state.coil;   // „viele e⁻“ nur bei der Leiterschleife (Kette von Ende zu Ende)
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';
   $('explainBtn').classList.toggle('active', state.explain);
   $('explainPanel').hidden = !state.explain;
@@ -69,7 +74,7 @@ function setExplain(on) {
   state.explain = on;
   state.paused = false;
   state.sideView = false;
-  if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showManyElectrons: false, showRings: false, magnetGlass: false });
+  if (on) Object.assign(state, { showB: false, showV: false, showF: false, showElectron: false, showTwoElectrons: false, showManyElectrons: false, showRings: false, magnetGlass: false });
   setRingsInstant();
   electrons.shift = 0;
   setMeterVisible(!on);
@@ -92,7 +97,7 @@ export function initUi() {
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.range = range;
-    button.textContent = `±${range} mV`;
+    button.textContent = `±${range}`;
     button.addEventListener('click', () => { state.range = range; updateUi(); });
     $('rangeButtons').append(button);
   }
@@ -165,6 +170,15 @@ export function initUi() {
     state.sideView = false;
     updateUi();
   });
+  // Leiterschleife ↔ Spule: Messbereich und U-Achse bleiben, wie sie sind – so sieht man im Diagramm direkt, dass die
+  // Spannung mit der Windungszahl wächst (die Kurve von davor bleibt stehen)
+  for (const id of ['coilBtn', 'explainCoilBtn']) {
+    $(id).addEventListener('click', () => {
+      state.coil = !state.coil;
+      if (state.coil) state.showManyElectrons = false;
+      updateUi();
+    });
+  }
   onCrankGrab(updateUi);
 
   applyMagnetPoles();

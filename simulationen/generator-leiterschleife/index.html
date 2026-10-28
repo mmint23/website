@@ -42,11 +42,13 @@
       <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
       <button id="showFBtn" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
     </div>
-    <div class="toggles two" role="group" aria-label="Elektronen">
+    <div class="toggles three" role="group" aria-label="Elektronen">
       <button id="showElectronBtn" type="button"><span class="dot" style="background:#1565c0"></span>e⁻</button>
+      <button id="showTwoBtn" type="button"><span class="dot" style="background:#1565c0"></span>2 e⁻</button>
       <button id="showManyBtn" type="button"><span class="dot" style="background:#1565c0"></span>viele e⁻</button>
     </div>
     <button id="showRingsBtn" class="state" type="button">Schleifringe</button>
+    <button id="explainCoilBtn" class="state" type="button">Spule mit 5 Windungen</button>
     <div class="toggles two" role="group" aria-label="Ablauf">
       <button id="pauseBtn" class="state" type="button">Pause</button>
       <button id="explainSlowBtn" class="state" type="button">Zeitlupe</button>
@@ -67,6 +69,11 @@
     <section>
       <h2>Erklärung</h2>
       <button id="explainBtn" type="button">Erklärung: Elektronen in der Schleife</button>
+    </section>
+    <section>
+      <h2>Leiter</h2>
+      <button id="coilBtn" class="state" type="button">Spule mit 5 Windungen</button>
+      <p class="status" id="coilStatus"></p>
     </section>
     <section>
       <h2>Antrieb</h2>
@@ -109,8 +116,8 @@
     </section>
     <section id="meterSection">
       <h2>Messgerät</h2>
-      <p class="status">Messbereich</p>
-      <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
+      <p class="status">Messbereich in mV</p>
+      <div class="segmented" role="group" aria-label="Messbereich in mV" id="rangeButtons"></div>
       <button id="plotBtn" class="state" type="button">U-t-Diagramm</button>
     </section>
   </aside>

@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { renderer, scene, camera, controls } from './szene.js';
 import { state } from './state.js';
-import { stepPhysics, stepPark } from './physik.js';
+import { stepPhysics, stepPark, stepSpule } from './physik.js';
 import { syncModel } from './modell.js';
 import { syncMeter } from './messgeraet.js';
 import { updatePlot } from './diagramm.js';
@@ -41,6 +41,7 @@ renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   if (tafelOffen()) return;   // Tafel groß geöffnet: Szene ruht, damit das Zeichnen flüssig bleibt
   stepPark(dt);                  // Rotor beim Antrieb „Wind“
+  stepSpule(dt);                 // Umbau Leiterschleife ↔ Spule (läuft auch in der Pause)
   controls.update();
   updateParkStatus();
   if (!state.paused) stepPhysics(state.slowMotion ? dt * SLOW_MOTION : dt);

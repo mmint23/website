@@ -21,7 +21,8 @@ const segment = (id, active) => {
   $(id).setAttribute('aria-pressed', String(active));
 };
 
-function updateUi() {
+// Bedienfeld nach dem Zustand richten (auch von der Live-Steuerung aufgerufen)
+export function updateUi() {
   for (const [id, meter] of METERS) segment(id, state.meter === meter);
   $('rangeBox').hidden = state.meter !== 'pointer';
   $('multiInfo').hidden = state.meter !== 'multi';
