@@ -136,7 +136,7 @@ COIL.THETA.forEach((theta, k) => {
   }
   addMesh(new THREE.TubeGeometry(new Wendel(), COIL.TURNS_SHOWN * 40, 0.3, 8, false), copper, group);
   // Zuleitungen vom Anfang der Wicklung (innen) zu A und vom Ende (außen) zu E; Anschlüsse als Messingknöpfe
-  // mit Schild. up: Richtung (±x in der Spule), die nach dem Drehen des Generators nach oben zeigt – A liegt bei
+  // (ohne Beschriftung, ebenso die Spulen). up: Richtung (±x in der Spule), die nach dem Drehen des Generators nach oben zeigt – A liegt bei
   // beiden Spulen oben, E unten.
   const up = Math.sin(theta + GEN_ROT) > 0 ? 1 : -1;
   const tx = up * COIL.TERMINAL_X, ty = COIL.TERMINAL_Y, tz = COIL.TERMINAL_Z;
@@ -144,15 +144,10 @@ COIL.THETA.forEach((theta, k) => {
   wire([[0, COIL.WIND_IN, COIL.WIND_R], [0, COIL.WIND_IN, front], [tx, COIL.WIND_OUT + 0.2, front], [tx, ty, tz]], 0.16, copper, group);
   wire([[0, COIL.WIND_OUT, COIL.WIND_R], [-tx, COIL.WIND_OUT + 0.4, tz], [-tx, ty, tz]], 0.16, copper, group);
   const ends = {};
-  // Schilder A₁/E₁ bzw. A₂/E₂ gut lesbar über bzw. unter dem äußeren Ende der Spule (passend zum Bedienfeld:
-  // „E von Spule 1 ist mit E von Spule 2 verbunden“)
   for (const [name, x] of [['a', tx], ['e', -tx]]) {
     const knob = addMesh(new THREE.SphereGeometry(0.6, 16, 12), mat.brass, group);
     knob.position.set(x, ty, tz);
     ends[name] = knob;
-    const schild = makeTextSprite(name.toUpperCase() + '₁₂'[k], 1.7, '#1d2733');
-    schild.position.set(Math.sign(x) * (COIL.WIND_R + 2), ty - 1.4, tz + 0.5);
-    group.add(schild);
   }
   // B im Kern: Pfeil in der Mitte der Wicklung, Beschriftung daneben
   const arrow = makeArrow(B_COLOR);
@@ -161,9 +156,6 @@ COIL.THETA.forEach((theta, k) => {
   const bLabel = makeTextSprite('B', 2.2, B_COLOR);
   group.add(bLabel);
   bLabel.position.set(up * (COIL.WIND_R + 2.4), COIL.WIND_IN + 0.8, 0);
-  const name = makeTextSprite(`Spule ${k + 1}`, 1.8, '#4a5866');
-  group.add(name);
-  name.position.set(-up * (COIL.WIND_R + 3.2), COIL.WIND_IN + 1, 0);
   // Halter: verbindet den äußeren Flansch der Spule mit dem Balken des Ständers hinten
   const halterZ0 = -2.6, halterZ1 = STAND.Z + STAND.DEPTH / 2;
   const halter = addMesh(new THREE.BoxGeometry(1.6, 0.8, halterZ0 - halterZ1), mat.stand, group);

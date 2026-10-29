@@ -12,7 +12,7 @@ die rotierende Leiterschleife in `generator-leiterschleife`).
 
 ## Kernidee
 
-In der Standardansicht sieht man den Generator mit zwei Spulen, deutlich beschrifteten Anschlüssen (A₁/E₁, A₂/E₂),
+In der Standardansicht sieht man den Generator mit zwei Spulen (ohne Beschriftung von Spulen und Anschlüssen),
 Kabeln, Messgerät und dem U–t-Diagramm. Das Magnetfeld gibt es nur im **Erklärmodus** („Erklärung: Magnetfeld in
 den Spulen“): Dort sieht man zu jeder Spule B im Spuleninneren (Pfeil) und zwei Diagramme übereinander auf
 derselben Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wird:
@@ -60,7 +60,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   - Verbinden: **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
     **Ende – Anfang** (E₁ mit A₂): Spannungen heben sich auf, das Messgerät zeigt nichts.
     Die Kabel liegen dabei sichtbar anders (alle schwarz – Wechselspannung; das Kabel von Spule 2 zum Messgerät
-    liegt vorne auf dem Tisch); die Anschlüsse sind groß mit A₁/E₁ und A₂/E₂ beschriftet. Die Knöpfe
+    liegt vorne auf dem Tisch); Spulen und Anschlüsse sind in der Szene nicht beschriftet. Die Knöpfe
     beschreiben nur die Verbindung, nicht, welche richtig ist.
     Im U–t-Diagramm stehen U₁, U₂ (dünn) und U am Messgerät (dick); im B–t-Diagramm B in beiden Spulen.
   - Physik und Tests können weiterhin mit einer Spule rechnen (`state.coils = 1`); im Bedienfeld gibt es das nicht
