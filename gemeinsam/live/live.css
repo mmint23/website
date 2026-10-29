@@ -6,7 +6,7 @@
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 28;
+  z-index: 35;   /* auch über der Tafel (gemeinsam/tafel/, z-index 30) */
   max-width: calc(100% - 32px);
   padding: 8px 16px;
   border-radius: 999px;
@@ -20,6 +20,20 @@
 .live-banner.du { background: #2e7d32; }
 .live-banner.warte { background: #1d4f91; }
 .live-banner.ende { background: #4a5866; }
+/* Tafel offen: Hinweis unten statt über der Werkzeugleiste; „Du steuerst“ dann ganz weglassen */
+body:has(.tafel-overlay:not([hidden])) .live-banner { top: auto; bottom: 12px; }
+body:has(.tafel-overlay:not([hidden])) .live-banner.du { display: none; }
+.live-banner button {
+  pointer-events: auto;
+  margin-left: 8px;
+  padding: 3px 10px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
 
 /* Bedienfeld der Lehrerseite: eigene Spalte in der Abgabeleiste … */
 .live-feld {

@@ -36,7 +36,7 @@ const LIMITS = {
   RAUM_LEERLAUF: 12 * 3600_000, // Raum ohne Lehrerseite und ohne Aktivität wird nach 12 h gelöscht
   ANMELDUNG: 12 * 3600_000,     // so lange gilt eine Anmeldung mit PIN
   ZUSTAND_ABSTAND: 20,          // Live-Steuerung: höchstens ein Zustand je 20 ms und Verbindung weiterreichen (50 pro Sekunde)
-  ZUSTAND_GROESSE: 64 * 1024,   // ... mit höchstens 64 KB
+  ZUSTAND_GROESSE: 1024 * 1024, // ... mit höchstens 1 MB (Zustände mit allen Strichen der Tafel; sonst wenige KB)
 };
 
 // ---------------- Speicher (nur im Arbeitsspeicher)
