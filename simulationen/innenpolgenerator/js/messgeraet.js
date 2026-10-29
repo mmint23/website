@@ -12,6 +12,8 @@ import { addMesh, makeLabel, formatNumber } from './hilfen.js';
 import { mat } from './materialien.js';
 import { scene } from './szene.js';
 import { terminals } from './modell.js';
+import { ledSocket, setLedVisible } from './led.js';
+import { lampSocket, setLampVisible } from './gluehlampe.js';
 
 // Das Messgerät schwebt rechts neben dem Modell (verkleinert), leicht zum Betrachter gedreht
 const meter = new THREE.Group();
@@ -181,9 +183,20 @@ function weg(terminal) {
   return [t, [t[0] + Math.sign(t[0]) * 2, t[1] + Math.sign(t[1]) * 2, t[2] + 1]];
 }
 
+// Letztes Stück zur Buchse (pol: 'plus' an A₁, 'minus' an Spule 2): von vorne in die Buchse des Messgeräts bzw.
+// von oben in die Buchse der Steckplatte von LED oder Glühlampe (state.display)
+function anschluss(pol) {
+  if (state.display === 'meter') {
+    const socket = pol === 'plus' ? SOCKET_PLUS : SOCKET_COM;
+    return [sag(socketPoint(socket, 5), -1.2), socketPoint(socket, 2), socketPoint(socket)];
+  }
+  const s = (state.display === 'led' ? ledSocket : lampSocket)(pol === 'plus' ? 1 : -1);
+  return [[s.x - 3, s.y + 4, s.z], [s.x, s.y + 2.5, s.z], s.toArray()];
+}
+
 // Vom Anschluss in weitem Bogen zur Buchse
-function toMeter(terminal, socketLocal, via) {
-  return [...weg(terminal), ...via, sag(socketPoint(socketLocal, 5), -1.2), socketPoint(socketLocal, 2), socketPoint(socketLocal)];
+function toMeter(terminal, pol, via) {
+  return [...weg(terminal), ...via, ...anschluss(pol)];
 }
 
 // Verbindung zwischen den Spulen: von E₁ (rechts unten) vorne unten um das Joch herum nach links, zu E₂ (links
@@ -203,26 +216,30 @@ function layCables() {
     scene.remove(cable);
   }
   const [s1, s2] = terminals;
-  cables = [makeCable(toMeter(s1.a, SOCKET_PLUS, [[21, 5, 6], [27, 0, 7]]), mat.cableBlack)];
+  cables = [makeCable(toMeter(s1.a, 'plus', [[21, 5, 6], [27, 0, 7]]), mat.cableBlack)];
   if (state.coils === 1) {
-    cables.push(makeCable(toMeter(s1.e, SOCKET_COM, [[20, -7, 6]]), mat.cableBlack));
+    cables.push(makeCable(toMeter(s1.e, 'minus', [[20, -7, 6]]), mat.cableBlack));
   } else if (!state.reversed) {
     cables.push(makeCable(bridge(s1.e, s2.e), mat.cableBlack));
     // A₂ (links oben) außen links neben dem Joch hinunter auf den Tisch, vorne auf dem Tisch nach rechts zum Messgerät
-    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[-20.5, 0, 6], [-21.5, -12, 8], [-19, TISCH, 11],
+    cables.push(makeCable(toMeter(s2.a, 'minus', [[-20.5, 0, 6], [-21.5, -12, 8], [-19, TISCH, 11],
       [-8, TISCH, 13], [8, TISCH, 13], [18, TISCH, 12]]), mat.cableBlack));
   } else {
     cables.push(makeCable(bridge(s1.e, s2.a), mat.cableBlack));
     // E₂ (links unten) hinunter auf den Tisch, vor der Verbindung auf dem Tisch nach rechts zum Messgerät
-    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[-19.5, -10, 7.5], [-15, TISCH, 11],
+    cables.push(makeCable(toMeter(s2.e, 'minus', [[-19.5, -10, 7.5], [-15, TISCH, 11],
       [-4, TISCH, 13], [8, TISCH, 13], [18, TISCH, 12]]), mat.cableBlack));
   }
 }
 
-// Kabel neu verlegen, wenn sich die Schaltung geändert hat (jedes Bild aufgerufen)
+// Kabel neu verlegen und Messgerät bzw. LED oder Glühlampe zeigen, wenn sich Schaltung oder Anzeige geändert haben
+// (jedes Bild aufgerufen)
 export function syncCables() {
-  const schaltung = state.coils === 1 ? 'eine' : state.reversed ? 'vertauscht' : 'richtig';
+  const schaltung = (state.coils === 1 ? 'eine' : state.reversed ? 'vertauscht' : 'richtig') + '/' + state.display;
   if (schaltung === verlegt) return;
   verlegt = schaltung;
+  meter.visible = state.display === 'meter';
+  setLedVisible(state.display === 'led');
+  setLampVisible(state.display === 'lamp');
   layCables();
 }

@@ -16,7 +16,7 @@ import { renderer } from './szene.js';
 import { generator } from './modell.js';
 
 const FARBE = new THREE.Color('#5c8fd6');        // Feldlinie außerhalb der Spulen
-const INNEN = new THREE.Color('#aa00ff');        // ... im Inneren einer Spule (violett: hebt sich vom Kupfer ab)
+const INNEN = new THREE.Color('#9d00ff');        // ... im Inneren einer Spule (violett: hebt sich vom Kupfer ab)
 
 const feldGroup = new THREE.Group();
 generator.add(feldGroup);   // dreht mit dem (waagrecht gelegten) Generator
@@ -25,6 +25,18 @@ const material = new LineMaterial({ linewidth: 2.6, vertexColors: true });
 const pfeilNormal = new THREE.MeshBasicMaterial({ color: FARBE });
 const pfeilInnen = new THREE.MeshBasicMaterial({ color: INNEN });
 const PFEIL = new THREE.ConeGeometry(0.42, 1.1, 12);
+// Abschnitte im Inneren einer Spule zusätzlich breiter darübergezeichnet, damit sie kräftig hervortreten (immer
+// sichtbar, auch durch die durchsichtige Wicklung)
+const materialInnen = new LineMaterial({ linewidth: 5.5, color: INNEN, depthTest: false });
+const innenLinien = [];   // wiederverwendete Line2 für die Abschnitte im Inneren
+function innenLinie(i) {
+  if (!innenLinien[i]) {
+    innenLinien[i] = new Line2(new LineGeometry(), materialInnen);
+    innenLinien[i].renderOrder = 5;
+    feldGroup.add(innenLinien[i]);
+  }
+  return innenLinien[i];
+}
 
 const eintraege = [];   // je Linie { line, pfeile }
 function eintrag(i) {
@@ -42,6 +54,7 @@ const innen = (x, y) => state.colorInside && (imInneren(x, y, 0) || (state.coils
 
 function aufbauen(phi) {
   const alle = linien(phi, state.coils, state.iron);
+  let n = 0;   // Zahl der breiten Abschnitte im Inneren
   alle.forEach((punkte, i) => {
     const { line, pfeile } = eintrag(i);
     line.visible = true;
@@ -52,6 +65,23 @@ function aufbauen(phi) {
     line.geometry.setPositions(punkte.flatMap(([x, y]) => [x, y, 0]));
     line.geometry.setColors(farben);
     line.computeLineDistances();
+    // zusammenhängende Stücke im Inneren einer Spule breit darüber
+    let stueck = [];
+    const abschliessen = () => {
+      if (stueck.length >= 2) {
+        const breit = innenLinie(n++);
+        breit.visible = true;
+        breit.geometry.dispose();
+        breit.geometry = new LineGeometry();
+        breit.geometry.setPositions(stueck.flatMap(([x, y]) => [x, y, 0]));
+      }
+      stueck = [];
+    };
+    for (const p of punkte) {
+      if (innen(...p)) stueck.push(p);
+      else abschliessen();
+    }
+    abschliessen();
     // Pfeilspitzen in Feldrichtung auf etwa einem und zwei Dritteln der Linie
     [0.3, 0.7].forEach((anteil, k) => {
       const m = Math.min(punkte.length - 2, Math.round(anteil * (punkte.length - 1)));
@@ -63,6 +93,7 @@ function aufbauen(phi) {
       cone.material = innen(x0, y0) ? pfeilInnen : pfeilNormal;
     });
   });
+  for (let i = n; i < innenLinien.length; i++) innenLinien[i].visible = false;
   for (let i = alle.length; i < eintraege.length; i++) {
     eintraege[i].line.visible = false;
     for (const cone of eintraege[i].pfeile) cone.visible = false;
@@ -74,6 +105,7 @@ export function syncFeld() {
   feldGroup.visible = state.showField;
   if (!state.showField) return;
   material.resolution.set(renderer.domElement.clientWidth, renderer.domElement.clientHeight);
+  materialInnen.resolution.copy(material.resolution);
   const phi = rotor.phi;
   const gleich = stand && Math.abs(phi - stand.phi) < 0.004 && stand.coils === state.coils
     && stand.colorInside === state.colorInside && stand.iron === state.iron;

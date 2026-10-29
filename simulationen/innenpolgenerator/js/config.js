@@ -63,6 +63,15 @@ export const CRANK_MAX_OMEGA = 40;                           // ... höchstens s
 export const FRICTION = 0.25;                                // freies Auslaufen nach dem Loslassen: Abbremsung in 1/s
 export const FRICTION_STOP = 0.15;                           // darunter (rad/s) bleibt der Magnet stehen
 
+// LED statt Messgerät (Gedankenexperiment, siehe README): leuchtet ab THRESHOLD (statt real etwa 1,8 V), voll bei
+// THRESHOLD + FULL – nur in Durchlassrichtung (Anode an der roten Buchse, wie die Plus-Buchse des Messgeräts an A₁).
+// Steckplatte auf dem Tisch an der Stelle des Messgeräts, um ROT gedreht: rote Buchse hinten (Kabel von A₁ kommt von
+// oben), schwarze vorne (Kabel von Spule 2 kommt vorne über den Tisch).
+export const LED = { THRESHOLD: 0.05, FULL: 0.1, POS: [27, TABLE_TOP, 6], ROT: Math.PI / 2 };
+// Glühlampe statt Messgerät (Gedankenexperiment): Glühdraht heizt sich mit der Leistung ∝ U² auf (Zeitkonstante
+// HEAT_TIME), glüht ab THRESHOLD sichtbar, bei FULL voll – in beiden Stromrichtungen
+export const LAMP = { THRESHOLD: 0.08, FULL: 0.2, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT };
+
 // Zeigermessgerät (wie bei Leiterschaukel und Generator): gedämpfter Schwinger
 export const METER = {
   FREQ: 1.2,                  // Eigenfrequenz in Hz
@@ -80,7 +89,6 @@ export const CORE_STRENGTH = 0.3;
 // Pfeil für B im Spuleninneren: Länge in cm bei B_MAX
 export const B_ARROW = 4.6;
 
-// Diagramme: so viele Sekunden (Simulationszeit) sind sichtbar; B-Achse bis ±B_PLOT mT
+// U–t-Diagramm: so viele Sekunden (Simulationszeit) sind sichtbar
 export const PLOT_SECONDS = 4;
 export const PLOT_SECONDS_WIND = 12;   // beim Antrieb „Wind“ (langsame Rotordrehung: eine Umdrehung dauert 4–20 s)
-export const B_PLOT = 120;

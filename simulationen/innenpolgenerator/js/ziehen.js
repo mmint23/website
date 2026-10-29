@@ -30,7 +30,7 @@ function angleAtPointer() {
   return Math.atan2(-hit.x, hit.y) - CRANK.OFFSET - GEN_ROT;
 }
 
-const grabbed = () => state.drive !== 'wind' && raycaster.intersectObjects(crankTargets, false).length > 0;   // Wind: keine Kurbel
+const grabbed = () => state.drive !== 'wind' && !state.paused && raycaster.intersectObjects(crankTargets, false).length > 0;   // Wind: keine Kurbel
 
 // Erfassungsphase: läuft vor den OrbitControls, die dann für diesen Zug abgeschaltet werden
 canvas.addEventListener('pointerdown', event => {

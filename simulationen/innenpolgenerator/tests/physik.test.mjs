@@ -205,3 +205,22 @@ test('Antrieb Wind: Rotor auf derselben Welle, Drehzahl proportional zum Wind ab
   Object.assign(state, { drive: 'speed', wind: 8 });
   resetPhysics();
 });
+
+test('LED und Glühlampe (Gedankenexperiment): mit Eisenkern hell, ohne kaum, bei „Ende – Anfang“ dunkel', async () => {
+  const { ledBrightness, lampGlow } = await import('../js/physik.js');
+  function messen(setup) {
+    Object.assign(state, { coils: 2, reversed: false, drive: 'speed', speed: 0.5, hold: false, lineModel: true, ...setup });
+    resetPhysics();
+    let led = 0, lampe = 0;
+    for (let i = 0; i < 6000; i++) {
+      stepPhysics(1 / 600);
+      if (i > 1200) { led = Math.max(led, ledBrightness()); lampe = Math.max(lampe, lampGlow()); }
+    }
+    return { led, lampe };
+  }
+  const eisen = messen({ iron: true }), luft = messen({ iron: false }), aus = messen({ iron: true, reversed: true });
+  assert.ok(eisen.led > 0.99 && eisen.lampe > 0.95, `mit Eisenkern: ${JSON.stringify(eisen)}`);
+  assert.ok(luft.led > 0.2 && luft.led < 0.8 && luft.lampe < 0.2, `ohne Eisenkern: ${JSON.stringify(luft)}`);
+  assert.ok(aus.led < 0.01 && aus.lampe < 0.01, `Ende – Anfang: ${JSON.stringify(aus)}`);
+  Object.assign(state, { reversed: false, iron: true, lineModel: false, coils: 1 });
+});

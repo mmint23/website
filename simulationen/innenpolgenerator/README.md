@@ -13,9 +13,9 @@ die rotierende Leiterschleife in `generator-leiterschleife`).
 ## Kernidee
 
 In der Standardansicht sieht man den Generator mit zwei Spulen (ohne Beschriftung von Spulen und Anschlüssen),
-Kabeln, Messgerät und dem U–t-Diagramm. Das Magnetfeld gibt es nur im **Erklärmodus** („Erklärung: Magnetfeld in
-den Spulen“): Dort sieht man zu jeder Spule B im Spuleninneren (Pfeil) und zwei Diagramme übereinander auf
-derselben Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wird:
+Kabeln und Messgerät (U–t-Diagramm auf Wunsch). Das Magnetfeld gibt es nur im **Erklärmodus** („Erklärung: Magnetfeld in
+den Spulen“): Dort sieht man zu jeder Spule B im Spuleninneren (Pfeil) und die Feldlinien, auf Wunsch dazu das
+U–t-Diagramm. So wird sichtbar, was oft falsch vermutet wird:
 
 - Die Spannung ist **nicht** am größten, wenn ein Pol auf die Spule zeigt (B am größten) – dort ändert sich B
   gerade nicht, also ist U = 0.
@@ -48,12 +48,28 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
 - **Erklärung: Magnetfeld in den Spulen** (oben im Bedienfeld; „Zurück zum Modell“ beendet ihn). Die Schalter zum
   Magnetfeld stehen dann in einem eigenen Feld links unter der Überschrift (wie in `generator-leiterschleife`;
-  schmale Fenster: oben), die Spulen sind im ganzen Erklärmodus stark durchsichtig. Nur im Erklärmodus: „Reale Physik“ (statt Feldlinienmodell), **Magnetfeld (Feldlinien)** (10 Linien in der Bildebene
+  schmale Fenster: oben), die Spulen sind im ganzen Erklärmodus stark durchsichtig. Nur im Erklärmodus:
+  **Magnetfeld (Feldlinien)** (10 Linien in der Bildebene
   mit Pfeilen; Spulen, Magnet und Joch werden dafür durchsichtig), **Feldlinien im Inneren der Spule färben**
-  (violett; nur mit eingeblendeten Feldlinien), **B im Spuleninneren** (Pfeil; Wicklung und Kern werden dafür
-  durchsichtig; beim Einschalten des Erklärmodus gleich an), **Änderung von B (Tangente)** und über dem
-  U–t-Diagramm das B–t-Diagramm. Beim Verlassen des Erklärmodus geht alles zum Magnetfeld wieder aus.
-  Zu Beginn: Standardansicht, Feldlinienmodell, ohne Eisenkern.
+  (kräftig violett und breiter darübergezeichnet; nur mit eingeblendeten Feldlinien), **B im Spuleninneren**
+  (Pfeil; Wicklung und Kern werden dafür durchsichtig; zu Beginn aus). Ein B–t-Diagramm gibt es nicht (mehr).
+  Beim Verlassen des Erklärmodus geht alles zum Magnetfeld wieder aus.
+  Im Erklärmodus gibt es **nur ein Bedienfeld (links)**, das rechte ist ausgeblendet: oben Link/QR-Code und
+  „Zurück zum Modell“, dann der **Antrieb** (wie in `generator-leiterschleife`): Wind, Drehzahl oder Kurbel mit
+  Regler, darunter **Pause** und **Zeitlupe** nebeneinander, dann **Magnet festhalten** mit Drehwinkel-Regler;
+  danach das Magnetfeld und ganz unten die Anzeige (Diagramme, Messbereich). Pause gibt es nur im Erklärmodus,
+  „Anhalten“ nur im Modell. (`bedienfeld.js` hängt die Abschnitte aus dem rechten Feld um und wieder zurück.) **Aufbau** (Eisenkern, Verbindung der Spulen) gibt es
+  nur im Modell, ganz unten im rechten Bedienfeld; darüber, ebenfalls nur im Modell, **Rechnung**:
+  „Reale Physik“ und „Feldlinienmodell“ als zwei Knöpfe nebeneinander (Standard: Feldlinienmodell).
+- **Anzeige** (nur im Modell): statt des Messgeräts eine **LED** oder eine **Glühlampe** auf einer Steckplatte
+  (Gedankenexperiment wie in `generator-leiterschleife`; in der Simulation steht dazu kein Erklärtext). Die LED
+  leuchtet ab 0,05 V, voll ab 0,15 V, nur in Durchlassrichtung (rote Buchse an A₁, wie die Plus-Buchse); die
+  Glühlampe glüht ab 0,08 V sichtbar, voll bei 0,2 V, in beiden Richtungen, mit kurzem Nachglühen. Bei 0,5 U/s und
+  „Ende – Ende“: mit Eisenkern (Scheitelwert etwa 0,23 V im Feldlinienmodell) leuchten beide hell, ohne Eisenkern
+  (etwa 0,1 V) blitzt die LED schwach und die Lampe bleibt fast dunkel – so wird sichtbar, wozu der Eisenkern da
+  ist; bei „Ende – Anfang“ bleibt alles dunkel. Real bräuchte eine LED etwa 1,8 V.
+  Zu Beginn: Standardansicht, Feldlinienmodell, ohne Eisenkern, Diagramme aus (auch im Erklärmodus erst auf
+  Wunsch).
 - **Aufbau:** immer zwei Spulen (rechts Spule 1, links Spule 2), in Reihe geschaltet.
   - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh und Eisenjoch – ein Ring, der
     die Kerne außen verbindet, wie der Stator eines echten Generators).
@@ -62,7 +78,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
     Die Kabel liegen dabei sichtbar anders (alle schwarz – Wechselspannung; das Kabel von Spule 2 zum Messgerät
     liegt vorne auf dem Tisch); Spulen und Anschlüsse sind in der Szene nicht beschriftet. Die Knöpfe
     beschreiben nur die Verbindung, nicht, welche richtig ist.
-    Im U–t-Diagramm stehen U₁, U₂ (dünn) und U am Messgerät (dick); im B–t-Diagramm B in beiden Spulen.
+    Im U–t-Diagramm stehen U₁, U₂ (dünn) und U am Messgerät (dick).
   - Physik und Tests können weiterhin mit einer Spule rechnen (`state.coils = 1`); im Bedienfeld gibt es das nicht
     mehr.
 - **Antrieb:**
@@ -77,16 +93,30 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   - **Drehzahl-Regler** −3 … +3 Umdrehungen pro Sekunde, „Anhalten“.
   - **Kurbel** vorne an der Welle mit Maus oder Finger drehen (wer die Kurbel greift, schaltet auf diesen Antrieb;
     losgelassen läuft der Magnet langsam aus).
-- **Magnet festhalten** und **Zeitlupe** (¼) als Knöpfe unter dem Antrieb (in beiden Ansichten): Festgehalten
+- **Zeitlupe** (¼) und **Magnet festhalten** als Knöpfe unter dem Antrieb (im Modell rechts, im Erklärmodus links,
+  dort mit **Pause** neben der Zeitlupe): Festgehalten
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
 - **Frequenz der Wechselspannung** (bei einem Polpaar gleich der Drehzahl).
-- **Diagramm U–t** (Haken beim Messgerät; im Erklärmodus „Diagramme B–t und U–t“).
+- **Diagramm U–t** (Haken bei der Anzeige, zu Beginn aus).
 - **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 V. Ab etwa 2 Umdrehungen pro
   Sekunde kann der träge Zeiger nicht mehr folgen und zittert nur um die Null – wie ein echtes
   Demonstrations-Messgerät. Das Diagramm zeigt die Wechselspannung trotzdem.
 - **Link / QR-Code zeigen** (gemeinsamer Baustein `gemeinsam/link.js`).
+- **QR-Code für den Erklärmodus:** Adresse mit `?erklaerung` – wer sie öffnet, landet gleich im Erklärmodus (wie der
+  Schülermodus-QR-Code in `generator-leiterschleife`). Über den Abgabe-Server mit der Adresse des Laptops im WLAN.
+  „Zurück zum Modell“ bleibt möglich.
 - Die Startansicht passt sich der Fenstergröße an (Laptop, iPad quer und hochkant), solange man die Ansicht nicht
   selbst gedreht hat.
+
+## Live-Steuerung: Schüler steuert am Beamer
+
+Über den Abgabe-Server (im Ordner `website/` `npm start`, Lehrerseite <http://localhost:8080/lehrer/innenpolgenerator>;
+gemeinsamer Baustein `gemeinsam/live/`, wie bei `induktion-spule`): Der Innenpolgenerator hat keine Tafel, deshalb
+steht das Bedienfeld der Live-Steuerung als kleiner Kasten unten links (im Erklärmodus unten rechts, wo dann kein
+Bedienfeld ist), mit „Steuerung abgeben“ (QR-Code), „Schüler steuert“ / „Ich steuere“, „Trennen“ und „Lehrerseite
+auf anderem Gerät“. Gespiegelt werden alle Einstellungen (auch Erklärmodus, Feldlinien, Anzeige), die Drehung des
+Magneten, Zeiger, Glühdraht, Windrotor, U–t-Diagramm und die Ansicht; Feldlinien, B-Pfeile, Spannung und LED rechnet
+das zuschauende Gerät aus der übernommenen Stellung selbst. Technik: `js/live.js`.
 
 ## Physikalisches Modell
 
@@ -119,7 +149,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 ## Plan
 
-1. Eine Spule, B im Spuleninneren, Diagramme B–t und U–t, Tangente ✓
+1. Eine Spule, B im Spuleninneren, Diagramme B–t und U–t, Tangente ✓ (B–t und Tangente später wieder entfernt)
 2. Zwei Spulen in Reihe mit Eisenjoch, Ende – Ende / Ende – Anfang ✓
 3. Drei Spulen um 120° versetzt: Drehstrom
 4. Polrad mit mehreren Polpaaren: f = p · n (warum langsame Windräder viele Pole haben)
@@ -155,9 +185,12 @@ innenpolgenerator/
 │   ├── szene.js        # Renderer, Kamera, Licht, Startansicht einpassen
 │   ├── modell.js       # Polrad mit Kurbel, Spulen mit Eisenkern, Joch, B-Pfeile
 │   ├── messgeraet.js   # Zeigermessgerät und Kabel (je nach Schaltung verlegt)
-│   ├── diagramm.js     # Diagramme B–t und U–t, Tangente
+│   ├── led.js          # LED statt Messgerät (Gedankenexperiment, wie in generator-leiterschleife)
+│   ├── gluehlampe.js   # Glühlampe statt Messgerät (Gedankenexperiment)
+│   ├── diagramm.js     # U–t-Diagramm
 │   ├── ziehen.js       # Kurbel mit Maus/Finger drehen
 │   ├── bedienfeld.js   # Knöpfe, Regler, Anzeigen, freie Fläche für die Startansicht
+│   ├── live.js         # Live-Steuerung (gemeinsam/live/)
 │   ├── hilfen.js       # Hilfsfunktionen (Beschriftungen)
 │   └── materialien.js  # gemeinsame Materialien
 ├── tests/physik.test.mjs

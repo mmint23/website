@@ -17,11 +17,15 @@ export const state = {
   hold: false,        // Magnet festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen
   slowMotion: false,
   range: 0.3,         // Messbereich ±0,3 V
+  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe) – Gedankenexperiment
   explain: false,     // Erklärmodus: nur hier Magnetfeld (Feldlinien, B-Pfeil, B–t-Diagramm, Tangente, reale Physik)
   showB: false,       // Pfeil für B im Spuleninneren (Spule und Kern dann durchsichtig)
-  showPlot: true,     // Diagramm U–t (im Erklärmodus dazu B–t)
-  showSlope: false,   // Änderung von B als Tangente an die B-Kurve
+  showPlot: false,    // Diagramm U–t (im Erklärmodus dazu B–t); zu Beginn aus
+  paused: false,      // Bewegung angehalten (Knopf „Pause“, nur im Erklärmodus)
 };
+
+// Mit ?erklaerung in der Adresse (QR-Code „für den Erklärmodus“) startet die Simulation gleich im Erklärmodus
+export const imErklaermodusStarten = new URLSearchParams(globalThis.location?.search ?? '').has('erklaerung');
 
 // Aus dem Windpark gekommen (?von=windpark&wind=…): Antrieb „Wind“ mit dem Wind von dort. Ohne Windpark im
 // Browser (Tests) bleibt alles wie oben.

@@ -1,34 +1,48 @@
 // ------------------------------------------------------------------
-// Bedienfeld: Erklärmodus ein/aus (nur dort das Magnetfeld: reale Physik statt Feldlinienmodell, Feldlinien und ihre
-// Färbung im Spuleninneren, B im Spuleninneren, B–t-Diagramm mit Tangente);
-// Aufbau (mit oder ohne Eisenkern, Verbindung der beiden Spulen), Antrieb mit Festhalten und Zeitlupe, Messgerät
+// Bedienfeld: Erklärmodus ein/aus (nur dort das Magnetfeld: Feldlinien und ihre Färbung im Spuleninneren, B im
+// Spuleninneren; dann alle Bedienelemente links, mit Pause);
+// nur im Modell: Rechnung (Feldlinienmodell / reale Physik) und Aufbau (Eisenkern, Verbindung der beiden Spulen);
+// Antrieb mit Festhalten und Zeitlupe; Anzeige (Messgerät, LED oder Glühlampe)
 // ------------------------------------------------------------------
 import { METER, SPEED_MAX, WIND_MAX, TURBINE } from './config.js';
-import { state, ausWindpark } from './state.js';
+import { state, ausWindpark, imErklaermodusStarten } from './state.js';
 import { endCrank, setHold, holdTo, rotor, frequency, park } from './physik.js';
 import { updateMeterFace } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { fitView, controls } from './szene.js';
 import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
+import { adresseFuer, netz, raum } from '../../../gemeinsam/verbindung.js';
 
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 const IRON = [['airBtn', false], ['ironBtn', true]];
+// Angeschlossen: Messgerät, LED oder Glühlampe (Gedankenexperiment, siehe README)
+const DISPLAYS = [['displayMeterBtn', 'meter'], ['displayLedBtn', 'led'], ['displayLampBtn', 'lamp']];
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
-const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope']];
+const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
 
 const segment = (id, active) => {
   $(id).classList.toggle('active', active);
   $(id).setAttribute('aria-pressed', String(active));
 };
 
-function updateUi() {
+export function updateUi() {
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Magnetfeld in den Spulen';
   $('explainBtn').classList.toggle('active', state.explain);
   $('explainBox').hidden = !state.explain;
-  $('plotLabel').textContent = state.explain ? 'Diagramme B–t und U–t' : 'Diagramm U–t';
+  bedienfeldUmhaengen();
+  $('panel').hidden = state.explain;   // im Erklärmodus nur ein Bedienfeld (links)
+  document.body.classList.toggle('erklaer-an', state.explain);   // Live-Steuerung: Kasten dann rechts (CSS)
+  requestAnimationFrame(erklaerLage);   // Höhe des Erklär-Bedienfelds (auch wenn der Erklärmodus live umschaltet)
+  $('aufbauSection').hidden = state.explain;
+  $('stopBtn').hidden = state.explain;   // im Erklärmodus gibt es Pause
+  $('pauseBtn').hidden = !state.explain;
+  $('pauseBtn').setAttribute('aria-pressed', String(state.paused));
+  $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
   for (const [id, iron] of IRON) segment(id, state.iron === iron);
+  for (const [id, display] of DISPLAYS) segment(id, state.display === display);
+  $('displayButtons').hidden = state.explain;   // Auswahl nur im Modell
   $('ironStatus').textContent = state.iron
     ? 'Der Eisenkern bündelt die Feldlinien: Mehr Linien gehen durch die Spule.'
     : 'Luftspule: Nur ein Teil der Feldlinien geht durch die Spule.';
@@ -48,9 +62,10 @@ function updateUi() {
   $('holdBox').hidden = !state.hold;
   for (const button of $('rangeButtons').children) segment(button.id, Number(button.dataset.range) === state.range);
   for (const [id, key] of CHECKS) $(id).checked = state[key];
-  $('slopeCheck').disabled = !state.showPlot;
   $('insideCheck').disabled = !state.showField;   // färben geht nur bei eingeblendeten Feldlinien
-  $('lineModelBtn').setAttribute('aria-pressed', String(!state.lineModel));   // gedrückt: reale Physik
+  segment('lineModelBtn', state.lineModel);
+  segment('realBtn', !state.lineModel);
+  $('rechnungSection').hidden = state.explain;   // nur im Modell
   $('lineModelInfo').hidden = !state.lineModel;
   $('realInfo').hidden = state.lineModel;
   updateMeterFace();
@@ -59,8 +74,25 @@ function updateUi() {
 // ---------------- Startansicht
 
 // Modell mit Kabeln und Messgerät (Bildebene, cm)
-const INHALT = { x: 7.5, y: -2, w: 62, h: 46 };
+const INHALT = { x: 9, y: -2, w: 66, h: 46 };
 let verschoben = false;   // hat jemand die Ansicht gedreht oder gezoomt? Dann beim Größenwechsel nicht neu einpassen
+
+// Erklärmodus: alle Bedienelemente links. Diese Abschnitte wandern dann aus dem rechten Bedienfeld ins Erklär-
+// Bedienfeld (Ziel) und zurück an ihren Platz (Merkzeichen an der alten Stelle)
+const UMZUG = [['startSection', 'startPlatz'], ['antriebSection', 'antriebPlatz'], ['anzeigeSection', 'anzeigePlatz']];
+const merkzeichen = new Map();
+function bedienfeldUmhaengen() {
+  for (const [id, ziel] of UMZUG) {
+    const abschnitt = $(id);
+    if (!merkzeichen.has(id)) {
+      merkzeichen.set(id, document.createComment(id));
+      abschnitt.before(merkzeichen.get(id));
+    }
+    const links = $(ziel).contains(abschnitt);
+    if (state.explain && !links) $(ziel).append(abschnitt);
+    if (!state.explain && links) merkzeichen.get(id).after(abschnitt);
+  }
+}
 
 // Freie Fläche zwischen Überschrift, Bedienfeld, Diagrammen, Hinweis und (im Erklärmodus) Erklär-Bedienfeld. Mehrere
 // Möglichkeiten – neben oder über den Diagrammen, neben oder unter dem Erklär-Bedienfeld –, genommen wird die, in
@@ -74,8 +106,8 @@ function freieFlaeche() {
   const erklaer = state.explain ? rect($('explainBox')) : null;
   const flaeche = (left, top, right, bottom) => ({ x: left, y: top, w: Math.max(120, right - left), h: Math.max(120, bottom - top) });
   // Schmale Fenster: Erklär-Bedienfeld oben über die ganze Breite, Bedienfeld unten
-  if (W <= 700) return flaeche(16, (erklaer ? erklaer.bottom : kopf.bottom) + 8, W - 16, (plot ? plot.top : panel.top) - 8);
-  const top = kopf.bottom + 8, right = panel.left - 12;
+  if (W <= 700) return flaeche(16, (erklaer ? erklaer.bottom : kopf.bottom) + 8, W - 16, (plot ? plot.top : $('panel').hidden ? H - 8 : panel.top) - 8);
+  const top = kopf.bottom + 8, right = $('panel').hidden ? W - 16 : panel.left - 12;
   const unten = hint.offsetParent ? rect(hint).top - 8 : H - 16;
   const links = [plot, erklaer].filter(Boolean);   // was links im Weg ist
   const kandidaten = [flaeche(Math.max(16, ...links.map(r => r.right + 12)), top, right, unten)];
@@ -111,11 +143,12 @@ function resetView() {
   fitView(freieFlaeche(), INHALT);
 }
 
-// Erklärmodus ein/aus: beim Einschalten gleich B im Spuleninneren, beim Ausschalten alles zum Magnetfeld aus. Das
-// B–t-Diagramm macht den Diagrammkasten höher – die Ansicht passt sich an.
+// Erklärmodus ein/aus: alles zum Magnetfeld zu Beginn aus (auch B im Spuleninneren). Die Bedienfelder ändern sich
+// – die Ansicht passt sich an.
 function setExplain(on) {
   state.explain = on;
-  Object.assign(state, on ? { showB: true } : { showB: false, showField: false, colorInside: false, showSlope: false });
+  state.paused = false;
+  Object.assign(state, { showB: false, showField: false, colorInside: false });   // Magnetfeld zu Beginn aus
   updateUi();
   requestAnimationFrame(neuEinpassen);   // erst, wenn der Diagrammkasten seine neue Größe hat
 }
@@ -147,6 +180,7 @@ export function initUi() {
     $('rangeButtons').append(button);
   }
   for (const [id, iron] of IRON) $(id).addEventListener('click', () => { state.iron = iron; updateUi(); });
+  for (const [id, display] of DISPLAYS) $(id).addEventListener('click', () => { state.display = display; updateUi(); });
   for (const [id, reversed] of WIRING) $(id).addEventListener('click', () => { state.reversed = reversed; updateUi(); });
   for (const [id, drive] of DRIVES) {
     $(id).addEventListener('click', () => {
@@ -168,6 +202,11 @@ export function initUi() {
   });
   $('holdBtn').addEventListener('click', () => { setHold(!state.hold); updateUi(); });
   $('slowBtn').addEventListener('click', () => { state.slowMotion = !state.slowMotion; updateUi(); });
+  $('pauseBtn').addEventListener('click', () => {
+    endCrank();
+    state.paused = !state.paused;
+    updateUi();
+  });
   const holdSlider = $('holdSlider');
   holdSlider.addEventListener('input', () => holdTo(Number(holdSlider.value) * Math.PI / 180));
   holdSlider.addEventListener('pointerdown', () => { holdSliderActive = true; });
@@ -181,15 +220,20 @@ export function initUi() {
       if (key === 'showPlot') requestAnimationFrame(neuEinpassen);   // mehr bzw. weniger Platz für das Modell
     });
   }
-  // Knopf „Reale Physik“: wechselt zwischen Feldlinienmodell (Standard) und cos-Modell. Ob die Feldlinien zu sehen
+  // Rechnung (nur im Modell): Feldlinienmodell (Standard) oder reale Physik (cos-Modell). Ob die Feldlinien zu sehen
   // sind, bleibt davon unberührt.
-  $('lineModelBtn').addEventListener('click', () => {
-    state.lineModel = !state.lineModel;
-    updateUi();
-  });
+  for (const [id, lineModel] of [['lineModelBtn', true], ['realBtn', false]]) {
+    $(id).addEventListener('click', () => { state.lineModel = lineModel; updateUi(); });
+  }
   $('explainBtn').addEventListener('click', () => setExplain(!state.explain));
   $('resetView').addEventListener('click', resetView);
   $('linkBtn').addEventListener('click', () => showLink());
+  // QR-Code, der immer in den Erklärmodus führt (?erklaerung); über den Abgabe-Server mit der Adresse des Laptops im
+  // WLAN (adresseFuer), sonst diese Seite
+  $('erklaerQrBtn').addEventListener('click', () => {
+    const url = netz.adressen.length || raum ? adresseFuer({ erklaerung: '' }) : location.origin + location.pathname + '?erklaerung';
+    showLink(url, 'Öffnet die Simulation gleich im Erklärmodus.');
+  });
   // Aus dem Windpark gekommen (?von=windpark, Antrieb „Wind“ mit dem Wind von dort, state.js): Knopf zurück, mit dem
   // Wind wie hier eingestellt und der Uhrzeit, damit der Windpark wieder so aussieht
   if (ausWindpark) {
@@ -206,6 +250,7 @@ export function initUi() {
   controls.addEventListener('start', () => { verschoben = true; });
   window.addEventListener('resize', () => { if (!verschoben) resetView(); else erklaerLage(); });
 
-  resetView();
+  if (imErklaermodusStarten) setExplain(true);
+  else resetView();
   updateUi();
 }
