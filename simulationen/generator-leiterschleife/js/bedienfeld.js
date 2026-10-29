@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // Bedienfeld: Antrieb, Magnet, Messbereich, Anzeigen, Erklärmodus. Aus dem Windpark gekommen (?von=windpark):
 // Knopf „Zurück zum Windpark“ (mit Wind und Uhrzeit) und kurz der Hinweis „Vereinfachtes Modell des Generators“.
-// Schülermodus (Knopf, bzw. fest mit ?schueler): Erklärmodus ohne die Knöpfe B, v und F_L; „QR-Code für den
+// Schülermodus (Knopf, bzw. fest mit ?schueler): Erklärmodus ohne den Knopf F_L; „QR-Code für den
 // Schülermodus“ zeigt die Adresse dafür (über den Abgabe-Server mit Raumcode, damit Geteiltes bei der Lehrkraft
 // ankommt). Ist er an, öffnet auch „Steuerung abgeben“ (Live-Steuerung, live.js) das Schülergerät im Schülermodus.
 // ------------------------------------------------------------------
@@ -48,6 +48,10 @@ export function updateUi() {
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
   $('sideViewBtn').setAttribute('aria-pressed', String(state.sideView));
   $('holdBox').hidden = !state.hold;
+  // Drehwinkel-Regler dort, wo man festhält: im Erklärmodus links unter „Festhalten“, sonst rechts unter
+  // „Leiterschleife festhalten“ (derselbe Regler, nur umgehängt)
+  const festhalten = $(state.explain ? 'explainHoldBtn' : 'holdBtn');
+  if (festhalten.nextElementSibling !== $('holdBox')) festhalten.after($('holdBox'));
   for (const [id, display] of DISPLAYS) {
     $(id).classList.toggle('active', state.display === display);
     $(id).setAttribute('aria-pressed', String(state.display === display));
@@ -149,7 +153,7 @@ export function initUi() {
   // QR-Code für den Schülermodus; mit Abgabe-Server (Raumcode vorhanden) im selben Raum wie diese Seite
   $('schuelerQrBtn').addEventListener('click', () => {
     const url = raum ? adresseFuer({ schueler: '' }) : location.origin + location.pathname + '?schueler';
-    showLink(url, 'Schülermodus: Erklärmodus ohne B, v und F_L' + (raum ? ' – Geteiltes kommt in diesem Raum an.' : '.'));
+    showLink(url, 'Schülermodus: Erklärmodus ohne F_L' + (raum ? ' – Geteiltes kommt in diesem Raum an.' : '.'));
   });
   // Schülermodus ein/aus (Lehrkraft, z. B. am Beamer): ein → gleich in den Erklärmodus, B, v und F_L aus
   $('schuelerModusBtn').addEventListener('click', () => {
@@ -212,7 +216,7 @@ export function initUi() {
 
   applyMagnetPoles();
   document.body.classList.toggle('schueler-geraet', modus.festgelegt);
-  if (modus.schueler) setExplain(true);   // Größen B, v, F_L sind dabei aus (setExplain) und bleiben es
+  if (modus.schueler) setExplain(true);   // Größen sind dabei aus (setExplain), F_L bleibt es
   else resetView();
   updateUi();
 }

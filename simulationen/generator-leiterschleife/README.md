@@ -105,7 +105,8 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
   Erst gleiten die Ringe von rechts auf die Welle, dann wachsen die Zuleitungen zu den Ringen, zuletzt kommen
   die Bürsten von unten (beim Abnehmen rückwärts, insgesamt 1,8 s).
   Die Pole „−“ und „+“ stehen dann über den Ringen – so sieht man, welcher Pol an welchem Ring liegt.
-- **Pause / Weiter, Zeitlupe, Festhalten** (dieselben Schalter wie rechts)
+- **Pause / Weiter, Zeitlupe, Festhalten** (dieselben Schalter wie rechts); festgehalten erscheint der
+  Drehwinkel-Regler im Erklärmodus direkt darunter im linken Feld (sonst rechts unter „Leiterschleife festhalten“)
 - **Magnet durchsichtig:** Polblöcke und Joch werden durchsichtig (Deckkraft 0,3), so sieht man die Schleife auch
   von oben oder unten durch den Magneten. Beim Verlassen des Erklärmodus wieder aus.
 - **Ansicht von rechts:** Blick genau entlang der Welle, von der Seite der Schleifringe. Die Schleife erscheint als
@@ -140,11 +141,10 @@ Zeichnungen geteilt wurden (die Koordinaten beziehen sich auf das Bild).
 
 ## Schülermodus (z. B. für eine Lehrprobe)
 
-Der **Erklärmodus ohne die Knöpfe B, v und F_L**: Die Schüler arbeiten mit Elektronen, Schleifringen, Spule, Pause,
-Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulation Feldrichtung, Geschwindigkeit und
-Lorentzkraft vorwegnimmt.
+Der **Erklärmodus ohne den Knopf F_L**: Die Schüler arbeiten mit B, v, Elektronen, Schleifringen, Spule, Pause,
+Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulation die Lorentzkraft vorwegnimmt.
 
-- **„Schülermodus (ohne B, v, F_L)“** (oben im Bedienfeld) schaltet ihn auf diesem Gerät ein und aus, z. B. am
+- **„Schülermodus (ohne F_L)“** (oben im Bedienfeld) schaltet ihn auf diesem Gerät ein und aus, z. B. am
   Beamer; beim Einschalten geht es gleich in den Erklärmodus.
 - **„QR-Code für den Schülermodus“** zeigt einen QR-Code zu `…/generator-leiterschleife/?schueler`. Wer ihn scannt,
   ist fest im Schülermodus (die beiden Knöpfe fehlen dort). Ist die Seite über den Abgabe-Server als Lehrerseite
@@ -152,10 +152,10 @@ Lorentzkraft vorwegnimmt.
   dann in der Abgabeleiste dieser Lehrerseite an. Ohne Server (GitHub Pages) geht alles außer Teilen.
 - **Live-Steuerung im Schülermodus:** Ist der Schülermodus auf der Lehrerseite an, öffnet auch der QR-Code von
   „Steuerung abgeben“ das Schülergerät im Schülermodus.
-- „Zurück zum Modell“ bleibt; auch dort und beim erneuten Öffnen des Erklärmodus fehlen B, v und F_L.
+- „Zurück zum Modell“ bleibt; auch dort und beim erneuten Öffnen des Erklärmodus fehlt F_L.
 - Kein Schutz: Wer `?schueler` aus der Adresse löscht, hat wieder alle Knöpfe.
 - Technik: `modus` in `state.js` (gehört zum Gerät, wird nicht live übertragen); im Schülermodus ist die Klasse
-  `ohne-im-schuelermodus` ausgeblendet, auf dem Schülergerät zusätzlich `nur-lehrkraft`.
+  `ohne-im-schuelermodus` (Knopf F_L) ausgeblendet, auf dem Schülergerät zusätzlich `nur-lehrkraft`.
 
 ## Live-Steuerung: Schüler steuert am Beamer
 

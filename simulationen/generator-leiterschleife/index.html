@@ -37,10 +37,10 @@
   <!-- Bedienfeld des Erklärmodus: nur Schalter für die Größen und den Ablauf -->
   <aside class="popup" id="explainPanel" aria-label="Erklärung" hidden>
     <h2>Erklärung</h2>
-    <div class="toggles three ohne-im-schuelermodus" role="group" aria-label="Größen">
+    <div class="toggles three groessen" role="group" aria-label="Größen">
       <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
       <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
-      <button id="showFBtn" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
+      <button id="showFBtn" class="ohne-im-schuelermodus" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
     </div>
     <div class="toggles three" role="group" aria-label="Elektronen">
       <button id="showElectronBtn" type="button"><span class="dot" style="background:#1565c0"></span>e⁻</button>
@@ -65,7 +65,7 @@
     <section>
       <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
       <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
-      <button id="schuelerModusBtn" class="state nur-lehrkraft" type="button" aria-pressed="false">Schülermodus (ohne B, v, F_L)</button>
+      <button id="schuelerModusBtn" class="state nur-lehrkraft" type="button" aria-pressed="false">Schülermodus (ohne F_L)</button>
       <button id="schuelerQrBtn" class="link-btn nur-lehrkraft" type="button">QR-Code für den Schülermodus</button>
     </section>
     <section>
