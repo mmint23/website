@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
-// Bedienfeld: ganz oben reale Physik statt Feldlinienmodell, Feldlinien und ihre Färbung im Spuleninneren, Magnet
-// festhalten (mit Drehwinkel-Regler) und Zeitlupe;
-// Aufbau (mit oder ohne Eisenkern, eine oder zwei Spulen), Antrieb, Anzeigen, Messbereich
+// Bedienfeld: Erklärmodus ein/aus (nur dort das Magnetfeld: reale Physik statt Feldlinienmodell, Feldlinien und ihre
+// Färbung im Spuleninneren, B im Spuleninneren, B–t-Diagramm mit Tangente);
+// Aufbau (mit oder ohne Eisenkern, Verbindung der beiden Spulen), Antrieb mit Festhalten und Zeitlupe, Messgerät
 // ------------------------------------------------------------------
 import { METER, SPEED_MAX } from './config.js';
 import { state } from './state.js';
@@ -14,7 +14,6 @@ import { showLink } from '../../../gemeinsam/link.js';
 
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
-const COILS = [['oneCoilBtn', 1], ['twoCoilsBtn', 2]];
 const IRON = [['airBtn', false], ['ironBtn', true]];
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
 const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope']];
@@ -25,13 +24,15 @@ const segment = (id, active) => {
 };
 
 function updateUi() {
-  for (const [id, n] of COILS) segment(id, state.coils === n);
+  $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Magnetfeld in den Spulen';
+  $('explainBtn').classList.toggle('active', state.explain);
+  $('explainBox').hidden = !state.explain;
+  $('plotLabel').textContent = state.explain ? 'Diagramme B–t und U–t' : 'Diagramm U–t';
   for (const [id, iron] of IRON) segment(id, state.iron === iron);
   $('ironStatus').textContent = state.iron
     ? 'Der Eisenkern bündelt die Feldlinien: Mehr Linien gehen durch die Spule.'
     : 'Luftspule: Nur ein Teil der Feldlinien geht durch die Spule.';
   for (const [id, reversed] of WIRING) segment(id, state.reversed === reversed);
-  $('wiringBox').hidden = state.coils === 1;
   $('wiringStatus').textContent = state.reversed
     ? 'E von Spule 1 ist mit A von Spule 2 verbunden.'
     : 'E von Spule 1 ist mit E von Spule 2 verbunden.';
@@ -58,28 +59,62 @@ function updateUi() {
 const INHALT = { x: 7.5, y: -2, w: 62, h: 46 };
 let verschoben = false;   // hat jemand die Ansicht gedreht oder gezoomt? Dann beim Größenwechsel nicht neu einpassen
 
-// Freie Fläche zwischen Überschrift, Bedienfeld, Diagrammen und Hinweis. Neben den Diagrammen (Querformat) oder
-// über ihnen (Hochformat) – je nachdem, wo das Modell größer erscheint.
+// Freie Fläche zwischen Überschrift, Bedienfeld, Diagrammen, Hinweis und (im Erklärmodus) Erklär-Bedienfeld. Mehrere
+// Möglichkeiten – neben oder über den Diagrammen, neben oder unter dem Erklär-Bedienfeld –, genommen wird die, in
+// der das Modell am größten erscheint.
 function freieFlaeche() {
   const W = innerWidth, H = innerHeight;
   const rect = el => el.getBoundingClientRect();
   const kopf = rect(document.querySelector('.header')), panel = rect($('panel'));
   const plot = state.showPlot ? rect($('plotBox')) : null;
   const hint = document.querySelector('.hint');
-  const top = kopf.bottom + 8;
-  const flaeche = (left, right, bottom) => ({ x: left, y: top, w: Math.max(120, right - left), h: Math.max(120, bottom - top) });
-  if (W <= 700) return flaeche(16, W - 16, (plot ? plot.top : panel.top) - 8);
-  const right = panel.left - 12;
+  const erklaer = state.explain ? rect($('explainBox')) : null;
+  const flaeche = (left, top, right, bottom) => ({ x: left, y: top, w: Math.max(120, right - left), h: Math.max(120, bottom - top) });
+  // Schmale Fenster: Erklär-Bedienfeld oben über die ganze Breite, Bedienfeld unten
+  if (W <= 700) return flaeche(16, (erklaer ? erklaer.bottom : kopf.bottom) + 8, W - 16, (plot ? plot.top : panel.top) - 8);
+  const top = kopf.bottom + 8, right = panel.left - 12;
   const unten = hint.offsetParent ? rect(hint).top - 8 : H - 16;
-  if (!plot) return flaeche(16, right, unten);
+  const links = [plot, erklaer].filter(Boolean);   // was links im Weg ist
+  const kandidaten = [flaeche(Math.max(16, ...links.map(r => r.right + 12)), top, right, unten)];
+  if (plot) kandidaten.push(flaeche(erklaer ? erklaer.right + 12 : 16, top, right, plot.top - 8));
+  if (erklaer) {
+    kandidaten.push(flaeche(plot ? plot.right + 12 : 16, erklaer.bottom + 8, right, unten));
+    if (plot) kandidaten.push(flaeche(16, erklaer.bottom + 8, right, plot.top - 8));
+  }
   const groesse = f => Math.min(f.w / INHALT.w, f.h / INHALT.h);
-  const daneben = flaeche(plot.right + 12, right, unten), darueber = flaeche(16, right, plot.top - 8);
-  return groesse(darueber) > groesse(daneben) ? darueber : daneben;
+  return kandidaten.reduce((a, b) => (groesse(b) > groesse(a) ? b : a));
 }
 
+// Erklär-Bedienfeld: unter der Überschrift, höchstens bis kurz über die Diagramme (scrollt sonst)
+function erklaerLage() {
+  const box = $('explainBox');
+  if (box.hidden || innerWidth <= 700) {
+    box.style.top = box.style.maxHeight = '';
+    return;
+  }
+  const top = document.querySelector('.header').getBoundingClientRect().bottom + 12;
+  const plot = state.showPlot ? $('plotBox').getBoundingClientRect() : null;
+  const bottom = plot && !$('plotBox').hidden ? plot.top - 12 : innerHeight - 70;
+  box.style.top = top + 'px';
+  box.style.maxHeight = Math.max(120, bottom - top) + 'px';
+}
+
+// Nach einer Änderung der Diagramme: Ansicht neu einpassen (wenn niemand sie verschoben hat), Erklär-Bedienfeld anpassen
+const neuEinpassen = () => (verschoben ? erklaerLage() : resetView());
+
 function resetView() {
+  erklaerLage();
   verschoben = false;
   fitView(freieFlaeche(), INHALT);
+}
+
+// Erklärmodus ein/aus: beim Einschalten gleich B im Spuleninneren, beim Ausschalten alles zum Magnetfeld aus. Das
+// B–t-Diagramm macht den Diagrammkasten höher – die Ansicht passt sich an.
+function setExplain(on) {
+  state.explain = on;
+  Object.assign(state, on ? { showB: true } : { showB: false, showField: false, colorInside: false, showSlope: false });
+  updateUi();
+  requestAnimationFrame(neuEinpassen);   // erst, wenn der Diagrammkasten seine neue Größe hat
 }
 
 // Jedes Bild: Drehwinkel-Regler folgt dem Magneten (solange man ihn nicht selbst bedient), Frequenz
@@ -104,7 +139,6 @@ export function initUi() {
     button.addEventListener('click', () => { state.range = range; updateUi(); });
     $('rangeButtons').append(button);
   }
-  for (const [id, n] of COILS) $(id).addEventListener('click', () => { state.coils = n; updateUi(); });
   for (const [id, iron] of IRON) $(id).addEventListener('click', () => { state.iron = iron; updateUi(); });
   for (const [id, reversed] of WIRING) $(id).addEventListener('click', () => { state.reversed = reversed; updateUi(); });
   for (const [id, drive] of DRIVES) {
@@ -134,7 +168,7 @@ export function initUi() {
     $(id).addEventListener('change', e => {
       state[key] = e.target.checked;
       updateUi();
-      if (key === 'showPlot' && !verschoben) resetView();   // mehr bzw. weniger Platz für das Modell
+      if (key === 'showPlot') requestAnimationFrame(neuEinpassen);   // mehr bzw. weniger Platz für das Modell
     });
   }
   // Knopf „Reale Physik“: wechselt zwischen Feldlinienmodell (Standard) und cos-Modell. Ob die Feldlinien zu sehen
@@ -143,6 +177,7 @@ export function initUi() {
     state.lineModel = !state.lineModel;
     updateUi();
   });
+  $('explainBtn').addEventListener('click', () => setExplain(!state.explain));
   $('resetView').addEventListener('click', resetView);
   $('linkBtn').addEventListener('click', () => showLink());
   // Aus dem Windpark gekommen (?von=windpark): Knopf zurück, mit Wind und Uhrzeit, damit der Windpark wieder so aussieht
@@ -155,7 +190,7 @@ export function initUi() {
   }
   onCrankGrab(updateUi);
   controls.addEventListener('start', () => { verschoben = true; });
-  window.addEventListener('resize', () => { if (!verschoben) resetView(); });
+  window.addEventListener('resize', () => { if (!verschoben) resetView(); else erklaerLage(); });
 
   resetView();
   updateUi();

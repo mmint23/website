@@ -156,3 +156,29 @@ html, body {
 .farbe.innen { background: #aa00ff; }
 /* Umschalter Feldlinienmodell / reale Physik oben im Bedienfeld */
 .panel button.modell-btn { margin-top: 0; font-weight: 600; }
+/* Erklärmodus ein/aus: Knopf unter „Link / QR-Code“, im Erklärmodus hervorgehoben */
+.panel button.explain-btn { margin-top: 0; font-weight: 600; }
+.panel button.explain-btn.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+/* Bedienfeld des Erklärmodus: links unter der Überschrift (wie bei generator-leiterschleife); Abstand nach oben und
+   Höhe bis zu den Diagrammen setzt bedienfeld.js */
+.popup {
+  position: fixed;
+  top: 110px;
+  left: 16px;
+  width: 290px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+.popup h2 { margin: 0 0 8px; font-size: 1rem; }
+.popup button {
+  display: block; width: 100%; padding: 8px 10px; font: inherit; font-size: 0.95rem; font-weight: 600;
+  border: 1px solid #9aa7b4; border-radius: 8px; background: #fff; color: inherit; cursor: pointer;
+}
+.popup button:hover { background: #f0f4f8; }
+.popup button.state[aria-pressed="true"] { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+@media (max-width: 700px) {
+  .popup { top: 16px; width: auto; right: 16px; max-height: 30%; }
+}

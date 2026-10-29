@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------
-// Diagramme übereinander auf derselben Zeitachse: oben B im Spuleninneren (B–t), unten die Spannung am
-// Messgerät (U–t). Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit); rechts bleibt ein
+// Diagramme übereinander auf derselben Zeitachse: oben B im Spuleninneren (B–t, nur im Erklärmodus), unten die
+// Spannung am Messgerät (U–t). Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit); rechts bleibt ein
 // schmaler Rand, damit die Tangente („Änderung von B“) am aktuellen Punkt nach beiden Seiten passt.
 // Bei zwei Spulen: B₂ gestrichelt, U₁ und U₂ dünn, U (Summe am Messgerät) dick.
 // ------------------------------------------------------------------
@@ -121,9 +121,24 @@ export function updatePlot() {
   while (samples.length && samples[0].t < now - PLOT_SECONDS - 0.5) samples.shift();
   for (const el of document.querySelectorAll('[data-zwei]')) el.hidden = !zwei;
   $('slopeLegend').hidden = !state.showSlope;
+  $('plotBPart').hidden = !state.explain;
   if (box.hidden) return;
+  if (state.explain) zeichneB(jetzt);
 
-  // B–t
+  // U–t
+  const r = state.range;
+  const u = rahmen(plots.u, r, [-r, -r / 2, 0, r / 2, r], r < 1 ? 2 : 1, true);
+  if (zwei) {
+    kurve(u, 'u1', FARBE.s1, 1.4);
+    kurve(u, 'u2', FARBE.s2, 1.4, [6, 5]);
+  }
+  kurve(u, 'u', zwei ? FARBE.summe : FARBE.s1, 2.6);
+  punkt(u, jetzt.u, zwei ? FARBE.summe : FARBE.s1);
+}
+
+// B–t mit B in beiden Spulen und auf Wunsch der Tangente an B₁ („Änderung von B“)
+function zeichneB(jetzt) {
+  const now = jetzt.t, zwei = state.coils === 2;
   const b = rahmen(plots.b, B_PLOT, [-100, -50, 0, 50, 100], 0, false);
   if (zwei) kurve(b, 'b2', FARBE.s2, 2, [6, 5]);
   kurve(b, 'b1', FARBE.s1, 2.4);
@@ -145,16 +160,6 @@ export function updatePlot() {
   }
   if (zwei) punkt(b, jetzt.b2, FARBE.s2);
   punkt(b, jetzt.b1, FARBE.s1);
-
-  // U–t
-  const r = state.range;
-  const u = rahmen(plots.u, r, [-r, -r / 2, 0, r / 2, r], r < 1 ? 2 : 1, true);
-  if (zwei) {
-    kurve(u, 'u1', FARBE.s1, 1.4);
-    kurve(u, 'u2', FARBE.s2, 1.4, [6, 5]);
-  }
-  kurve(u, 'u', zwei ? FARBE.summe : FARBE.s1, 2.6);
-  punkt(u, jetzt.u, zwei ? FARBE.summe : FARBE.s1);
 }
 
 export const clearPlot = () => { samples.length = 0; };

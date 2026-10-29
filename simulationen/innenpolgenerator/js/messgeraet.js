@@ -1,7 +1,8 @@
 // ------------------------------------------------------------------
 // Großes Demonstrations-Zeigermessgerät (Nullpunkt in der Mitte, wie bei Leiterschaukel und Generator) und
 // Kabel von den Anschlüssen der Spulen. Bei zwei Spulen verbindet ein Kabel die beiden Spulen (Reihenschaltung);
-// „vertauscht“ ist Spule 2 andersherum angeschlossen – die Kabel liegen dann sichtbar anders.
+// „vertauscht“ ist Spule 2 andersherum angeschlossen – die Kabel liegen dann sichtbar anders. Alle Kabel sind
+// schwarz (Wechselspannung: kein fester Plus- und Minuspol); die Kabel von Spule 2 zum Messgerät liegen auf dem Tisch.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { METER, TABLE_TOP } from './config.js';
@@ -172,6 +173,7 @@ function socketPoint(socketLocal, d = 0) {
   return meter.localToWorld(socketLocal.clone()).addScaledVector(front, 1.2 + d).toArray();
 }
 const sag = (p, dy) => [p[0], p[1] + dy, p[2]];
+const TISCH = TABLE_TOP + 0.3;   // Höhe der Kabelmitte, wenn das Kabel auf dem Tisch liegt
 
 // Erstes Stück vom Anschluss: nach außen (rechts bzw. links) und nach oben (A) bzw. unten (E), etwas nach vorne
 function weg(terminal) {
@@ -201,17 +203,19 @@ function layCables() {
     scene.remove(cable);
   }
   const [s1, s2] = terminals;
-  cables = [makeCable(toMeter(s1.a, SOCKET_PLUS, [[21, 5, 6], [27, 0, 7]]), mat.cableRed)];
+  cables = [makeCable(toMeter(s1.a, SOCKET_PLUS, [[21, 5, 6], [27, 0, 7]]), mat.cableBlack)];
   if (state.coils === 1) {
     cables.push(makeCable(toMeter(s1.e, SOCKET_COM, [[20, -7, 6]]), mat.cableBlack));
   } else if (!state.reversed) {
     cables.push(makeCable(bridge(s1.e, s2.e), mat.cableBlack));
-    // A₂ (links oben) über das Joch hinweg nach rechts zum Messgerät
-    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[-18, 9, 5], [-9, 18.8, 5], [9, 18.8, 5], [18.5, 9, 5.5], [23, -3, 7.5]]), mat.cableBlack));
+    // A₂ (links oben) außen links neben dem Joch hinunter auf den Tisch, vorne auf dem Tisch nach rechts zum Messgerät
+    cables.push(makeCable(toMeter(s2.a, SOCKET_COM, [[-20.5, 0, 6], [-21.5, -12, 8], [-19, TISCH, 11],
+      [-8, TISCH, 13], [8, TISCH, 13], [18, TISCH, 12]]), mat.cableBlack));
   } else {
     cables.push(makeCable(bridge(s1.e, s2.a), mat.cableBlack));
-    // E₂ (links unten) unter dem Joch hindurch (weiter vorne als die Verbindung) zum Messgerät
-    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[-14, -15, 8], [0, -19.5, 8.5], [14, -17, 8]]), mat.cableBlack));
+    // E₂ (links unten) hinunter auf den Tisch, vor der Verbindung auf dem Tisch nach rechts zum Messgerät
+    cables.push(makeCable(toMeter(s2.e, SOCKET_COM, [[-19.5, -10, 7.5], [-15, TISCH, 11],
+      [-4, TISCH, 13], [8, TISCH, 13], [18, TISCH, 12]]), mat.cableBlack));
   }
 }
 

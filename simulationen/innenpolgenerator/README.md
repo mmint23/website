@@ -12,8 +12,10 @@ die rotierende Leiterschleife in `generator-leiterschleife`).
 
 ## Kernidee
 
-Zu jeder Spule sieht man das Magnetfeld B im Spuleninneren (Pfeil) und zwei Diagramme übereinander auf derselben
-Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wird:
+In der Standardansicht sieht man den Generator mit zwei Spulen, deutlich beschrifteten Anschlüssen (A₁/E₁, A₂/E₂),
+Kabeln, Messgerät und dem U–t-Diagramm. Das Magnetfeld gibt es nur im **Erklärmodus** („Erklärung: Magnetfeld in
+den Spulen“): Dort sieht man zu jeder Spule B im Spuleninneren (Pfeil) und zwei Diagramme übereinander auf
+derselben Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wird:
 
 - Die Spannung ist **nicht** am größten, wenn ein Pol auf die Spule zeigt (B am größten) – dort ändert sich B
   gerade nicht, also ist U = 0.
@@ -28,7 +30,7 @@ die Spule ändert: Zeigt ein Pol auf die Spule, gehen die meisten Linien hindurc
 gerade nicht (U = 0). Steht der Magnet quer, geht keine Linie hindurch – aber die Zahl wechselt gerade am
 schnellsten von „nach außen“ zu „nach innen“ (|U| am größten). Im Feldlinienmodell werden B und U aus der Zahl der
 gezeigten Feldlinien berechnet: *Ändert sich die Zahl der Feldlinien durch die Spule, wird eine Spannung
-induziert.* Der Knopf **„Reale Physik“** oben im Bedienfeld schaltet auf das cos-Modell um (siehe unten);
+induziert.* Der Knopf **„Reale Physik“** im Erklärmodus schaltet auf das cos-Modell um (siehe unten);
 nochmal gedrückt geht es zurück. Weil die Linien so gebaut sind, dass ihre Zahl fast wie cos verläuft, stimmen
 beide Modelle annähernd überein (Abweichung von B höchstens etwa 10 %).
 
@@ -44,28 +46,32 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 - **Aus dem Windpark** (Windrad antippen in der Simulation Generator-Windpark, Adresse `?von=windpark&wind=…&zeit=…`):
   Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
-- **Ganz oben im Bedienfeld:** „Reale Physik“ (statt Feldlinienmodell), **Magnetfeld (Feldlinien)** (10 Linien in
-  der Bildebene mit Pfeilen; Spulen, Magnet und Joch werden dafür durchsichtig) und **Feldlinien im Inneren der
-  Spule färben** (violett; nur mit eingeblendeten Feldlinien). Zu Beginn: Feldlinienmodell, Feldlinien aus,
-  ohne Eisenkern.
-  Darunter „Magnet festhalten“ (mit Drehwinkel-Regler) und „Zeitlupe“.
-- **Aufbau**
-  - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh, bei zwei Spulen mit Joch).
-  - **1 Spule** (rechts): Stabmagnet dreht sich vor einer Spule mit Eisenkern und Polschuh.
-  - **2 Spulen**: zweite Spule links, dazu ein Eisenjoch (Ring), das die Kerne außen verbindet – wie der Stator
-    eines echten Generators. Die Spulen sind in Reihe geschaltet; zwei Möglichkeiten zum Verbinden:
-    **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
+- **Erklärung: Magnetfeld in den Spulen** (oben im Bedienfeld; „Zurück zum Modell“ beendet ihn). Die Schalter zum
+  Magnetfeld stehen dann in einem eigenen Feld links unter der Überschrift (wie in `generator-leiterschleife`;
+  schmale Fenster: oben), die Spulen sind im ganzen Erklärmodus stark durchsichtig. Nur im Erklärmodus: „Reale Physik“ (statt Feldlinienmodell), **Magnetfeld (Feldlinien)** (10 Linien in der Bildebene
+  mit Pfeilen; Spulen, Magnet und Joch werden dafür durchsichtig), **Feldlinien im Inneren der Spule färben**
+  (violett; nur mit eingeblendeten Feldlinien), **B im Spuleninneren** (Pfeil; Wicklung und Kern werden dafür
+  durchsichtig; beim Einschalten des Erklärmodus gleich an), **Änderung von B (Tangente)** und über dem
+  U–t-Diagramm das B–t-Diagramm. Beim Verlassen des Erklärmodus geht alles zum Magnetfeld wieder aus.
+  Zu Beginn: Standardansicht, Feldlinienmodell, ohne Eisenkern.
+- **Aufbau:** immer zwei Spulen (rechts Spule 1, links Spule 2), in Reihe geschaltet.
+  - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh und Eisenjoch – ein Ring, der
+    die Kerne außen verbindet, wie der Stator eines echten Generators).
+  - Verbinden: **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
     **Ende – Anfang** (E₁ mit A₂): Spannungen heben sich auf, das Messgerät zeigt nichts.
-    Die Kabel liegen dabei sichtbar anders. Die Knöpfe beschreiben nur die Verbindung, nicht, welche richtig ist.
-    Im U–t-Diagramm stehen dann U₁, U₂ (dünn) und U am Messgerät (dick); im B–t-Diagramm B in beiden Spulen.
+    Die Kabel liegen dabei sichtbar anders (alle schwarz – Wechselspannung; das Kabel von Spule 2 zum Messgerät
+    liegt vorne auf dem Tisch); die Anschlüsse sind groß mit A₁/E₁ und A₂/E₂ beschriftet. Die Knöpfe
+    beschreiben nur die Verbindung, nicht, welche richtig ist.
+    Im U–t-Diagramm stehen U₁, U₂ (dünn) und U am Messgerät (dick); im B–t-Diagramm B in beiden Spulen.
+  - Physik und Tests können weiterhin mit einer Spule rechnen (`state.coils = 1`); im Bedienfeld gibt es das nicht
+    mehr.
 - **Antrieb:** Drehzahl-Regler −3 … +3 Umdrehungen pro Sekunde, „Anhalten“; oder **Kurbel** vorne an der Welle
   mit Maus oder Finger drehen (wer die Kurbel greift, schaltet auf diesen Antrieb; losgelassen läuft der Magnet
   langsam aus).
-- **Magnet festhalten** und **Zeitlupe** (¼) als Knöpfe oben im Bedienfeld, direkt unter den Feldlinien: Festgehalten
+- **Magnet festhalten** und **Zeitlupe** (¼) als Knöpfe unter dem Antrieb (in beiden Ansichten): Festgehalten
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
 - **Frequenz der Wechselspannung** (bei einem Polpaar gleich der Drehzahl).
-- **Anzeigen:** B im Spuleninneren (Pfeil; Wicklung und Kern werden dafür durchsichtig), Diagramme B–t und U–t,
-  Änderung von B (Tangente).
+- **Diagramm U–t** (Haken beim Messgerät; im Erklärmodus „Diagramme B–t und U–t“).
 - **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 V. Ab etwa 2 Umdrehungen pro
   Sekunde kann der träge Zeiger nicht mehr folgen und zittert nur um die Null – wie ein echtes
   Demonstrations-Messgerät. Das Diagramm zeigt die Wechselspannung trotzdem.

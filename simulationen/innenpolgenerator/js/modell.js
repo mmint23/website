@@ -144,12 +144,14 @@ COIL.THETA.forEach((theta, k) => {
   wire([[0, COIL.WIND_IN, COIL.WIND_R], [0, COIL.WIND_IN, front], [tx, COIL.WIND_OUT + 0.2, front], [tx, ty, tz]], 0.16, copper, group);
   wire([[0, COIL.WIND_OUT, COIL.WIND_R], [-tx, COIL.WIND_OUT + 0.4, tz], [-tx, ty, tz]], 0.16, copper, group);
   const ends = {};
+  // Schilder A₁/E₁ bzw. A₂/E₂ gut lesbar über bzw. unter dem äußeren Ende der Spule (passend zum Bedienfeld:
+  // „E von Spule 1 ist mit E von Spule 2 verbunden“)
   for (const [name, x] of [['a', tx], ['e', -tx]]) {
-    const knob = addMesh(new THREE.SphereGeometry(0.45, 16, 12), mat.brass, group);
+    const knob = addMesh(new THREE.SphereGeometry(0.6, 16, 12), mat.brass, group);
     knob.position.set(x, ty, tz);
     ends[name] = knob;
-    const schild = makeTextSprite(name.toUpperCase(), 1.15, '#4a5866');
-    schild.position.set(x * 2.6, ty - 1.1, tz + 0.5);
+    const schild = makeTextSprite(name.toUpperCase() + '₁₂'[k], 1.7, '#1d2733');
+    schild.position.set(Math.sign(x) * (COIL.WIND_R + 2), ty - 1.4, tz + 0.5);
     group.add(schild);
   }
   // B im Kern: Pfeil in der Mitte der Wicklung, Beschriftung daneben
@@ -158,7 +160,7 @@ COIL.THETA.forEach((theta, k) => {
   group.add(arrow);
   const bLabel = makeTextSprite('B', 2.2, B_COLOR);
   group.add(bLabel);
-  bLabel.position.set(up * (COIL.WIND_R + 2.4), arrow.position.y, 0);
+  bLabel.position.set(up * (COIL.WIND_R + 2.4), COIL.WIND_IN + 0.8, 0);
   const name = makeTextSprite(`Spule ${k + 1}`, 1.8, '#4a5866');
   group.add(name);
   name.position.set(-up * (COIL.WIND_R + 3.2), COIL.WIND_IN + 1, 0);
@@ -211,9 +213,10 @@ function setSeeThrough(pairs, on) {
     material.transparent = on;
     material.opacity = on ? opacity : 1;
     material.depthWrite = !on;
+    material.needsUpdate = true;   // durchsichtig ein/aus braucht ein neues Shaderprogramm
   }
 }
-const coilParts = coil => [[coil.copper, 0.32], [coil.iron, 0.22], [coil.insulator, 0.3]];
+const coilParts = coil => [[coil.copper, 0.16], [coil.iron, 0.12], [coil.insulator, 0.12]];
 let seeThrough = null, magnetSeeThrough = null;
 
 export function syncModel() {
@@ -222,8 +225,8 @@ export function syncModel() {
   coils[1].group.visible = bars[1].visible = two;
   yoke.visible = two && state.iron;   // Joch nur mit Eisenkernen
   for (const coil of coils) for (const part of coil.ironParts) part.visible = state.iron;
-  // Spulen durchsichtig für den B-Pfeil und die Feldlinien; Magnet und Joch nur für die Feldlinien
-  const durchsichtig = state.showB || state.showField;
+  // Spulen im ganzen Erklärmodus stark durchsichtig (B-Pfeil, Feldlinien); Magnet und Joch nur für die Feldlinien
+  const durchsichtig = state.explain;
   if (seeThrough !== durchsichtig) {
     seeThrough = durchsichtig;
     for (const coil of coils) setSeeThrough(coilParts(coil), durchsichtig);
