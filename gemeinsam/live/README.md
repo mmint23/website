@@ -73,6 +73,7 @@ if (!zuschauen()) stepPhysics(dt);
 
 Hat die Simulation eine Zeichentafel (`initTafel`), kommt das Bedienfeld der Lehrerseite in die Abgabeleiste;
 sonst erscheint es als kleiner Kasten unten links. `initLive` nach `initTafel` aufrufen.
+Leiste wie Kasten lassen sich minimieren (`body.lehrerfeld-klein`, siehe `../tafel/README.md`).
 
 **Lehrerseite zusätzlich auf einem zweiten Gerät** (z. B. iPad der Lehrkraft): „Lehrerseite auf anderem Gerät“
 zeigt einen QR-Code zur Lehrerseite mit demselben Raumcode (nur auf Knopfdruck, damit ihn die Schüler am Beamer

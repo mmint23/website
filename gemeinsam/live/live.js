@@ -9,7 +9,7 @@
 // seinen Zustand etwa 30-mal pro Sekunde mit der Zeit des Bilds; das andere rechnet nicht selbst, ist gesperrt und
 // zeigt den Zustand leicht verzögert und geglättet an (glaetten.js), damit ungleichmäßige Ankunft nicht ruckelt.
 // ------------------------------------------------------------------
-import { verbindungStarten, aufNachricht, aufStatus, senden, halloErgaenzen, adresseFuer, netz } from '../verbindung.js';
+import { verbindungStarten, aufNachricht, aufStatus, senden, halloErgaenzen, adresseFuer, netz, speicher } from '../verbindung.js';
 import { Glaetter } from './glaetten.js';
 import { showLink, hideLink } from '../link.js';
 import { stilLaden } from '../stil.js';
@@ -114,7 +114,19 @@ function lehrerFeldAnlegen() {
   const kopf = document.querySelector('#abgaben .abgaben-kopf');
   if (kopf) kopf.insertAdjacentHTML('afterend', html);
   else {
-    document.body.insertAdjacentHTML('beforeend', `<div class="live-kasten">${html}</div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="live-kasten" id="liveKasten">
+      <button class="live-klein-btn" id="liveKlein" type="button" aria-controls="liveKasten">Minimieren ▾</button>${html}</div>`);
+    // Minimieren: nur noch Überschrift und „Einblenden“ (gemerkt je Gerät); body.lehrerfeld-klein wie bei der
+    // Abgabeleiste (tafel/abgabe.js), damit Simulationen ihren Platzhalter für den Kasten aufheben können
+    const minimieren = klein => {
+      $('liveKasten').classList.toggle('klein', klein);
+      document.body.classList.toggle('lehrerfeld-klein', klein);
+      $('liveKlein').textContent = klein ? 'Einblenden ▴' : 'Minimieren ▾';
+      $('liveKlein').setAttribute('aria-expanded', String(!klein));
+      speicher('live-klein', klein ? '1' : '0');
+    };
+    $('liveKlein').addEventListener('click', () => minimieren(!$('liveKasten').classList.contains('klein')));
+    minimieren(speicher('live-klein') === '1');
     // Lehrerseite auf dem iPad o. Ä.: nur auf Knopfdruck, damit die Schüler den Code am Beamer nicht mitscannen
     $('liveLehrerQr').hidden = false;
     $('liveLehrerQr').addEventListener('click', () => showLink(adresseFuer({ lehrer: '' }),
