@@ -176,6 +176,7 @@ html, body {
 }
 .popup .toggles.two { grid-template-columns: 1fr 1fr; }
 .popup .slider { margin-top: 8px; }
+.popup #holdBox { margin-bottom: 4px; }   /* Drehwinkel-Regler im Erklärmodus (bedienfeld.js) */
 /* Schalter für Pause, Zeitlupe, Festhalten: eingeschaltet blau gefüllt */
 .popup .toggles button.state[aria-pressed="false"] { opacity: 1; box-shadow: none; }
 .popup button.state[aria-pressed="true"] { background: #1d4f91; border-color: #1d4f91; color: #fff; }
@@ -246,8 +247,9 @@ body.lehrer .popup { max-height: calc(100% - 380px); }
    Abgaben-Raster und QR-Code-Fenster (gemeinsam/: z-index 25 bis 40); deckt die Szene fast ganz ab */
 .plot-box { z-index: 24; background: rgba(255, 255, 255, 0.97); }
 
-/* Schülermodus: Erklärmodus ohne die Größen B, v und F_L; auf dem Schülergerät (?schueler) auch ohne die Knöpfe der
-   Lehrkraft (bedienfeld.js) */
+/* Schülermodus: Erklärmodus ohne die Lorentzkraft F_L (B und v bleiben, dann zwei Spalten); auf dem Schülergerät
+   (?schueler) auch ohne die Knöpfe der Lehrkraft (bedienfeld.js) */
 body.schueler-modus .ohne-im-schuelermodus, body.schueler-geraet .nur-lehrkraft { display: none !important; }
+body.schueler-modus .popup .toggles.groessen { grid-template-columns: 1fr 1fr; }
 .panel #schuelerModusBtn { margin-top: 8px; }
 .panel #schuelerQrBtn { margin-top: 8px; }

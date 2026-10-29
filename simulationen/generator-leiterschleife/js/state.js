@@ -25,8 +25,8 @@ export const state = {
   showRings: false,          // Erklärmodus: Schleifringe mit Bürsten (zu Beginn offene Enden)
 };
 
-// Schülermodus (z. B. für eine Lehrprobe): Erklärmodus ohne die Knöpfe für B, v und F_L – die Schüler sollen selbst
-// herausfinden, was die Simulation sonst vorwegnimmt. Tafel, Teilen und Live-Steuerung wie immer.
+// Schülermodus (z. B. für eine Lehrprobe): Erklärmodus ohne den Knopf für die Lorentzkraft F_L – die Schüler sollen
+// sie selbst herausfinden, statt dass die Simulation sie vorwegnimmt. Tafel, Teilen und Live-Steuerung wie immer.
 // Mit ?schueler in der Adresse (QR-Code) ist er fest eingeschaltet (Schülergerät); sonst schaltet ihn die Lehrkraft
 // mit dem Knopf „Schülermodus“ um (bedienfeld.js). Er gehört zum Gerät und wird nicht live übertragen.
 const imLink = new URLSearchParams(globalThis.location?.search ?? '').has('schueler');
