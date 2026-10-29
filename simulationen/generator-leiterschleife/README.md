@@ -138,6 +138,35 @@ siehe [`gemeinsam/tafel/README.md`](../../gemeinsam/tafel/README.md); Lehrerseit
 Das Bild ist eine SVG-Datei und lässt sich mit einem Texteditor ändern – aber nicht mehr verschieben, sobald
 Zeichnungen geteilt wurden (die Koordinaten beziehen sich auf das Bild).
 
+## Schülermodus (z. B. für eine Lehrprobe)
+
+Der **Erklärmodus ohne die Knöpfe B, v und F_L**: Die Schüler arbeiten mit Elektronen, Schleifringen, Spule, Pause,
+Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulation Feldrichtung, Geschwindigkeit und
+Lorentzkraft vorwegnimmt.
+
+- **„Schülermodus (ohne B, v, F_L)“** (oben im Bedienfeld) schaltet ihn auf diesem Gerät ein und aus, z. B. am
+  Beamer; beim Einschalten geht es gleich in den Erklärmodus.
+- **„QR-Code für den Schülermodus“** zeigt einen QR-Code zu `…/generator-leiterschleife/?schueler`. Wer ihn scannt,
+  ist fest im Schülermodus (die beiden Knöpfe fehlen dort). Ist die Seite über den Abgabe-Server als Lehrerseite
+  geöffnet (`/lehrer/generator-leiterschleife`), enthält der QR-Code den Raumcode: **„Teilen“** auf der Tafel kommt
+  dann in der Abgabeleiste dieser Lehrerseite an. Ohne Server (GitHub Pages) geht alles außer Teilen.
+- **Live-Steuerung im Schülermodus:** Ist der Schülermodus auf der Lehrerseite an, öffnet auch der QR-Code von
+  „Steuerung abgeben“ das Schülergerät im Schülermodus.
+- „Zurück zum Modell“ bleibt; auch dort und beim erneuten Öffnen des Erklärmodus fehlen B, v und F_L.
+- Kein Schutz: Wer `?schueler` aus der Adresse löscht, hat wieder alle Knöpfe.
+- Technik: `modus` in `state.js` (gehört zum Gerät, wird nicht live übertragen); im Schülermodus ist die Klasse
+  `ohne-im-schuelermodus` ausgeblendet, auf dem Schülergerät zusätzlich `nur-lehrkraft`.
+
+## Live-Steuerung: Schüler steuert am Beamer
+
+Über den Abgabe-Server (gemeinsamer Baustein `gemeinsam/live/`, wie bei der Leiterschaukel): In der Abgabeleiste der
+Lehrerseite zeigt **„Steuerung abgeben“** einen QR-Code; das Schülergerät steuert dann die Simulation am Beamer.
+Gespiegelt werden alle Einstellungen, Drehung, Elektronen, Zeiger, LED/Glühlampe, Umbau Leiterschleife ↔ Spule,
+Windrotor, U-t-Diagramm, Ansicht und die **Tafel** des steuernden Geräts (offen/zu, Seite, Striche schon beim
+Zeichnen). Eigene Tafel und Abgaben des zuschauenden Geräts bleiben unberührt; Teilen funktioniert wie immer.
+„Ich steuere“ / „Schüler steuert“ schaltet hin und her (bei offener Tafel steht „Ich steuere“ im Hinweis unten).
+Technik: `js/live.js`.
+
 ## Physikalisches Modell
 
 - Leiterschleife: Längsseiten l = 10 cm im Abstand r = 4 cm von der Achse, Fläche A = 80 cm²;
@@ -212,6 +241,7 @@ generator-leiterschleife/
 │   ├── erklaerung.js   # Erklärmodus: Elektronen, Pfeile v und F_L
 │   ├── ziehen.js       # Kurbel mit Maus/Finger drehen
 │   ├── bedienfeld.js   # Knöpfe, Regler, Anzeigen; Rückweg zum Windpark
+│   ├── live.js         # Live-Steuerung (gemeinsam/live/), auch Tafel
 │   ├── hilfen.js       # Hilfsfunktionen
 │   └── materialien.js  # gemeinsame Materialien
 ├── tests/physik.test.mjs

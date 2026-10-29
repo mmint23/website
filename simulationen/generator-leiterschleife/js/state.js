@@ -25,6 +25,13 @@ export const state = {
   showRings: false,          // Erklärmodus: Schleifringe mit Bürsten (zu Beginn offene Enden)
 };
 
+// Schülermodus (z. B. für eine Lehrprobe): Erklärmodus ohne die Knöpfe für B, v und F_L – die Schüler sollen selbst
+// herausfinden, was die Simulation sonst vorwegnimmt. Tafel, Teilen und Live-Steuerung wie immer.
+// Mit ?schueler in der Adresse (QR-Code) ist er fest eingeschaltet (Schülergerät); sonst schaltet ihn die Lehrkraft
+// mit dem Knopf „Schülermodus“ um (bedienfeld.js). Er gehört zum Gerät und wird nicht live übertragen.
+const imLink = new URLSearchParams(globalThis.location?.search ?? '').has('schueler');
+export const modus = { schueler: imLink, festgelegt: imLink };
+
 // Aus dem Windpark gekommen (?von=windpark&wind=…): Antrieb „Wind“ mit dem Wind von dort. Ohne Windpark im
 // Browser (Tests) bleibt alles wie oben.
 export const ausWindpark = new URLSearchParams(globalThis.location?.search ?? '').get('von') === 'windpark';
