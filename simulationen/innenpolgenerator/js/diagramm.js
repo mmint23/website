@@ -1,22 +1,20 @@
 // ------------------------------------------------------------------
-// Diagramme übereinander auf derselben Zeitachse: oben B im Spuleninneren (B–t, nur im Erklärmodus), unten die
-// Spannung am Messgerät (U–t). Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit; Antrieb „Wind“:
-// PLOT_SECONDS_WIND); rechts bleibt ein schmaler Rand, damit die Tangente („Änderung von B“) am aktuellen Punkt
-// nach beiden Seiten passt.
-// Bei zwei Spulen: B₂ gestrichelt, U₁ und U₂ dünn, U (Summe am Messgerät) dick.
+// U–t-Diagramm: Spannung am Messgerät. Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit; Antrieb
+// „Wind“: PLOT_SECONDS_WIND); rechts bleibt ein schmaler Rand für den aktuellen Punkt.
+// Bei zwei Spulen: U₁ und U₂ dünn, U (Summe am Messgerät) dick.
 // ------------------------------------------------------------------
-import { PLOT_SECONDS, PLOT_SECONDS_WIND, B_PLOT } from './config.js';
+import { PLOT_SECONDS, PLOT_SECONDS_WIND } from './config.js';
 import { state } from './state.js';
-import { clock, coilField, coilFieldRate, coilVoltage, meterVoltage } from './physik.js';
+import { clock, coilVoltage, meterVoltage } from './physik.js';
 import { formatNumber } from './hilfen.js';
 
 const $ = id => document.getElementById(id);
 const box = $('plotBox');
-const plots = { b: $('plotB'), u: $('plotU') };
-const samples = [];               // { t, b1, b2 (mT), u, u1, u2 (V) }
+const plots = { u: $('plotU') };
+const samples = [];               // { t, u, u1, u2 (V) }
 
 const PAD = { left: 52, right: 34, top: 10, bottom: 22 };
-const FARBE = { s1: '#1d4f91', s2: '#e65100', summe: '#1d2733', tangente: '#c62828' };
+const FARBE = { s1: '#1d4f91', s2: '#e65100', summe: '#1d2733' };
 
 function resizeCanvas(canvas) {
   const ratio = Math.min(window.devicePixelRatio, 2);
@@ -118,19 +116,12 @@ function punkt(p, wert, farbe) {
 export function updatePlot() {
   box.hidden = !state.showPlot;
   const now = clock.t, zwei = state.coils === 2;
-  const jetzt = {
-    t: now, b1: 1000 * coilField(0), b2: 1000 * coilField(1),
-    u: meterVoltage(), u1: coilVoltage(0), u2: coilVoltage(1),
-  };
+  const jetzt = { t: now, u: meterVoltage(), u1: coilVoltage(0), u2: coilVoltage(1) };
   if (!samples.length || now > samples.at(-1).t) samples.push(jetzt);
   while (samples.length && samples[0].t < now - PLOT_SECONDS_WIND - 0.5) samples.shift();
   for (const el of document.querySelectorAll('[data-zwei]')) el.hidden = !zwei;
-  $('slopeLegend').hidden = !state.showSlope;
-  $('plotBPart').hidden = !state.explain;
   if (box.hidden) return;
-  if (state.explain) zeichneB(jetzt);
 
-  // U–t
   const r = state.range;
   const u = rahmen(plots.u, r, [-r, -r / 2, 0, r / 2, r], r < 1 ? 2 : 1, true);
   if (zwei) {
@@ -139,32 +130,6 @@ export function updatePlot() {
   }
   kurve(u, 'u', zwei ? FARBE.summe : FARBE.s1, 2.6);
   punkt(u, jetzt.u, zwei ? FARBE.summe : FARBE.s1);
-}
-
-// B–t mit B in beiden Spulen und auf Wunsch der Tangente an B₁ („Änderung von B“)
-function zeichneB(jetzt) {
-  const now = jetzt.t, zwei = state.coils === 2;
-  const b = rahmen(plots.b, B_PLOT, [-100, -50, 0, 50, 100], 0, false);
-  if (zwei) kurve(b, 'b2', FARBE.s2, 2, [6, 5]);
-  kurve(b, 'b1', FARBE.s1, 2.4);
-  if (state.showSlope) {
-    // Tangente an B₁ im aktuellen Punkt: Steigung = Änderung von B (in mT/s), ±0,5 s
-    const rate = 1000 * coilFieldRate(0), dt = 0.5;
-    const { ctx, X, Y } = b;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(b.x0, b.y0 - 2, b.x1 - b.x0 + PAD.right - 4, b.y1 - b.y0 + 4);
-    ctx.clip();
-    ctx.strokeStyle = FARBE.tangente;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    ctx.moveTo(X(now - dt), Y(jetzt.b1 - rate * dt));
-    ctx.lineTo(X(now + dt * 0.5), Y(jetzt.b1 + rate * dt * 0.5));
-    ctx.stroke();
-    ctx.restore();
-  }
-  if (zwei) punkt(b, jetzt.b2, FARBE.s2);
-  punkt(b, jetzt.b1, FARBE.s1);
 }
 
 export const clearPlot = () => { samples.length = 0; };

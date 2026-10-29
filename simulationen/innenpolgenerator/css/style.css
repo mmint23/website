@@ -105,7 +105,7 @@ html, body {
   #scene { bottom: 45%; }
 }
 
-/* Diagramme B–t und U–t unten links über der Szene */
+/* U–t-Diagramm unten links über der Szene */
 .plot-box {
   position: fixed;
   left: 16px;
@@ -123,7 +123,6 @@ html, body {
 .linie.s1 { border-color: #1d4f91; }
 .linie.s2 { border-color: #e65100; border-top-style: dashed; }
 .linie.summe { border-color: #1d2733; }
-.linie.tangente { border-color: #c62828; }
 .linie.duenn { border-top-width: 1.5px; }
 .plot-box canvas { display: block; width: 100%; height: 132px; }
 @media (max-width: 700px) {
@@ -141,6 +140,7 @@ html, body {
 .check:has(input:disabled) { opacity: 0.5; cursor: default; }
 /* Knopf „Link / QR-Code zeigen“ ganz oben im Bedienfeld – auf jedem Gerät erreichbar */
 .panel button.link-btn { margin: 0 0 12px; border-color: #1d4f91; color: #1d4f91; font-weight: 600; }
+.panel button.link-btn + button.link-btn { margin-top: -4px; }
 /* Schmale Fenster (iPad): Hinweiszeile ohne Text, damit sie nicht umbricht und die Diagramme verdeckt */
 @media (max-width: 1100px) and (min-width: 701px) {
   .hint > span { display: none; }
@@ -153,9 +153,7 @@ html, body {
 .panel a.zurueck-btn:hover { background: #163f75; }
 /* Feldlinien im Inneren der Spule: Farbmarke in der Beschriftung */
 .farbe { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
-.farbe.innen { background: #aa00ff; }
-/* Umschalter Feldlinienmodell / reale Physik oben im Bedienfeld */
-.panel button.modell-btn { margin-top: 0; font-weight: 600; }
+.farbe.innen { background: #9d00ff; height: 6px; }
 /* Erklärmodus ein/aus: Knopf unter „Link / QR-Code“, im Erklärmodus hervorgehoben */
 .panel button.explain-btn { margin-top: 0; font-weight: 600; }
 .panel button.explain-btn.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
@@ -182,3 +180,22 @@ html, body {
 @media (max-width: 700px) {
   .popup { top: 16px; width: auto; right: 16px; max-height: 30%; }
 }
+
+/* Antrieb: Pause (nur im Erklärmodus) und Zeitlupe nebeneinander */
+.paar { display: flex; gap: 6px; }
+.paar button { flex: 1 1 0; min-width: 0; }
+/* Antrieb im Erklärmodus links (bedienfeld.js hängt den Abschnitt um) */
+.popup #antriebSection, .popup #startSection { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #d5dce3; }
+.popup #anzeigeSection { margin-top: 14px; padding-top: 12px; border-top: 1px solid #d5dce3; }
+.popup #startSection button + button { margin-top: 8px; }
+.popup button.link-btn { border-color: #1d4f91; color: #1d4f91; }
+.popup button.explain-btn.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+.popup #antriebSection button { margin-top: 8px; }
+.popup #antriebSection .paar { margin-top: 8px; }
+.popup #antriebSection .paar button { margin-top: 0; }
+.popup .segmented button { flex: 1 1 0; min-width: 0; margin-top: 0; }
+.popup .segmented button.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+
+/* Live-Steuerung (Lehrerseite ohne Tafel: kleiner Kasten unten links, gemeinsam/live/): im Erklärmodus rechts, wo
+   dann kein Bedienfeld steht */
+body.erklaer-an .live-kasten { left: auto; right: 16px; }
