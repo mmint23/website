@@ -79,6 +79,23 @@ body:has(.tafel-overlay:not([hidden])) .live-banner.du { display: none; }
   color: #1d2733;
 }
 .live-kasten .live-feld { padding-left: 0; border-left: none; }
+.live-kasten .live-klein-btn {
+  display: block;
+  margin: 0 0 6px auto;
+  padding: 3px 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  border: 1px solid #9aa7b4;
+  border-radius: 8px;
+  background: #fff;
+  color: #4a5866;
+  cursor: pointer;
+}
+/* minimiert: nur „Live-Steuerung“ und „Einblenden“ in einer Zeile */
+.live-kasten.klein { display: flex; flex-direction: row-reverse; align-items: center; gap: 10px; padding: 6px 8px; }
+.live-kasten.klein .live-klein-btn { margin: 0; }
+.live-kasten.klein .live-feld { width: auto; }
+.live-kasten.klein .live-feld > :not(strong) { display: none !important; }
 
 /* Beim Zuschauen: Bedienelemente sichtbar gedämpft */
 body.live-zuschauen .panel, body.live-zuschauen .popup { opacity: 0.72; }

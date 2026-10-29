@@ -115,8 +115,16 @@ button.gefahr.scharf { background: #c62828; border-color: #c62828; color: #fff; 
 .abgaben.gross .abgaben-qr svg { display: block; width: 100%; height: auto; }
 .abgaben.gross .abgaben-liste { flex-wrap: wrap; overflow-y: auto; align-content: flex-start; }
 .abgaben.gross .kachel { width: 260px; font-size: 1rem; }
+/* minimiert: nur „Abgaben: n“ und „Einblenden“ (auch die Live-Steuerung darin ist dann weg) */
+.abgaben-kopf > button.abgaben-klein-btn { font-size: 0.85rem; padding: 3px 8px; color: #4a5866; }
+.abgaben-klein-btn.neu { animation: kachel-neu 2s ease-out; }
+.abgaben.klein { right: auto; padding: 6px 8px; }
+.abgaben.klein .abgaben-kopf { width: auto; flex-direction: row-reverse; align-items: center; gap: 10px; }
+.abgaben.klein .abgaben-kopf > :not(.abgaben-info, .abgaben-klein-btn),
+.abgaben.klein .abgaben-info .status, .abgaben.klein .abgaben-liste, .abgaben.klein .live-feld { display: none; }
 @media (max-width: 700px) {
   .abgaben { right: 16px; bottom: auto; top: 16px; z-index: 12; }
+  .abgaben.klein { right: auto; }
   .abgaben-kopf { width: 120px; }
 }
 

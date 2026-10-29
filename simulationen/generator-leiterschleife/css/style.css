@@ -212,10 +212,10 @@ html, body {
 :root { --abgaben-rechts: 312px; }   /* Abgabeleiste endet vor dem Bedienfeld */
 body.lehrer .hint { display: none; }
 /* Diagramm über der Abgabeleiste, rechts neben dem Erklär-Bedienfeld (links ist dafür kein Platz) */
-body.lehrer .plot-box { bottom: 296px; left: 302px; width: min(440px, calc(100% - 614px)); }
-body.lehrer .popup { max-height: calc(100% - 380px); }
+body.lehrer:not(.lehrerfeld-klein) .plot-box { bottom: 296px; left: 302px; width: min(440px, calc(100% - 614px)); }
+body.lehrer:not(.lehrerfeld-klein) .popup { max-height: calc(100% - 380px); }
 @media (max-width: 700px) {
-  body.lehrer .plot-box { bottom: calc(45% + 16px); left: 16px; width: calc(100% - 32px); }
+  body.lehrer:not(.lehrerfeld-klein) .plot-box { bottom: calc(45% + 16px); left: 16px; width: calc(100% - 32px); }
 }
 /* Knopf „Link / QR-Code zeigen“ und – aus dem Windpark gekommen – „Zurück zum Windpark“ ganz oben im Bedienfeld */
 .panel button.link-btn { margin-top: 0; border-color: #1d4f91; color: #1d4f91; font-weight: 600; }

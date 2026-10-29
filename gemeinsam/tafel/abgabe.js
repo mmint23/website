@@ -82,6 +82,22 @@ function starteLehrer() {
     const gross = $('abgaben').classList.toggle('gross');
     $('abgabenGross').textContent = gross ? 'Verkleinern' : 'Groß';
   });
+  // Minimieren: nur noch „Abgaben: n“ und ein Knopf zum Einblenden, damit die Leiste die Szene nicht verdeckt
+  // (gemerkt je Gerät); body.lehrerfeld-klein, damit Simulationen ihre Platzhalter für die Leiste aufheben können
+  const minimieren = klein => {
+    $('abgaben').classList.toggle('klein', klein);
+    document.body.classList.toggle('lehrerfeld-klein', klein);
+    if (klein) {
+      $('abgaben').classList.remove('gross');
+      $('abgabenGross').textContent = 'Groß';
+    }
+    $('abgabenKlein').textContent = klein ? 'Einblenden ▴' : 'Minimieren ▾';
+    $('abgabenKlein').title = klein ? 'Abgaben und Live-Steuerung wieder zeigen' : 'Leiste minimieren';
+    $('abgabenKlein').setAttribute('aria-expanded', String(!klein));
+    speicher('abgaben-klein', klein ? '1' : '0');
+  };
+  $('abgabenKlein').addEventListener('click', () => minimieren(!$('abgaben').classList.contains('klein')));
+  minimieren(speicher('abgaben-klein') === '1');
   mitRueckfrage($('abgabenAlleLoeschen'), 'Wirklich alle?', () => {
     senden({ typ: 'alle-loeschen' });
   });
@@ -179,9 +195,12 @@ function eintragen(abgabe, neu) {
   eintrag.kachel.querySelector('.kachel-name').textContent = abgabe.name || 'ohne Namen';
   kachelZeichnen(eintrag);
   if (neu) {
-    eintrag.kachel.classList.remove('neu');
-    void eintrag.kachel.offsetWidth;   // Animation neu starten
-    eintrag.kachel.classList.add('neu');
+    // Animation neu starten (auch am Knopf „Einblenden“, falls die Leiste minimiert ist)
+    for (const element of [eintrag.kachel, $('abgabenKlein')]) {
+      element.classList.remove('neu');
+      void element.offsetWidth;
+      element.classList.add('neu');
+    }
   }
   zaehlen();
   zeigeTitel();
@@ -260,6 +279,7 @@ function fensterAnlegen() {
   document.body.insertAdjacentHTML('beforeend', `
   <section class="abgaben" id="abgaben" aria-label="Abgaben der Schüler" hidden>
     <div class="abgaben-kopf">
+      <button class="abgaben-klein-btn" id="abgabenKlein" type="button" aria-controls="abgaben">Minimieren ▾</button>
       <button class="abgaben-qr" id="abgabenQr" type="button" title="QR-Code groß zeigen"><span id="abgabenQrBild"></span></button>
       <div class="abgaben-info">
         <strong>Abgaben: <span id="abgabenZahl">0</span></strong>

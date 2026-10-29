@@ -54,6 +54,9 @@ Bei mehreren Seiten: `aktuelleSeite()`, `seitenBild(nummer)`, `aufSeitenwechsel(
 **Aussehen anpassen:** Die Regeln stehen in `tafel.css` und werden vor dem eigenen Stylesheet der Seite geladen;
 die Simulation kann sie also überschreiben. Hat sie rechts ein festes Bedienfeld, endet die Abgabeleiste davor mit
 `:root { --abgaben-rechts: 312px; }`.
+Die Lehrkraft kann die Abgabeleiste mit „Minimieren“ auf „Abgaben: n“ verkleinern (je Gerät gemerkt); dann trägt
+`body` die Klasse `lehrerfeld-klein`. Platz, den die Simulation für die Leiste freihält (z. B. ein höher gesetztes
+Diagramm), daher nur mit `body.lehrer:not(.lehrerfeld-klein)` reservieren.
 
 **Das Tafelbild nicht mehr austauschen**, wenn schon Zeichnungen geteilt wurden: Koordinaten beziehen sich auf das
 Bild, alte Zeichnungen passen sonst nicht mehr dazu.

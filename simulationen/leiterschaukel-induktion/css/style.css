@@ -172,7 +172,7 @@ html, body {
 /* ---------------- Lehrerseite (Tafel und Abgabe: gemeinsam/tafel/tafel.css) */
 :root { --abgaben-rechts: 312px; }   /* Abgabeleiste endet vor dem Bedienfeld */
 body.lehrer .hint { display: none; }
-body.lehrer .popup { max-height: calc(100% - 340px); }
+body.lehrer:not(.lehrerfeld-klein) .popup { max-height: calc(100% - 340px); }
 
 /* ---------------- Laserpointer */
 #laserCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; }
