@@ -157,7 +157,7 @@ export function adresseFuer(angaben = {}) {
   const url = new URL((amLaptop && netz.adressen.length ? `http://${netz.adressen[0]}:${netz.port}` : location.origin) + location.pathname);
   for (const [name, wert] of Object.entries(angaben)) url.searchParams.set(name, wert);
   url.searchParams.set('raum', raum);
-  return url.toString().replace('lehrer=&', 'lehrer&').replace(/lehrer=$/, 'lehrer');
+  return url.toString().replace(/=(?=&|$)/g, '');   // leere Angaben ohne „=“ (z. B. ?lehrer&raum=…)
 }
 
 // ---------------- Lehrerseite: Raum und PIN

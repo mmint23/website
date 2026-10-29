@@ -37,7 +37,7 @@
   <!-- Bedienfeld des Erklärmodus: nur Schalter für die Größen und den Ablauf -->
   <aside class="popup" id="explainPanel" aria-label="Erklärung" hidden>
     <h2>Erklärung</h2>
-    <div class="toggles three" role="group" aria-label="Größen">
+    <div class="toggles three ohne-im-schuelermodus" role="group" aria-label="Größen">
       <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
       <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
       <button id="showFBtn" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
@@ -65,6 +65,8 @@
     <section>
       <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
       <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+      <button id="schuelerModusBtn" class="state nur-lehrkraft" type="button" aria-pressed="false">Schülermodus (ohne B, v, F_L)</button>
+      <button id="schuelerQrBtn" class="link-btn nur-lehrkraft" type="button">QR-Code für den Schülermodus</button>
     </section>
     <section>
       <h2>Erklärung</h2>
@@ -115,8 +117,13 @@
       <p class="status" id="magnetStatus"></p>
     </section>
     <section id="meterSection">
-      <h2>Messgerät</h2>
-      <p class="status">Messbereich in mV</p>
+      <h2>Anzeige</h2>
+      <div class="segmented" role="group" aria-label="Angeschlossen" id="displayButtons">
+        <button id="displayMeterBtn" type="button">Mess&shy;gerät</button>
+        <button id="displayLedBtn" type="button">LED</button>
+        <button id="displayLampBtn" type="button">Glüh&shy;lampe</button>
+      </div>
+      <p class="status">Messbereich in mV (Messgerät und U-t-Diagramm)</p>
       <div class="segmented" role="group" aria-label="Messbereich in mV" id="rangeButtons"></div>
       <button id="plotBtn" class="state" type="button">U-t-Diagramm</button>
     </section>

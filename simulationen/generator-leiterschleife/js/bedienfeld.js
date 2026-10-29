@@ -1,20 +1,26 @@
 // ------------------------------------------------------------------
 // Bedienfeld: Antrieb, Magnet, Messbereich, Anzeigen, Erklärmodus. Aus dem Windpark gekommen (?von=windpark):
 // Knopf „Zurück zum Windpark“ (mit Wind und Uhrzeit) und kurz der Hinweis „Vereinfachtes Modell des Generators“.
+// Schülermodus (Knopf, bzw. fest mit ?schueler): Erklärmodus ohne die Knöpfe B, v und F_L; „QR-Code für den
+// Schülermodus“ zeigt die Adresse dafür (über den Abgabe-Server mit Raumcode, damit Geteiltes bei der Lehrkraft
+// ankommt). Ist er an, öffnet auch „Steuerung abgeben“ (Live-Steuerung, live.js) das Schülergerät im Schülermodus.
 // ------------------------------------------------------------------
 import { METER, SPEED_MAX, WIND_MAX, COIL } from './config.js';
-import { state, ausWindpark } from './state.js';
+import { state, ausWindpark, modus } from './state.js';
 import { endCrank, setHold, holdTo, rotor, electrons, park } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
-import { updateMeterFace, setMeterVisible } from './messgeraet.js';
+import { updateMeterFace, setMeterVisible, setDisplay } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { explainView, sideView } from './erklaerung.js';
 import { resetView as resetModelView, controls, setTable } from './szene.js';
 import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
+import { adresseFuer, raum } from '../../../gemeinsam/verbindung.js';
 
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
+// Angeschlossen statt der Bürstenkabel ans Messgerät: LED oder Glühlampe (Gedankenexperiment, siehe README)
+const DISPLAYS = [['displayMeterBtn', 'meter'], ['displayLedBtn', 'led'], ['displayLampBtn', 'lamp']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
 const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'], ['showTwoBtn', 'showTwoElectrons'],
   ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'], ['plotBtn', 'showPlot'], ['explainPlotBtn', 'showPlot'],
@@ -26,7 +32,9 @@ const resetView = () => {
   else resetModelView();
 };
 
-function updateUi() {
+export function updateUi() {
+  document.body.classList.toggle('schueler-modus', modus.schueler);
+  $('schuelerModusBtn').setAttribute('aria-pressed', String(modus.schueler));
   for (const id of ['coilBtn', 'explainCoilBtn']) $(id).setAttribute('aria-pressed', String(state.coil));
   $('coilStatus').textContent = (state.coil
     ? `${COIL.TURNS} Windungen hintereinander: ${COIL.TURNS}-fache Spannung.`
@@ -40,6 +48,10 @@ function updateUi() {
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
   $('sideViewBtn').setAttribute('aria-pressed', String(state.sideView));
   $('holdBox').hidden = !state.hold;
+  for (const [id, display] of DISPLAYS) {
+    $(id).classList.toggle('active', state.display === display);
+    $(id).setAttribute('aria-pressed', String(state.display === display));
+  }
   for (const [id, drive] of DRIVES) {
     $(id).classList.toggle('active', state.drive === drive);
     $(id).setAttribute('aria-pressed', String(state.drive === drive));
@@ -69,7 +81,7 @@ export function updateParkStatus() {
 
 // Erklärmodus ein/aus: Messgerät und Kabel weg, dicke durchsichtige Schleife, Größen zu Beginn aus,
 // Kamera näher an die Schleife
-function setExplain(on) {
+export function setExplain(on) {
   endCrank();
   state.explain = on;
   state.paused = false;
@@ -105,6 +117,12 @@ export function initUi() {
   Object.assign(speed, { min: -SPEED_MAX, max: SPEED_MAX, step: 0.1, value: state.speed });
   speed.addEventListener('input', () => { state.speed = Number(speed.value); updateUi(); });
 
+  for (const [id, display] of DISPLAYS) {
+    $(id).addEventListener('click', () => {
+      setDisplay(display);
+      updateUi();
+    });
+  }
   for (const [id, drive] of DRIVES) {
     $(id).addEventListener('click', () => {
       endCrank();
@@ -128,6 +146,17 @@ export function initUi() {
   Object.assign(modelWind, { min: 0, max: WIND_MAX, step: 0.5, value: state.wind });
   modelWind.addEventListener('input', () => { state.wind = Number(modelWind.value); updateUi(); });
   $('linkBtn').addEventListener('click', () => showLink());
+  // QR-Code für den Schülermodus; mit Abgabe-Server (Raumcode vorhanden) im selben Raum wie diese Seite
+  $('schuelerQrBtn').addEventListener('click', () => {
+    const url = raum ? adresseFuer({ schueler: '' }) : location.origin + location.pathname + '?schueler';
+    showLink(url, 'Schülermodus: Erklärmodus ohne B, v und F_L' + (raum ? ' – Geteiltes kommt in diesem Raum an.' : '.'));
+  });
+  // Schülermodus ein/aus (Lehrkraft, z. B. am Beamer): ein → gleich in den Erklärmodus, B, v und F_L aus
+  $('schuelerModusBtn').addEventListener('click', () => {
+    modus.schueler = !modus.schueler;
+    if (modus.schueler) setExplain(true);
+    updateUi();
+  });
   // Aus dem Windpark gekommen: zurück mit Wind (wie hier eingestellt) und Uhrzeit; kurz „Vereinfachtes Modell“
   if (ausWindpark) {
     const zeit = new URLSearchParams(location.search).get('zeit');
@@ -182,6 +211,8 @@ export function initUi() {
   onCrankGrab(updateUi);
 
   applyMagnetPoles();
-  resetView();
+  document.body.classList.toggle('schueler-geraet', modus.festgelegt);
+  if (modus.schueler) setExplain(true);   // Größen B, v, F_L sind dabei aus (setExplain) und bleiben es
+  else resetView();
   updateUi();
 }

@@ -68,6 +68,7 @@ if (!zuschauen()) stepPhysics(dt);
 | `schreiben` | **Pflicht.** Übernimmt empfangene Daten. `zustandUebernehmen(ziel, daten)` ersetzt keine Teilobjekte – wichtig, wenn andere Module Verweise darauf halten. |
 | `glaetten` | Bewegte Größen, die beim Zuschauen geglättet werden, als Punkt-Pfade, z. B. `['swing.theta', 'view.position']` (Zahlen oder Listen von Zahlen). Nur stetige Größen eintragen – nichts, was springen darf (z. B. Fortschritt einer Animation, die von 1 auf 0 zurückfällt). Ohne Angabe: keine Zwischenwerte, nur die Verzögerung. |
 | `sperren` | Bereiche, die beim Zuschauen gesperrt sind (CSS-Selektor). Standard: `#scene, .panel, .popup, .hint`. Elemente mit der Klasse `live-frei` darin bleiben bedienbar. |
+| `steuernAngaben()` | Weitere Angaben für die Adresse im QR-Code „Steuerung abgeben“, z. B. `{ schueler: '' }` (generator-leiterschleife: Schülergerät im Schülermodus). |
 | `beiWechsel(zuschauen)` | Wird aufgerufen, wenn das Gerät zwischen Zuschauen und Steuern wechselt (z. B. laufendes Ziehen beenden). |
 
 Hat die Simulation eine Zeichentafel (`initTafel`), kommt das Bedienfeld der Lehrerseite in die Abgabeleiste;

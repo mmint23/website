@@ -8,6 +8,7 @@ export const state = {
   northUp: true,      // Nordpol oben, Südpol unten
   coil: false,        // Spule mit COIL.TURNS Windungen statt einer einzelnen Leiterschleife
   range: 3,           // Messbereich ±3 mV
+  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe) – Gedankenexperiment
   slowMotion: false,
   showPlot: false,    // U-t-Diagramm einblenden (per Knopf, rechts und im Erklärmodus)
   hold: false,        // Schleife festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen
@@ -23,6 +24,13 @@ export const state = {
   showManyElectrons: false,  // viele Elektronen über die ganze Schleife (von Ende zu Ende), mit Atomrümpfen
   showRings: false,          // Erklärmodus: Schleifringe mit Bürsten (zu Beginn offene Enden)
 };
+
+// Schülermodus (z. B. für eine Lehrprobe): Erklärmodus ohne die Knöpfe für B, v und F_L – die Schüler sollen selbst
+// herausfinden, was die Simulation sonst vorwegnimmt. Tafel, Teilen und Live-Steuerung wie immer.
+// Mit ?schueler in der Adresse (QR-Code) ist er fest eingeschaltet (Schülergerät); sonst schaltet ihn die Lehrkraft
+// mit dem Knopf „Schülermodus“ um (bedienfeld.js). Er gehört zum Gerät und wird nicht live übertragen.
+const imLink = new URLSearchParams(globalThis.location?.search ?? '').has('schueler');
+export const modus = { schueler: imLink, festgelegt: imLink };
 
 // Aus dem Windpark gekommen (?von=windpark&wind=…): Antrieb „Wind“ mit dem Wind von dort. Ohne Windpark im
 // Browser (Tests) bleibt alles wie oben.

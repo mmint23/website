@@ -84,6 +84,17 @@ export const METER = {
   RANGES: [3, 10, 15, 30],    // Messbereiche ±3, ±10, ±15, ±30 mV (±15: Leiterschleife und Spule im selben Maßstab)
 };
 
+// LED statt Messgerät (Gedankenexperiment wie bei der Leiterschaukel, siehe README): Schwellspannung 1 mV statt real
+// etwa 1,8 V. Darüber wird sie heller und leuchtet bei THRESHOLD + FULL voll – nur in Durchlassrichtung (Anode an
+// der roten Buchse = Ring 1). Steckplatte auf dem Tisch an der Stelle des Messgeräts (POS: Mitte der Unterseite),
+// um ROT gedreht: rote Buchse vorne, schwarze hinten – so kreuzen sich die Kabel von den Bürsten nicht.
+export const LED = { THRESHOLD: 1e-3, FULL: 2e-3, POS: [25, TABLE_TOP, 4], ROT: -Math.PI / 2 };
+
+// Glühlampe statt Messgerät (Gedankenexperiment, noch unrealistischer als die LED, siehe README): Der Glühdraht
+// heizt sich mit der Leistung ∝ U² auf (Zeitkonstante HEAT_TIME) und glüht ab THRESHOLD sichtbar, bei FULL voll –
+// in beiden Stromrichtungen.
+export const LAMP = { THRESHOLD: 1.5e-3, FULL: 5e-3, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT };
+
 // Antrieb „Wind“, didaktisch vereinfacht: Der Rotor läuft ab CUT_IN an und dreht dann proportional zur
 // Windgeschwindigkeit – über den ganzen Regler, ohne Nenndrehzahl (echte Anlagen: siehe README, „Antrieb Wind:
 // vereinfacht“). Bei 12 m/s dreht er wie die Windräder im Windpark mit 14 U/min, bei 20 m/s mit gut 23 U/min.

@@ -126,7 +126,7 @@ function lehrerFeldAnlegen() {
   $('liveIch').addEventListener('click', () => senden({ typ: 'live-umschalten', an: 'lehrer' }));
   $('liveTrennen').addEventListener('click', () => senden({ typ: 'live-trennen' }));
   aufNachricht('live-code', nachricht => {
-    showLink(adresseFuer({ steuern: nachricht.code }),
+    showLink(adresseFuer({ ...optionen.steuernAngaben?.(), steuern: nachricht.code }),
       'Steuerung abgeben: mit dem Schülergerät scannen. Danach steuert dieses Gerät die Simulation am Beamer.');
   });
 }
@@ -158,7 +158,7 @@ function bild(zeit) {
   }
 }
 
-// optionen: { id, lesen, schreiben, glaetten?, sperren?, beiWechsel? } – siehe README.md
+// optionen: { id, lesen, schreiben, glaetten?, sperren?, beiWechsel?, steuernAngaben? } – siehe README.md
 export async function initLive(neu) {
   if (optionen) throw new Error('initLive() wurde schon aufgerufen');
   optionen = { sperren: '#scene, .panel, .popup, .hint', ...neu };

@@ -7,11 +7,14 @@ import { state } from './state.js';
 import { stepPhysics, stepPark, stepSpule } from './physik.js';
 import { syncModel } from './modell.js';
 import { syncMeter } from './messgeraet.js';
+import { syncLed } from './led.js';
+import { syncLamp } from './gluehlampe.js';
 import { updatePlot } from './diagramm.js';
 import { initUi, updateHoldSlider, updateParkStatus } from './bedienfeld.js';
 import { syncExplain } from './erklaerung.js';
 import './ziehen.js';
 import { initTafel, oeffneTafel, tafelOffen } from '../../../gemeinsam/tafel/index.js';
+import { initLiveSteuerung, zuschauen, ansichtUebernehmen } from './live.js';
 
 initUi();
 // Tafel im Erklärmodus: Schleife in fünf Stellungen, darunter ein leeres U-t-Diagramm zum Einzeichnen
@@ -34,19 +37,26 @@ initTafel({
   seitenverhaeltnis: 1.6,
 });
 document.getElementById('tafelBtn').addEventListener('click', oeffneTafel);
+initLiveSteuerung();   // nach initTafel: das Bedienfeld kommt in die Abgabeleiste der Lehrerseite
 
 const SLOW_MOTION = 0.25;
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   if (tafelOffen()) return;   // Tafel groß geöffnet: Szene ruht, damit das Zeichnen flüssig bleibt
-  stepPark(dt);                  // Rotor beim Antrieb „Wind“
-  stepSpule(dt);                 // Umbau Leiterschleife ↔ Spule (läuft auch in der Pause)
-  controls.update();
+  // Live-Steuerung: Zeigt dieses Gerät nur an, rechnet es nicht selbst – Bewegung und Ansicht kommen vom anderen
+  const nurAnzeigen = zuschauen();
+  if (!nurAnzeigen) {
+    stepPark(dt);                // Rotor beim Antrieb „Wind“
+    stepSpule(dt);               // Umbau Leiterschleife ↔ Spule (läuft auch in der Pause)
+    controls.update();
+    if (!state.paused) stepPhysics(state.slowMotion ? dt * SLOW_MOTION : dt);
+  } else ansichtUebernehmen();
   updateParkStatus();
-  if (!state.paused) stepPhysics(state.slowMotion ? dt * SLOW_MOTION : dt);
   syncModel(state.paused ? 0 : dt);
   syncMeter();
+  syncLed();
+  syncLamp();
   syncExplain();
   updateHoldSlider();
   updatePlot();

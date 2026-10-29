@@ -218,3 +218,30 @@ test('Spule mit COIL.TURNS Windungen: Spannung COIL.TURNS-mal so groß; bei 0,5 
   const anteil = u => 1000 * u / 15;   // Anteil der U-Achse im Messbereich ±15 mV
   assert.ok(anteil(schleife.max) > 0.15 && anteil(spule.max) < 0.9, `${anteil(schleife.max)} / ${anteil(spule.max)}`);
 });
+
+test('LED und Glühlampe (Gedankenexperiment): LED nur in einer Halbschwingung, Lampe in beiden; mit Spule heller', async () => {
+  const { ledBrightness, lampGlow, ringVoltage } = await import('../js/physik.js');
+  function messen(coil) {
+    Object.assign(state, { drive: 'speed', speed: 0.5, northUp: true, coil, display: 'lamp' });
+    resetPhysics();
+    const r = { led: 0, ledFalsch: 0, lampe: 0, lampeMinus: 0 };
+    for (let i = 0; i < 6 * 600; i++) {
+      stepPhysics(1 / 600);
+      if (i < 600) continue;   // nach dem Anlaufen
+      const u = ringVoltage(), b = ledBrightness(), g = lampGlow();
+      r.led = Math.max(r.led, b);
+      if (u <= 0) r.ledFalsch = Math.max(r.ledFalsch, b);          // Sperrrichtung: Ring 1 nicht Pluspol
+      r.lampe = Math.max(r.lampe, g);
+      if (u < -0.8 * 2.4e-3 * (coil ? 5 : 1)) r.lampeMinus = Math.max(r.lampeMinus, g);   // auch bei Minus
+    }
+    return r;
+  }
+  const schleife = messen(false), spule = messen(true);
+  state.coil = false;
+  assert.equal(schleife.ledFalsch, 0, 'LED dunkel in Sperrrichtung');
+  assert.equal(spule.ledFalsch, 0);
+  assert.ok(schleife.led > 0.3 && schleife.led < 1, `Leiterschleife: LED leuchtet teilweise (${schleife.led})`);
+  assert.equal(spule.led, 1, 'Spule: LED voll');
+  assert.ok(schleife.lampe > 0 && schleife.lampe < 0.4, `Leiterschleife: Lampe glimmt nur (${schleife.lampe})`);
+  assert.ok(spule.lampe > 0.95 && spule.lampeMinus > 0.9, `Spule: Lampe hell, auch bei Minus (${spule.lampe}, ${spule.lampeMinus})`);
+});
