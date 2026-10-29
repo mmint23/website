@@ -1,10 +1,11 @@
 // ------------------------------------------------------------------
 // Diagramme übereinander auf derselben Zeitachse: oben B im Spuleninneren (B–t, nur im Erklärmodus), unten die
-// Spannung am Messgerät (U–t). Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit); rechts bleibt ein
-// schmaler Rand, damit die Tangente („Änderung von B“) am aktuellen Punkt nach beiden Seiten passt.
+// Spannung am Messgerät (U–t). Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit; Antrieb „Wind“:
+// PLOT_SECONDS_WIND); rechts bleibt ein schmaler Rand, damit die Tangente („Änderung von B“) am aktuellen Punkt
+// nach beiden Seiten passt.
 // Bei zwei Spulen: B₂ gestrichelt, U₁ und U₂ dünn, U (Summe am Messgerät) dick.
 // ------------------------------------------------------------------
-import { PLOT_SECONDS, B_PLOT } from './config.js';
+import { PLOT_SECONDS, PLOT_SECONDS_WIND, B_PLOT } from './config.js';
 import { state } from './state.js';
 import { clock, coilField, coilFieldRate, coilVoltage, meterVoltage } from './physik.js';
 import { formatNumber } from './hilfen.js';
@@ -29,14 +30,18 @@ function resizeCanvas(canvas) {
   return { ctx, w, h };
 }
 
+// Sichtbare Zeitspanne: beim Antrieb „Wind“ länger (der Rotor dreht langsam)
+const sekunden = () => (state.drive === 'wind' ? PLOT_SECONDS_WIND : PLOT_SECONDS);
+
 const zahl = (value, digits) => (value < 0 ? '−' : '') + formatNumber(Math.abs(value), digits);
 
 // Achsen, Raster und Beschriftung; liefert die Umrechnung in Pixel
 function rahmen(canvas, max, ticks, digits, mitZeit) {
   const { ctx, w, h } = resizeCanvas(canvas);
+  const dauer = sekunden();
   const x0 = PAD.left, x1 = w - PAD.right, y0 = PAD.top, y1 = h - PAD.bottom;
   const now = clock.t;
-  const X = t => x1 - (now - t) / PLOT_SECONDS * (x1 - x0);
+  const X = t => x1 - (now - t) / dauer * (x1 - x0);
   const Y = v => (y0 + y1) / 2 - Math.max(-1.08, Math.min(1.08, v / max)) * (y1 - y0) / 2;
   ctx.clearRect(0, 0, w, h);
   ctx.font = '12px system-ui, sans-serif';
@@ -54,7 +59,7 @@ function rahmen(canvas, max, ticks, digits, mitZeit) {
   }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  for (let s = Math.ceil(now - PLOT_SECONDS); s <= now; s++) {
+  for (let s = Math.ceil(now - dauer); s <= now; s++) {
     if (s < 0) continue;
     ctx.beginPath();
     ctx.moveTo(X(s), y0);
@@ -118,7 +123,7 @@ export function updatePlot() {
     u: meterVoltage(), u1: coilVoltage(0), u2: coilVoltage(1),
   };
   if (!samples.length || now > samples.at(-1).t) samples.push(jetzt);
-  while (samples.length && samples[0].t < now - PLOT_SECONDS - 0.5) samples.shift();
+  while (samples.length && samples[0].t < now - PLOT_SECONDS_WIND - 0.5) samples.shift();
   for (const el of document.querySelectorAll('[data-zwei]')) el.hidden = !zwei;
   $('slopeLegend').hidden = !state.showSlope;
   $('plotBPart').hidden = !state.explain;

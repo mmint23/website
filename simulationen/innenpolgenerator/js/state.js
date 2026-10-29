@@ -11,7 +11,8 @@ export const state = {
   iron: false,        // Spulen mit Eisenkern (und bei zwei Spulen mit Joch); false: Luftspulen
   coils: 2,           // immer zwei Spulen (rechts und links, in Reihe); 1 (nur rechts) gibt es nur noch in den Tests
   reversed: false,    // zwei Spulen: false „Ende – Ende“ (Spannungen addieren sich), true „Ende – Anfang“ (heben sich auf)
-  drive: 'speed',     // Antrieb: 'speed' (Drehzahl-Regler) oder 'crank' (Handkurbel)
+  drive: 'speed',     // Antrieb: 'wind' (Rotor einer Windkraftanlage), 'speed' (Drehzahl-Regler) oder 'crank' (Handkurbel)
+  wind: 8,            // Windgeschwindigkeit in m/s (Antrieb „Wind“)
   speed: 0.5,         // Drehzahl-Regler in Umdrehungen pro Sekunde (vorwärts positiv)
   hold: false,        // Magnet festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen
   slowMotion: false,
@@ -21,3 +22,12 @@ export const state = {
   showPlot: true,     // Diagramm U–t (im Erklärmodus dazu B–t)
   showSlope: false,   // Änderung von B als Tangente an die B-Kurve
 };
+
+// Aus dem Windpark gekommen (?von=windpark&wind=…): Antrieb „Wind“ mit dem Wind von dort. Ohne Windpark im
+// Browser (Tests) bleibt alles wie oben.
+export const ausWindpark = new URLSearchParams(globalThis.location?.search ?? '').get('von') === 'windpark';
+if (ausWindpark) {
+  const wind = Number(new URLSearchParams(location.search).get('wind'));
+  if (Number.isFinite(wind)) state.wind = Math.min(20, Math.max(0, wind));
+  state.drive = 'wind';
+}

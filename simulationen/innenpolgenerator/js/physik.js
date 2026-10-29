@@ -16,7 +16,7 @@
 // dazukommen kann.
 // ------------------------------------------------------------------
 import {
-  COIL, B_MAX, TURNS, CORE_AREA, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER,
+  COIL, B_MAX, TURNS, CORE_AREA, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER, TURBINE,
 } from './config.js';
 import { state } from './state.js';
 import { linienInSpule } from './feldlinienModell.js';
@@ -88,6 +88,9 @@ function stepRotor(dt) {
     // Festgehalten: folgt Kurbel bzw. Regler und bleibt sonst stehen
     if (rotor.dragging) rotor.holdTarget = rotor.target;
     rotor.omega = clamp((rotor.holdTarget - rotor.phi) / CRANK_TIME, -CRANK_MAX_OMEGA, CRANK_MAX_OMEGA);
+  } else if (state.drive === 'wind') {
+    // Wind: Rotor und Magnet sitzen auf derselben Welle (Generator ohne Getriebe); Drehzahl proportional zum Wind
+    rotor.omega = TWO_PI * park.rpm / 60;
   } else if (state.drive === 'speed') {
     // Drehzahl-Regler: wie ein geregelter Antrieb, die Drehzahl stellt sich gleichmäßig ein
     rotor.omega += (TWO_PI * state.speed - rotor.omega) * Math.min(1, dt / SPEED_TIME);
@@ -121,6 +124,22 @@ export function stepPhysics(dt) {
     stepNeedle(h);
   }
   clock.t += dt;
+}
+
+// ---------------- Rotor einer Windkraftanlage (Antrieb „Wind“; bis 12 m/s wie in der Simulation Windpark)
+
+// Drehzahl des Rotors in U/min (0 unterhalb der Einschaltgeschwindigkeit)
+export const park = { rpm: 0 };
+// (vereinfacht: proportional zum Wind, ohne Nenndrehzahl – mehr Wind heißt immer schneller und mehr Spannung)
+export function turbineTargetRpm(wind) {
+  if (wind < TURBINE.CUT_IN) return 0;
+  return TURBINE.RPM_PER_WIND * wind;
+}
+
+// Der Rotor ist träge: Drehzahl folgt dem Wind verzögert (dt in s, Echtzeit)
+export function stepPark(dt) {
+  park.rpm += (turbineTargetRpm(state.wind) - park.rpm) * Math.min(1, dt / TURBINE.SPIN_TIME);
+  if (park.rpm < 0.05 && turbineTargetRpm(state.wind) === 0) park.rpm = 0;
 }
 
 // ---------------- Kurbel
@@ -161,6 +180,7 @@ export function holdTo(angle) {
 
 export function resetPhysics() {
   Object.assign(rotor, { phi: 0, omega: 0, dragging: false, target: 0, holdTarget: 0 });
+  park.rpm = 0;
   Object.assign(needle, { pos: 0, vel: 0 });
   clock.t = 0;
 }

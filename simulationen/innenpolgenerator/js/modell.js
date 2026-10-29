@@ -7,7 +7,7 @@
 // Wicklung, innen, oben) und E (Ende der Wicklung, außen, unten); dort beginnen die Kabel (messgeraet.js).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND, GEN_ROT } from './config.js';
+import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND, GEN_ROT, TURBINE } from './config.js';
 import { state } from './state.js';
 import { rotor, coilField } from './physik.js';
 import { addMesh, makeLabel, makeTextSprite } from './hilfen.js';
@@ -56,6 +56,41 @@ arm.position.y = CRANK.ARM / 2;
 const grip = addMesh(new THREE.CylinderGeometry(0.6, 0.6, CRANK.KNOB_LEN, 20), mat.wood, crank);
 grip.rotation.x = Math.PI / 2;
 grip.position.set(0, CRANK.ARM, CRANK.KNOB_LEN / 2 + 0.4);
+
+// Antrieb „Wind“ (statt der Kurbel): kleiner Rotor mit drei Blättern hinter dem Ständer auf der verlängerten Welle
+// (vorne würde er den Magneten verdecken) – zeigt, dass der Magnet im Windrad vom Rotor angetrieben wird. Blätter wie
+// in generator-leiterschleife, hier in der Bildebene (Welle entlang z).
+const windRotor = new THREE.Group();
+windRotor.position.z = TURBINE.Z;
+windRotor.visible = false;
+rotorGroup.add(windRotor);
+{
+  const verlaengerung = SHAFT.Z_MIN - TURBINE.Z;
+  const welle = addMesh(new THREE.CylinderGeometry(SHAFT.R, SHAFT.R, verlaengerung, 16), mat.steel, windRotor);
+  welle.rotation.x = Math.PI / 2;
+  welle.position.z = verlaengerung / 2;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.45 });
+  const nabe = addMesh(new THREE.SphereGeometry(1.3, 20, 14), white, windRotor);
+  nabe.scale.z = 1.4;
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.6, 0);
+  shape.lineTo(-1.4, 2.2);
+  shape.quadraticCurveTo(-0.9, 6, -0.25, 9);
+  shape.lineTo(0.3, 9);
+  shape.quadraticCurveTo(0.9, 4.5, 1.0, 1.6);
+  shape.lineTo(0.6, 0);
+  shape.closePath();
+  const bladeGeometry = new THREE.ExtrudeGeometry(shape, { depth: 0.25, bevelEnabled: false });
+  bladeGeometry.translate(0, 0, -0.125);
+  bladeGeometry.scale(TURBINE.BLADE, TURBINE.BLADE, 1);
+  for (let k = 0; k < 3; k++) {
+    const armRotor = new THREE.Group();
+    armRotor.rotation.z = k * 2 * Math.PI / 3;
+    windRotor.add(armRotor);
+    const blade = addMesh(bladeGeometry, white, armRotor);
+    blade.rotation.y = 0.6;   // leicht angestellt
+  }
+}
 
 // Unsichtbare, größere Grifffläche für Finger und Maus (Arm und Griff)
 export const crankTargets = [];
@@ -213,6 +248,8 @@ let seeThrough = null, magnetSeeThrough = null;
 
 export function syncModel() {
   rotorGroup.rotation.z = rotor.phi;
+  crank.visible = state.drive !== 'wind';
+  windRotor.visible = state.drive === 'wind';
   const two = state.coils === 2;
   coils[1].group.visible = bars[1].visible = two;
   yoke.visible = two && state.iron;   // Joch nur mit Eisenkernen

@@ -75,8 +75,16 @@
     <section>
       <h2>Antrieb</h2>
       <div class="segmented" role="group" aria-label="Antrieb">
+        <button id="driveWindBtn" type="button">Wind</button>
         <button id="driveSpeedBtn" type="button">Drehzahl</button>
         <button id="driveCrankBtn" type="button">Kurbel</button>
+      </div>
+      <div id="windBox" hidden>
+        <label class="slider">
+          <span class="row">Windgeschwindigkeit <output id="windOut"></output></span>
+          <input id="windSlider" type="range" />
+        </label>
+        <p class="status" id="rotorStatus"></p>
       </div>
       <div id="speedBox">
         <label class="slider">
