@@ -73,6 +73,14 @@ function anzeigen() {
   banner.hidden = !zu;
   banner.className = 'live-banner warte';
   banner.textContent = stand.quelle === 'schueler' ? 'Ein Schülergerät steuert die Simulation.' : 'Ein anderes Lehrergerät steuert.';
+  // „Ich steuere“ auch im Hinweis: Er liegt über der Tafel, die beim Zuschauen die Abgabeleiste verdecken kann
+  if (zu) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.textContent = 'Ich steuere';
+    knopf.addEventListener('click', () => senden({ typ: 'live-umschalten', an: 'lehrer' }));
+    banner.append(' ', knopf);
+  }
   $('liveStatus').textContent = !stand.offen ? 'Keine Verbindung zum Server …'
     : !stand.aktiv ? 'Kein Schülergerät verbunden.'
       : stand.verbunden ? 'Schülergerät verbunden.' : 'Warte auf das Schülergerät (QR-Code scannen) …';
@@ -118,7 +126,7 @@ function lehrerFeldAnlegen() {
   $('liveIch').addEventListener('click', () => senden({ typ: 'live-umschalten', an: 'lehrer' }));
   $('liveTrennen').addEventListener('click', () => senden({ typ: 'live-trennen' }));
   aufNachricht('live-code', nachricht => {
-    showLink(adresseFuer({ steuern: nachricht.code }),
+    showLink(adresseFuer({ ...optionen.steuernAngaben?.(), steuern: nachricht.code }),
       'Steuerung abgeben: mit dem Schülergerät scannen. Danach steuert dieses Gerät die Simulation am Beamer.');
   });
 }
@@ -150,7 +158,7 @@ function bild(zeit) {
   }
 }
 
-// optionen: { id, lesen, schreiben, glaetten?, sperren?, beiWechsel? } – siehe README.md
+// optionen: { id, lesen, schreiben, glaetten?, sperren?, beiWechsel?, steuernAngaben? } – siehe README.md
 export async function initLive(neu) {
   if (optionen) throw new Error('initLive() wurde schon aufgerufen');
   optionen = { sperren: '#scene, .panel, .popup, .hint', ...neu };
