@@ -73,6 +73,14 @@ function anzeigen() {
   banner.hidden = !zu;
   banner.className = 'live-banner warte';
   banner.textContent = stand.quelle === 'schueler' ? 'Ein Schülergerät steuert die Simulation.' : 'Ein anderes Lehrergerät steuert.';
+  // „Ich steuere“ auch im Hinweis: Er liegt über der Tafel, die beim Zuschauen die Abgabeleiste verdecken kann
+  if (zu) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.textContent = 'Ich steuere';
+    knopf.addEventListener('click', () => senden({ typ: 'live-umschalten', an: 'lehrer' }));
+    banner.append(' ', knopf);
+  }
   $('liveStatus').textContent = !stand.offen ? 'Keine Verbindung zum Server …'
     : !stand.aktiv ? 'Kein Schülergerät verbunden.'
       : stand.verbunden ? 'Schülergerät verbunden.' : 'Warte auf das Schülergerät (QR-Code scannen) …';

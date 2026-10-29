@@ -79,7 +79,18 @@ nicht mitscannen; mit PIN, falls der Server mit PIN läuft). Mit Zeichentafel st
 (`gemeinsam/tafel/abgabe.js`), sonst im Kasten der Live-Steuerung. Läuft die Live-Steuerung, übernimmt das zweite
 Gerät mit „Ich steuere“; am anderen steht dann „Ein anderes Lehrergerät steuert“.
 
-Beispiel: `simulationen/leiterschaukel-induktion/js/live.js` (baut beim Übernehmen nur neu auf, was sich
+**Tafel mitspiegeln** (gemeinsam/tafel/): `tafelLiveDaten()` in `lesen` mitschicken, in `schreiben`
+`fremdeTafel(daten.tafel)` aufrufen, in `beiWechsel` bei `!zuschauen` `fremdeTafel(null)`, und `.tafel-overlay` zu
+`sperren` nehmen. Das zuschauende Gerät zeigt dann die Tafel des steuernden Geräts (offen/zu, Seite, Striche, auch
+den Strich, der gerade entsteht); seine eigene Tafel bzw. eine gerade angesehene Abgabe bleibt unberührt und ist
+wieder da, sobald es selbst steuert. Die Striche gehen nur nach einer Änderung und sonst etwa jede Sekunde mit
+(gepackt wie bei einer Abgabe), der Server nimmt dafür Zustände bis 1 MB an. Teilen und Abgaben funktionieren wie
+immer. Für einen Laserpointer auf der Tafel gibt es `zuTafel(x, y)` / `vonTafel(x, y)` (Bildschirm ↔
+Tafeleinheiten), damit seine Spuren auf jedem Gerät an derselben Stelle des Tafelbilds liegen (Beispiel:
+`leiterschaukel-induktion/js/laser.js`). Der Hinweis „Ein Schülergerät steuert“ liegt über der Tafel und hat auf der Lehrerseite einen Knopf
+„Ich steuere“ (die offene Tafel verdeckt sonst die Abgabeleiste).
+
+Beispiel: `simulationen/leiterschaukel-induktion/js/live.js` (mit Tafel) (baut beim Übernehmen nur neu auf, was sich
 geändert hat: Versuch, Anzeige, Kabel, Polung des Magneten).
 
 ## Technik

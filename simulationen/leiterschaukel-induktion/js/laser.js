@@ -8,11 +8,14 @@
 //
 // Live-Steuerung (live.js): Die Spuren des steuernden Geräts werden mit übertragen – als Punkte in der 3D-Szene
 // (auf der Ebene durch den Drehpunkt der Ansicht), damit sie auf jedem Bildschirm am selben Teil der Simulation
-// liegen, auch wenn Größe und Seitenverhältnis verschieden sind. Das zuschauende Gerät zeichnet sie zusätzlich.
+// liegen, auch wenn Größe und Seitenverhältnis verschieden sind. Spuren auf der großen Tafel gehen stattdessen in
+// Tafeleinheiten mit (ort 'tafel'): Sie liegen auf jedem Gerät an derselben Stelle des Tafelbilds. Das zuschauende
+// Gerät zeichnet sie zusätzlich – Tafelspuren nur bei offener Tafel, Szenenspuren nur bei geschlossener.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { state } from './state.js';
 import { renderer, camera, controls } from './szene.js';
+import { tafelOffen, zuTafel, vonTafel } from '../../../gemeinsam/tafel/index.js';
 
 const HALTEN = 400;     // ms: so lange bleibt die Spur nach dem Absetzen voll sichtbar …
 const VERBLASSEN = 1100; // … und verblasst dann in dieser Zeit
@@ -20,8 +23,10 @@ const BEDIENELEMENTE = 'button, input, select, textarea, a, label';
 
 const canvas = document.getElementById('laserCanvas');
 const ctx = canvas.getContext('2d');
-const spuren = [];          // { id, punkte: [{ x, y }], welt: [[x, y, z]], ende: Zeitpunkt des Absetzens oder null }
-let fremde = [];            // Spuren des steuernden Geräts (Live-Steuerung): { welt: [[x, y, z]], alter }
+// Spuren: { id, ort ('szene' | 'tafel'), punkte: [{ x, y }] (Bildschirm), welt: Punkte zum Übertragen – in der
+// Szene [x, y, z], auf der Tafel [x, y] in Tafeleinheiten –, ende: Zeitpunkt des Absetzens oder null }
+const spuren = [];
+let fremde = [];            // Spuren des steuernden Geräts (Live-Steuerung): { ort, welt, alter }
 let laeuft = false;         // Zeichenschleife aktiv
 const MAX_PUNKTE = 1500;    // so viele Punkte höchstens übertragen (die neuesten Spuren zuerst)
 
@@ -49,9 +54,18 @@ function zuBild(p) {
 
 function merken(s, x, y) {
   s.punkte.push({ x, y });
+  if (s.ort === 'tafel') {
+    const t = zuTafel(x, y);
+    if (t) s.welt.push([runden(t.x), runden(t.y)]);
+    return;
+  }
   const w = zuWelt(x, y);
   if (w) s.welt.push(w);
 }
+
+// Übertragenen Punkt einer fremden Spur auf diesem Bildschirm (null: hier gerade nicht zu sehen)
+const aufBild = (ort, p) => (ort === 'tafel' ? vonTafel(p[0], p[1]) : zuBild(p));
+const sichtbar = ort => (ort === 'tafel') === tafelOffen();
 
 function groesse() {
   const dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -92,7 +106,9 @@ function zeichnen() {
     strich(s.punkte, deckkraft);
   }
   // Spuren des steuernden Geräts: jedes Bild neu aus der Szene projiziert (die Ansicht kann sich bewegen)
-  for (const s of fremde) strich(s.welt.map(zuBild).filter(Boolean), deckkraftNach(s.alter));
+  for (const s of fremde) {
+    if (sichtbar(s.ort)) strich(s.welt.map(p => aufBild(s.ort, p)).filter(Boolean), deckkraftNach(s.alter));
+  }
   ctx.globalAlpha = 1;
   ctx.shadowBlur = 0;
   laeuft = spuren.length > 0 || fremde.length > 0;
@@ -116,7 +132,7 @@ const abfangen = event => {
 window.addEventListener('pointerdown', event => {
   if (!fuerLaser(event) || event.button > 0) return;
   abfangen(event);
-  const s = { id: event.pointerId, punkte: [], welt: [], ende: null };
+  const s = { id: event.pointerId, ort: tafelOffen() ? 'tafel' : 'szene', punkte: [], welt: [], ende: null };
   merken(s, event.clientX, event.clientY);
   spuren.push(s);
   anstossen();
@@ -154,7 +170,7 @@ export function laserDaten() {
     if (deckkraftNach(alter) <= 0 || !s.welt.length) continue;
     const welt = s.welt.slice(-(MAX_PUNKTE - anzahl));
     anzahl += welt.length;
-    daten.unshift({ welt, alter });
+    daten.unshift({ ort: s.ort, welt, alter });
     if (anzahl >= MAX_PUNKTE) break;
   }
   return daten;
@@ -162,7 +178,8 @@ export function laserDaten() {
 
 // Live-Steuerung, zuschauendes Gerät: Spuren des steuernden Geräts übernehmen (leere Liste: keine)
 export function fremdeLaser(daten) {
-  fremde = Array.isArray(daten) ? daten.filter(s => Array.isArray(s?.welt) && Number.isFinite(s.alter)) : [];
+  fremde = Array.isArray(daten) ? daten.filter(s => Array.isArray(s?.welt) && Number.isFinite(s.alter))
+    .map(s => ({ ...s, ort: s.ort === 'tafel' ? 'tafel' : 'szene' })) : [];
   if (fremde.length) anstossen();
 }
 

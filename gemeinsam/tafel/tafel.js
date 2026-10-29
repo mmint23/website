@@ -9,8 +9,12 @@
 // Finger/Handballen ignoriert.
 // Mehrere Seiten (Option seiten): je ein eigenes Bild, umschaltbar in der Werkzeugleiste. Alle Striche bleiben in
 // einem Dokument und tragen ihre Seite (striche.js); gezeichnet, radiert und gelöscht wird auf der gezeigten Seite.
+// Live-Steuerung (gemeinsam/live/): tafelLiveDaten() liefert, was dieses Gerät gerade auf der Tafel zeigt;
+// fremdeTafel() zeigt beim Zuschauen die Tafel des steuernden Geräts (eigene Tafel und Abgaben bleiben unberührt).
 // ------------------------------------------------------------------
-import { TAFEL_BREITE, GRENZEN, zeichneStrich, zeichneStueck, zeichneAlle, getroffen, seiteVon } from './striche.js';
+import {
+  TAFEL_BREITE, GRENZEN, zeichneStrich, zeichneStueck, zeichneAlle, getroffen, seiteVon, packen, entpacken,
+} from './striche.js';
 import { stilLaden } from '../stil.js';
 
 const $ = id => document.getElementById(id);
@@ -87,7 +91,11 @@ zustand.dokument = eigenesDokument;
 const beiAenderung = [], beiAnzeige = [];
 export const aufAenderung = rueckruf => beiAenderung.push(rueckruf);
 export const aufAnzeige = rueckruf => beiAnzeige.push(rueckruf);
-const anzeigeMelden = () => { for (const rueckruf of beiAnzeige) rueckruf(); };
+let anzeigeStand = 0;   // zählt jede Änderung dessen, was auf der Tafel zu sehen ist (Live-Steuerung)
+const anzeigeMelden = () => {
+  anzeigeStand++;
+  for (const rueckruf of beiAnzeige) rueckruf();
+};
 
 export const aktuellesDokument = () => zustand.dokument;
 
@@ -122,6 +130,7 @@ const basis = document.createElement('canvas');   // fertige Striche (Zwischensp
 const basisCtx = basis.getContext('2d');
 
 let strich = null;       // Strich, der gerade gezeichnet wird
+let fremderStrich = null;   // beim Zuschauen: Strich, der auf dem steuernden Gerät gerade entsteht
 let radiert = null;      // beim laufenden Radieren entfernte Striche
 let aktiv = null;        // { id, typ } des zeichnenden Zeigers
 let stiftGesehen = false;
@@ -164,9 +173,10 @@ function anzeigen() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(basis, 0, 0);
-  if (strich) {
+  const laufend = strich ?? fremderStrich;
+  if (laufend && seiteVon(laufend) === seite) {
     ctx.setTransform(massstab(), 0, 0, massstab(), 0, 0);
-    zeichneStrich(ctx, strich);
+    zeichneStrich(ctx, laufend);
   }
 }
 function neuZeichnen() {
@@ -383,6 +393,74 @@ function zeigeSeite(nummer) {
   bildZeigen();
   neuZeichnen();
   for (const rueckruf of beiSeitenwechsel) rueckruf(seite);
+}
+
+// ---------------- Live-Steuerung
+
+// Bildschirm ↔ Tafel (z. B. für einen Laserpointer, dessen Spuren auf jedem Gerät an derselben Stelle des Tafelbilds
+// liegen sollen): Punkt in Tafeleinheiten bzw. zurück in Bildschirmpunkte; null, wenn die Tafel zu ist
+export function zuTafel(x, y) {
+  if (!zustand.open) return null;
+  const r = canvas.getBoundingClientRect();
+  return { x: (x - r.left) / r.width * TAFEL_BREITE, y: (y - r.top) / r.height * hoehe };
+}
+export function vonTafel(x, y) {
+  if (!zustand.open) return null;
+  const r = canvas.getBoundingClientRect();
+  return { x: r.left + x / TAFEL_BREITE * r.width, y: r.top + y / hoehe * r.height };
+}
+
+// Steuerndes Gerät: was gerade auf der Tafel zu sehen ist – offen, Seite, der Strich, der gerade entsteht, und
+// (nur nach einer Änderung und sonst etwa jede Sekunde, damit nicht jeder Zustand alle Striche trägt) die Striche
+// des gezeigten Dokuments, gepackt wie bei einer Abgabe. Nach einer Änderung dreimal hintereinander, falls das
+// zuschauende Gerät einen Zustand überspringt.
+let gesendet = { stand: -1, zeit: 0, nochmal: 0 };
+export function tafelLiveDaten() {
+  const daten = { offen: zustand.open, seite, strich: strich ? packen([strich])[0] : null };
+  const jetzt = performance.now();
+  if (gesendet.stand !== anzeigeStand) gesendet = { stand: anzeigeStand, zeit: 0, nochmal: 3 };
+  if (gesendet.nochmal > 0 || jetzt - gesendet.zeit > 1000) {
+    daten.striche = packen(zustand.dokument.striche);
+    gesendet.zeit = jetzt;
+    gesendet.nochmal = Math.max(0, gesendet.nochmal - 1);
+  }
+  return daten;
+}
+
+// Zuschauendes Gerät: Tafel des steuernden Geräts zeigen (daten aus tafelLiveDaten) bzw. mit null wieder die eigene
+// – mit Dokument, Seite und offen/zu wie vorher. Gezeichnet wird auf dem fremden Dokument nie (die Live-Steuerung
+// sperrt die Tafel beim Zuschauen), deshalb wird dabei auch nichts gespeichert oder gemeldet.
+const fremdesDokument = { fremd: true, verlauf: [], striche: [] };
+let vorFremd = null;   // { dokument, offen, seite } vor dem Zuschauen
+export function fremdeTafel(daten) {
+  if (!daten) {
+    if (!vorFremd) return;
+    const { dokument, offen, seite: alteSeite } = vorFremd;
+    vorFremd = fremderStrich = null;
+    fenster.classList.remove('fremd');
+    zustand.dokument = dokument;
+    fremdesDokument.striche = [];
+    zeigeSeite(alteSeite);
+    if (offen) oeffneTafel(); else schliesseTafel();
+    neuZeichnen();
+    return;
+  }
+  if (!vorFremd) {
+    abbrechen();
+    vorFremd = { dokument: zustand.dokument, offen: zustand.open, seite };
+    fenster.classList.add('fremd');   // ohne Teilen bzw. Titel und Knöpfe einer Abgabe (tafel.css)
+  } else if (zustand.dokument !== fremdesDokument) {
+    vorFremd.dokument = zustand.dokument;   // inzwischen auf diesem Gerät ein anderes Dokument gewählt (Lehrerseite)
+  }
+  const neuesDokument = zustand.dokument !== fremdesDokument;
+  zustand.dokument = fremdesDokument;
+  if (daten.striche) fremdesDokument.striche = entpacken(daten.striche);
+  fremderStrich = daten.strich ? entpacken([daten.strich])[0] : null;
+  if (Number.isInteger(daten.seite)) zeigeSeite(daten.seite);
+  if (daten.offen && !zustand.open) oeffneTafel();
+  if (!daten.offen && zustand.open) schliesseTafel();
+  if (daten.striche || neuesDokument) neuZeichnen();
+  else if (zustand.open) anzeigen();   // nur der laufende Strich hat sich geändert
 }
 
 // optionen: { id, bild, bildText?, seiten?, seitenverhaeltnis?, stifte?, leisteZusatz? } – siehe README.md

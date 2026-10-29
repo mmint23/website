@@ -119,3 +119,7 @@ button.gefahr.scharf { background: #c62828; border-color: #c62828; color: #fff; 
   .abgaben { right: 16px; bottom: auto; top: 16px; z-index: 12; }
   .abgaben-kopf { width: 120px; }
 }
+
+/* Live-Steuerung: beim Zuschauen die Tafel des steuernden Geräts – ohne Teilen (Schüler) und ohne Titel und Knöpfe
+   einer Abgabe (Lehrerseite) */
+.tafel-overlay.fremd #tafelSchueler, .tafel-overlay.fremd #tafelLehrer { display: none !important; }
