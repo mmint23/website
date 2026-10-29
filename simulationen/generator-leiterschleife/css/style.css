@@ -251,5 +251,31 @@ body.lehrer .popup { max-height: calc(100% - 380px); }
    (?schueler) auch ohne die Knöpfe der Lehrkraft (bedienfeld.js) */
 body.schueler-modus .ohne-im-schuelermodus, body.schueler-geraet .nur-lehrkraft { display: none !important; }
 body.schueler-modus .popup .toggles.groessen { grid-template-columns: 1fr 1fr; }
+/* Schülermodus: nur ein Bedienfeld (links) – das rechte fällt weg, Antrieb und Magnet hängen links (bedienfeld.js) */
+body.schueler-modus #modelPanel { display: none; }
+/* … und das U-t-Diagramm unten rechts statt über dem Bedienfeld (verschieben geht wie immer) */
+@media (min-width: 701px) { body.schueler-modus .plot-box { left: auto; right: 16px; width: min(440px, calc(100% - 330px)); } }
+/* … alles untereinander; das Feld reicht bis zum unteren Rand und scrollt, wenn es nicht ganz passt (die
+   Hinweiszeile rückt dafür nach rechts unter das U-t-Diagramm) */
+@media (min-width: 701px) {
+  body.schueler-modus .popup { max-height: calc(100% - 126px); }
+  body.schueler-modus .hint { left: auto; right: 16px; }
+}
+.popup #schuelerOben { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #d5dce3; }
+.popup #schuelerOben button:first-child { margin-top: 0; }
+/* Reihenfolge im Schülermodus: oben, Antrieb und Magnet, Erklärung, ganz unten Schleifringe, Spule, U-t-Diagramm
+   (#erklaerInhalt löst sich dafür auf, seine Knöpfe ordnen sich direkt im Bedienfeld ein) */
+body.schueler-modus .popup { display: flex; flex-direction: column; }
+body.schueler-modus .popup > * { flex: none; }
+body.schueler-modus #erklaerInhalt { display: contents; }
+body.schueler-modus #schuelerOben { order: 0; }
+body.schueler-modus #schuelerUnten { order: 1; }
+body.schueler-modus #erklaerInhalt > * { order: 2; }
+body.schueler-modus #erklaerInhalt > .unten-im-schuelermodus { order: 3; }
+body.schueler-modus.erklaer-an .popup #schuelerUnten { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #d5dce3; }
+.popup #schuelerUnten h2 + div > :first-child { margin-top: 0; }
+.popup #schuelerUnten h2:not(:first-child) { margin-top: 12px; }
+.popup .segmented button { flex: 1 1 0; min-width: 0; margin-top: 0; }
+.popup .segmented button.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
 .panel #schuelerModusBtn { margin-top: 8px; }
 .panel #schuelerQrBtn { margin-top: 8px; }

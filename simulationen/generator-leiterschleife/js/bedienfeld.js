@@ -12,7 +12,7 @@ import { applyMagnetPoles, setRingsInstant } from './modell.js';
 import { updateMeterFace, setMeterVisible, setDisplay } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { explainView, sideView } from './erklaerung.js';
-import { resetView as resetModelView, controls, setTable } from './szene.js';
+import { resetView as resetModelView, controls, setTable, setBildVersatz } from './szene.js';
 import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
 import { adresseFuer, raum } from '../../../gemeinsam/verbindung.js';
@@ -32,7 +32,37 @@ const resetView = () => {
   else resetModelView();
 };
 
+// Schülermodus: nur ein Bedienfeld (links). Diese Bedienelemente wandern dann aus dem rechten Bedienfeld nach links
+// (Ziel: Element im linken Feld) und beim Ausschalten wieder an ihren Platz zurück (Merkzeichen an der alten Stelle)
+const UMZUG = [['schuelerModusBtn', 'schuelerOben'], ['schuelerQrBtn', 'schuelerOben'], ['explainBtn', 'schuelerOben'],
+  ['driveButtons', 'schuelerAntrieb'], ['speedBox', 'schuelerAntrieb'], ['crankInfo', 'schuelerAntrieb'], ['flipBtn', 'schuelerMagnet']];
+const merkzeichen = new Map();
+function bedienfeldUmhaengen() {
+  for (const [id, ziel] of UMZUG) {
+    const element = $(id);
+    if (!merkzeichen.has(id)) {
+      merkzeichen.set(id, document.createComment(id));
+      element.before(merkzeichen.get(id));
+    }
+    const links = $(ziel).contains(element);
+    if (modus.schueler && !links) $(ziel).append(element);
+    if (!modus.schueler && links) merkzeichen.get(id).after(element);
+  }
+  $('schuelerOben').hidden = $('schuelerUnten').hidden = !modus.schueler;
+  document.body.classList.toggle('erklaer-an', state.explain);
+  requestAnimationFrame(bildVersetzen);
+}
+
+// Schülermodus: Modell in die Mitte der freien Fläche rechts neben dem einzigen Bedienfeld (nicht in schmalen
+// Fenstern, dort liegt das Bedienfeld oben)
+function bildVersetzen() {
+  const feld = $('explainPanel').getBoundingClientRect();
+  const frei = modus.schueler && innerWidth > 700 && !$('explainPanel').hidden;
+  setBildVersatz(frei ? (feld.right + 12 + innerWidth - 16) / 2 - innerWidth / 2 : 0);
+}
+
 export function updateUi() {
+  bedienfeldUmhaengen();
   document.body.classList.toggle('schueler-modus', modus.schueler);
   $('schuelerModusBtn').setAttribute('aria-pressed', String(modus.schueler));
   for (const id of ['coilBtn', 'explainCoilBtn']) $(id).setAttribute('aria-pressed', String(state.coil));
@@ -42,7 +72,8 @@ export function updateUi() {
   $('showManyBtn').disabled = state.coil;   // „viele e⁻“ nur bei der Leiterschleife (Kette von Ende zu Ende)
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';
   $('explainBtn').classList.toggle('active', state.explain);
-  $('explainPanel').hidden = !state.explain;
+  $('explainPanel').hidden = !state.explain && !modus.schueler;   // im Schülermodus das einzige Bedienfeld
+  $('erklaerInhalt').hidden = !state.explain;
   $('meterSection').hidden = state.explain;
   for (const [id, key] of TOGGLES) $(id).setAttribute('aria-pressed', String(state[key]));
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
@@ -158,6 +189,7 @@ export function initUi() {
   // Schülermodus ein/aus (Lehrkraft, z. B. am Beamer): ein → gleich in den Erklärmodus, B, v und F_L aus
   $('schuelerModusBtn').addEventListener('click', () => {
     modus.schueler = !modus.schueler;
+    if (modus.schueler && state.drive === 'wind') state.drive = 'speed';   // Wind gibt es im Schülermodus nicht
     if (modus.schueler) setExplain(true);
     updateUi();
   });
@@ -212,10 +244,12 @@ export function initUi() {
       updateUi();
     });
   }
+  window.addEventListener('resize', () => requestAnimationFrame(bildVersetzen));   // Schülermodus: Modell neben dem Feld
   onCrankGrab(updateUi);
 
   applyMagnetPoles();
   document.body.classList.toggle('schueler-geraet', modus.festgelegt);
+  if (modus.schueler && state.drive === 'wind') state.drive = 'speed';   // Wind gibt es im Schülermodus nicht
   if (modus.schueler) setExplain(true);   // Größen sind dabei aus (setExplain), F_L bleibt es
   else resetView();
   updateUi();

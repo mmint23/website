@@ -56,6 +56,16 @@ export function setTable(visible) {
   controls.maxPolarAngle = visible ? POLAR_TISCH : Math.PI;
 }
 
+// Bild seitlich verschieben (Pixel, positiv: nach rechts), z. B. im Schülermodus in die Mitte der freien Fläche
+// rechts neben dem einzigen Bedienfeld. Die Kamera selbst bleibt, wo sie ist (Ansicht, Live-Steuerung, Kurbel greifen).
+let versatz = 0;
+export function setBildVersatz(px) {
+  versatz = Math.round(px);
+  const w = container.clientWidth, h = container.clientHeight;
+  if (versatz) camera.setViewOffset(w, h, -versatz, 0, w, h);
+  else camera.clearViewOffset();
+}
+
 // Größe anpassen; im Hochformat das Sichtfeld vergrößern, damit das ganze Modell sichtbar bleibt
 function resize() {
   const w = container.clientWidth;
@@ -68,6 +78,7 @@ function resize() {
     ? BASE_FOV
     : THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_FOV / 2)) * BASE_ASPECT / camera.aspect));
   camera.updateProjectionMatrix();
+  setBildVersatz(versatz);
 }
 window.addEventListener('resize', resize);
 resize();

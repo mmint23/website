@@ -144,6 +144,12 @@ Zeichnungen geteilt wurden (die Koordinaten beziehen sich auf das Bild).
 Der **Erklärmodus ohne den Knopf F_L**: Die Schüler arbeiten mit B, v, Elektronen, Schleifringen, Spule, Pause,
 Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulation die Lorentzkraft vorwegnimmt.
 
+- **Nur ein Bedienfeld (links):** Das rechte Bedienfeld fällt weg. Alles steht untereinander (passt es nicht ganz,
+  scrollt das Feld): oben „Zurück zum Modell“ bzw. „Erklärung“ (auf der Lehrerseite auch Schülermodus-Schalter und
+  QR-Code), darunter **Antrieb** (Drehzahl-Regler oder Kurbel; ohne Wind und ohne „Anhalten“) und **Magnet
+  umdrehen**, dann die Erklär-Knöpfe und ganz unten Schleifringe, Spule mit 5 Windungen und U-t-Diagramm. Das
+  Modell rückt in die freie Fläche daneben, das U-t-Diagramm steht unten rechts.
+  Nach „Zurück zum Modell“ bleibt das Feld mit Antrieb und Magnet (Messgerät mit ±3 mV).
 - **„Schülermodus (ohne F_L)“** (oben im Bedienfeld) schaltet ihn auf diesem Gerät ein und aus, z. B. am
   Beamer; beim Einschalten geht es gleich in den Erklärmodus.
 - **„QR-Code für den Schülermodus“** zeigt einen QR-Code zu `…/generator-leiterschleife/?schueler`. Wer ihn scannt,
@@ -155,7 +161,10 @@ Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulatio
 - „Zurück zum Modell“ bleibt; auch dort und beim erneuten Öffnen des Erklärmodus fehlt F_L.
 - Kein Schutz: Wer `?schueler` aus der Adresse löscht, hat wieder alle Knöpfe.
 - Technik: `modus` in `state.js` (gehört zum Gerät, wird nicht live übertragen); im Schülermodus ist die Klasse
-  `ohne-im-schuelermodus` (Knopf F_L) ausgeblendet, auf dem Schülergerät zusätzlich `nur-lehrkraft`.
+  `ohne-im-schuelermodus` (F_L, Wind, Anhalten) ausgeblendet, `unten-im-schuelermodus` steht ganz unten, auf dem
+  Schülergerät ist zusätzlich `nur-lehrkraft` ausgeblendet.
+  `bedienfeld.js` hängt die Bedienelemente aus dem rechten Feld ins linke um (`UMZUG`) und zurück; das Bild rückt
+  per `setBildVersatz` (szene.js) neben das Feld, die Kamera selbst bleibt.
 
 ## Live-Steuerung: Schüler steuert am Beamer
 
