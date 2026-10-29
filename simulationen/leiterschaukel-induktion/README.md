@@ -175,7 +175,11 @@ bedient die Leiterschaukel auf seinem iPad – der Beamer zeigt genau das, auch 
 **„Ich steuere“ / „Schüler steuert“** schaltet hin und her, ohne neues Scannen; „Trennen“ beendet. Laserpointer
 und „Link / QR-Code zeigen“ bleiben am Beamer bedienbar. Benutzt das steuernde Gerät den Laserpointer, erscheint die
 Spur auch am Beamer (bzw. umgekehrt auf dem Schülergerät, wenn die Lehrkraft steuert) – am selben Teil der
-Simulation, auch bei anderer Bildschirmgröße. Einzelheiten:
+Simulation, auch bei anderer Bildschirmgröße.
+Auch die **Tafel** geht mit: Öffnet das steuernde Gerät sie, zeichnet, blättert oder schließt sie, zeigt der Beamer
+genau das (jeden Strich schon beim Zeichnen, auch Laserpointer-Spuren auf der Tafel – an derselben Stelle des
+Tafelbilds). Die eigene Tafel und die Abgaben des zuschauenden Geräts bleiben dabei unberührt; Teilen und Abgaben
+funktionieren wie immer. Bei offener Tafel steht „Ich steuere“ auch im Hinweis unten. Einzelheiten:
 [`gemeinsam/live/README.md`](../../gemeinsam/live/README.md).
 
 ### Technik (Leiterschaukel)

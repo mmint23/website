@@ -103,7 +103,7 @@ export function syncTafel() {
 // Gemeinsame Tafel einrichten: Bild, Stifte und der Laserpointer in ihrer Werkzeugleiste
 export function initTafel3d() {
   const laser = document.createElement('button');
-  laser.className = 'laser-btn';
+  laser.className = 'laser-btn live-frei';   // auch beim Zuschauen (Live-Steuerung) bedienbar
   laser.type = 'button';
   laser.dataset.laser = '';
   laser.setAttribute('aria-pressed', 'false');
