@@ -8,6 +8,7 @@ export const state = {
   northUp: true,      // Nordpol oben, Südpol unten
   coil: false,        // Spule mit COIL.TURNS Windungen statt einer einzelnen Leiterschleife
   range: 3,           // Messbereich ±3 mV
+  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe) – Gedankenexperiment
   slowMotion: false,
   showPlot: false,    // U-t-Diagramm einblenden (per Knopf, rechts und im Erklärmodus)
   hold: false,        // Schleife festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen

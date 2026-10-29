@@ -6,7 +6,7 @@ import { METER, SPEED_MAX, WIND_MAX, COIL } from './config.js';
 import { state, ausWindpark } from './state.js';
 import { endCrank, setHold, holdTo, rotor, electrons, park } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
-import { updateMeterFace, setMeterVisible } from './messgeraet.js';
+import { updateMeterFace, setMeterVisible, setDisplay } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { explainView, sideView } from './erklaerung.js';
 import { resetView as resetModelView, controls, setTable } from './szene.js';
@@ -15,6 +15,8 @@ import { showLink } from '../../../gemeinsam/link.js';
 
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
+// Angeschlossen statt der Bürstenkabel ans Messgerät: LED oder Glühlampe (Gedankenexperiment, siehe README)
+const DISPLAYS = [['displayMeterBtn', 'meter'], ['displayLedBtn', 'led'], ['displayLampBtn', 'lamp']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
 const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'], ['showTwoBtn', 'showTwoElectrons'],
   ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'], ['plotBtn', 'showPlot'], ['explainPlotBtn', 'showPlot'],
@@ -40,6 +42,10 @@ function updateUi() {
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
   $('sideViewBtn').setAttribute('aria-pressed', String(state.sideView));
   $('holdBox').hidden = !state.hold;
+  for (const [id, display] of DISPLAYS) {
+    $(id).classList.toggle('active', state.display === display);
+    $(id).setAttribute('aria-pressed', String(state.display === display));
+  }
   for (const [id, drive] of DRIVES) {
     $(id).classList.toggle('active', state.drive === drive);
     $(id).setAttribute('aria-pressed', String(state.drive === drive));
@@ -105,6 +111,12 @@ export function initUi() {
   Object.assign(speed, { min: -SPEED_MAX, max: SPEED_MAX, step: 0.1, value: state.speed });
   speed.addEventListener('input', () => { state.speed = Number(speed.value); updateUi(); });
 
+  for (const [id, display] of DISPLAYS) {
+    $(id).addEventListener('click', () => {
+      setDisplay(display);
+      updateUi();
+    });
+  }
   for (const [id, drive] of DRIVES) {
     $(id).addEventListener('click', () => {
       endCrank();

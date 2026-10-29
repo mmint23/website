@@ -115,8 +115,13 @@
       <p class="status" id="magnetStatus"></p>
     </section>
     <section id="meterSection">
-      <h2>Messgerät</h2>
-      <p class="status">Messbereich in mV</p>
+      <h2>Anzeige</h2>
+      <div class="segmented" role="group" aria-label="Angeschlossen" id="displayButtons">
+        <button id="displayMeterBtn" type="button">Mess&shy;gerät</button>
+        <button id="displayLedBtn" type="button">LED</button>
+        <button id="displayLampBtn" type="button">Glüh&shy;lampe</button>
+      </div>
+      <p class="status">Messbereich in mV (Messgerät und U-t-Diagramm)</p>
       <div class="segmented" role="group" aria-label="Messbereich in mV" id="rangeButtons"></div>
       <button id="plotBtn" class="state" type="button">U-t-Diagramm</button>
     </section>

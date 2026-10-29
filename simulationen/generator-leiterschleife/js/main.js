@@ -7,6 +7,8 @@ import { state } from './state.js';
 import { stepPhysics, stepPark, stepSpule } from './physik.js';
 import { syncModel } from './modell.js';
 import { syncMeter } from './messgeraet.js';
+import { syncLed } from './led.js';
+import { syncLamp } from './gluehlampe.js';
 import { updatePlot } from './diagramm.js';
 import { initUi, updateHoldSlider, updateParkStatus } from './bedienfeld.js';
 import { syncExplain } from './erklaerung.js';
@@ -47,6 +49,8 @@ renderer.setAnimationLoop(() => {
   if (!state.paused) stepPhysics(state.slowMotion ? dt * SLOW_MOTION : dt);
   syncModel(state.paused ? 0 : dt);
   syncMeter();
+  syncLed();
+  syncLamp();
   syncExplain();
   updateHoldSlider();
   updatePlot();

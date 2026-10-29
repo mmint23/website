@@ -65,6 +65,23 @@ Diagramm eine kurze Nulllinie). Der Umbau läuft auch in der Pause.
   der ersten Windung (der Leiterschleife). „Viele e⁻“ gibt es nur bei der Leiterschleife
   (die Kette läuft von Ende zu Ende).
 
+## LED und Glühlampe statt Messgerät (Gedankenexperiment)
+
+Unter **„Anzeige“** (Bedienfeld rechts) lässt sich statt des Zeigermessgeräts eine **LED** oder eine **Glühlampe**
+auf einer Steckplatte an die Bürsten anschließen (wie in `leiterschaukel-induktion`, dieselben Schwellen). Ring 1
+(rotes Kabel) führt zur roten Buchse vorne (Anode der LED), Ring 2 (schwarz) zur schwarzen hinten. Messbereich und
+U-t-Diagramm bleiben. In der Simulation steht bewusst kein Erklärtext – die Einordnung gehört in den Unterricht:
+
+- **In Wirklichkeit leuchtet hier nichts.** Die Leiterschleife liefert bei 0,5 U/s etwa 2,5 mV, die Spule mit
+  5 Windungen etwa 12,5 mV. Eine LED braucht etwa 1,8 V (rot), ein Glühlämpchen rund 1 V und einige 10 mW.
+- **Im Gedankenexperiment** leuchtet die LED ab 1 mV und voll ab 3 mV, **nur in Durchlassrichtung** (Ring 1
+  Pluspol): Sie blitzt bei jeder zweiten Halbschwingung auf, nach „Magnet umdrehen“ in der jeweils anderen.
+  Die Glühlampe glüht ab 1,5 mV sichtbar und ist bei 5 mV voll hell; die Helligkeit folgt der Leistung (∝ U²),
+  der Draht glüht kurz nach (0,08 s) – **in beiden Stromrichtungen**, also bei jeder Halbschwingung.
+- **Leiterschleife ↔ Spule:** Mit der Leiterschleife glimmt die Lampe nur schwach und die LED blitzt kurz auf; mit
+  der Spule leuchten beide hell – die Windungszahl macht den Unterschied (so arbeiten Fahrraddynamo und Generator).
+- Im Erklärmodus sind Messgerät, LED, Lampe und Kabel ausgeblendet.
+
 ## Erklärmodus
 
 Der Knopf „Erklärung: Elektronen in der Schleife“ blendet Messgerät und Kabel aus, zeigt die Schleife dick
@@ -188,7 +205,9 @@ generator-leiterschleife/
 │   ├── physik.js       # Drehung, Induktionsspannung, Zeiger, Rotor beim Antrieb „Wind“ (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Licht
 │   ├── modell.js       # Magnet, Welle, Leiterschleife, Schleifringe, Bürsten, Kurbel
-│   ├── messgeraet.js   # Zeigermessgerät und Kabel
+│   ├── messgeraet.js   # Zeigermessgerät und Kabel; Umschalten auf LED bzw. Glühlampe
+│   ├── led.js          # LED statt Messgerät (Gedankenexperiment, wie in leiterschaukel-induktion)
+│   ├── gluehlampe.js   # Glühlampe statt Messgerät (Gedankenexperiment)
 │   ├── diagramm.js     # U-t-Diagramm
 │   ├── erklaerung.js   # Erklärmodus: Elektronen, Pfeile v und F_L
 │   ├── ziehen.js       # Kurbel mit Maus/Finger drehen

@@ -1,6 +1,7 @@
 // ------------------------------------------------------------------
 // Großes Demonstrations-Zeigermessgerät (Nullpunkt in der Mitte, wie bei der Leiterschaukel) und Kabel
-// von den Bürsten des Generators
+// von den Bürsten des Generators – statt des Messgeräts wahlweise LED oder Glühlampe (state.display, led.js,
+// gluehlampe.js): Sie stehen an derselben Stelle, die Kabel führen dann in ihre Buchsen.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { METER, TABLE_TOP } from './config.js';
@@ -10,6 +11,8 @@ import { addMesh, makeLabel, formatNumber } from './hilfen.js';
 import { mat } from './materialien.js';
 import { scene } from './szene.js';
 import { brushTerminals } from './modell.js';
+import { ledSocket, setLedVisible } from './led.js';
+import { lampSocket, setLampVisible } from './gluehlampe.js';
 
 // Das Messgerät schwebt rechts neben dem Modell (verkleinert), leicht zum Betrachter gedreht
 const meter = new THREE.Group();
@@ -174,13 +177,44 @@ function cablePoints(terminal, socketLocal) {
   return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 6, t.z + 3], at(5).map((v, i) => (i === 1 ? v - 1.5 : v)), at(2), socket.toArray()];
 }
 
-const cables = [
-  makeCable(cablePoints(brushTerminals[0], SOCKET_PLUS), mat.cableRed),
-  makeCable(cablePoints(brushTerminals[1], SOCKET_COM), mat.cableBlack),
-];
-
-// Im Erklärmodus werden Messgerät und Kabel ausgeblendet
-export function setMeterVisible(visible) {
-  meter.visible = visible;
-  for (const cable of cables) cable.visible = visible;
+// Zu LED bzw. Glühlampe: vom Bürstenanschluss durchhängend und von oben in die Buchse der Steckplatte
+function boardCablePoints(terminal, socket) {
+  const t = terminal, s = socket;
+  return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 6, (t.z + s.z) / 2], [s.x - 3, s.y + 3, s.z], [s.x, s.y + 2, s.z], s.toArray()];
 }
+
+// Kabelpaare je Anzeige: Ring 1 (rot) an Plus bzw. Anode, Ring 2 (schwarz) an Minus bzw. Kathode
+const cables = {
+  meter: [
+    makeCable(cablePoints(brushTerminals[0], SOCKET_PLUS), mat.cableRed),
+    makeCable(cablePoints(brushTerminals[1], SOCKET_COM), mat.cableBlack),
+  ],
+  led: [
+    makeCable(boardCablePoints(brushTerminals[0], ledSocket(1)), mat.cableRed),
+    makeCable(boardCablePoints(brushTerminals[1], ledSocket(-1)), mat.cableBlack),
+  ],
+  lamp: [
+    makeCable(boardCablePoints(brushTerminals[0], lampSocket(1)), mat.cableRed),
+    makeCable(boardCablePoints(brushTerminals[1], lampSocket(-1)), mat.cableBlack),
+  ],
+};
+
+// Anzeige (Messgerät, LED oder Glühlampe) mit ihren Kabeln zeigen; im Erklärmodus alles ausgeblendet
+let anzeigeSichtbar = true;
+function anzeigeAbgleichen() {
+  meter.visible = anzeigeSichtbar && state.display === 'meter';
+  setLedVisible(anzeigeSichtbar && state.display === 'led');
+  setLampVisible(anzeigeSichtbar && state.display === 'lamp');
+  for (const [display, paar] of Object.entries(cables)) {
+    for (const cable of paar) cable.visible = anzeigeSichtbar && state.display === display;
+  }
+}
+export function setMeterVisible(visible) {
+  anzeigeSichtbar = visible;
+  anzeigeAbgleichen();
+}
+export const setDisplay = display => {
+  state.display = display;
+  anzeigeAbgleichen();
+};
+anzeigeAbgleichen();

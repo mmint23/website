@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------
 import {
   TURBINE, LOOP, B_FIELD, SIDE_LENGTH, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER,
-  EXPLAIN, COIL,
+  EXPLAIN, COIL, LED, LAMP,
 } from './config.js';
 import { state } from './state.js';
 
@@ -25,6 +25,8 @@ export const rotor = { phi: 0, omega: 0, dragging: false, target: 0, holdTarget:
 export const electrons = { shift: 0 };
 // Zeiger: Ausschlag als Anteil des Vollausschlags, Geschwindigkeit
 export const needle = { pos: 0, vel: 0 };
+// Glühdraht der Glühlampe: Temperatur als Anteil der vollen Leistung (0 … 1,5)
+export const lamp = { heat: 0 };
 // Simulationszeit in s (für das U-t-Diagramm)
 export const clock = { t: 0 };
 
@@ -202,12 +204,30 @@ function stepElectrons(dt) {
   electrons.shift += (target - electrons.shift) * Math.min(1, dt / EXPLAIN.ELECTRON_TIME);
 }
 
+// ---------------- LED und Glühlampe statt Messgerät (Gedankenexperiment, Schwellen in config.js)
+
+// Helligkeit der LED (0 … 1): erst oberhalb der Schwellspannung, nur in Durchlassrichtung (Ring 1 = Anode positiv)
+export const ledBrightness = () => clamp((ringVoltage() - LED.THRESHOLD) / LED.FULL, 0, 1);
+
+// Helligkeit der Glühlampe (0 … 1): sichtbares Glühen ab der Schwelle, unabhängig von der Stromrichtung
+export function lampGlow() {
+  const start = (LAMP.THRESHOLD / LAMP.FULL) ** 2;
+  return clamp((lamp.heat - start) / (1 - start), 0, 1);
+}
+
+// Glühdraht folgt der Leistung ∝ U² mit kurzer Verzögerung (Aufheizen und Nachglühen)
+function stepLamp(dt) {
+  const power = Math.min((emf() / LAMP.FULL) ** 2, 1.5);
+  lamp.heat += (power - lamp.heat) * Math.min(1, dt / LAMP.HEAT_TIME);
+}
+
 // Ein Zeitschritt der Physik (dt in s, Simulationszeit)
 export function stepPhysics(dt) {
   const SUBSTEPS = 8, h = dt / SUBSTEPS;
   for (let i = 0; i < SUBSTEPS; i++) {
     stepRotor(h);
     stepNeedle(h);
+    stepLamp(h);
     stepElectrons(h);
   }
   clock.t += dt;
@@ -269,6 +289,7 @@ export function resetPhysics() {
   Object.assign(rotor, { phi: 0, omega: 0, dragging: false, target: 0, holdTarget: 0 });
   electrons.shift = 0;
   Object.assign(needle, { pos: 0, vel: 0 });
+  lamp.heat = 0;
   clock.t = 0;
   spule.fortschritt = state.coil ? 1 : 0;
 }
