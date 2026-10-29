@@ -3,8 +3,9 @@
 // Ohne Darstellung und ohne Browser – lässt sich mit Node testen (tests/physik.test.mjs).
 //
 // Modell: Der Magnet (Polrad) dreht sich um die Welle, Drehwinkel φ (gegen den Uhrzeigersinn von vorne,
-// φ = 0: Nordpol oben). Die Flussdichte im Kern einer Spule an der Lage θ ist B = B_MAX · cos(φ − θ), gezählt
-// in Richtung der Spulenachse nach außen (vom Magneten weg): Zeigt der Nordpol auf die Spule, ist B am größten.
+// φ = 0: Nordpol zeigt auf Spule 1, rechts). Die Flussdichte im Kern einer Spule an der Lage θ ist
+// B = B_MAX · cos(φ − θ), gezählt in Richtung der Spulenachse nach außen (vom Magneten weg): Zeigt der Nordpol auf
+// die Spule, ist B am größten.
 // Diese Kosinusform ist eine Vereinfachung – echte Generatoren formen ihre Polschuhe aber genau so, dass sie
 // annähernd gilt. Induktionsgesetz: U = −N · A · dB/dt.
 // Feldlinienmodell (state.lineModel, Standard, für den Unterricht): B im Spuleninneren folgt der Zahl der gezeigten

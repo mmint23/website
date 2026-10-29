@@ -73,6 +73,12 @@ if (!zuschauen()) stepPhysics(dt);
 Hat die Simulation eine Zeichentafel (`initTafel`), kommt das Bedienfeld der Lehrerseite in die Abgabeleiste;
 sonst erscheint es als kleiner Kasten unten links. `initLive` nach `initTafel` aufrufen.
 
+**Lehrerseite zusätzlich auf einem zweiten Gerät** (z. B. iPad der Lehrkraft): „Lehrerseite auf anderem Gerät“
+zeigt einen QR-Code zur Lehrerseite mit demselben Raumcode (nur auf Knopfdruck, damit ihn die Schüler am Beamer
+nicht mitscannen; mit PIN, falls der Server mit PIN läuft). Mit Zeichentafel steht der Knopf in der Abgabeleiste
+(`gemeinsam/tafel/abgabe.js`), sonst im Kasten der Live-Steuerung. Läuft die Live-Steuerung, übernimmt das zweite
+Gerät mit „Ich steuere“; am anderen steht dann „Ein anderes Lehrergerät steuert“.
+
 Beispiel: `simulationen/leiterschaukel-induktion/js/live.js` (baut beim Übernehmen nur neu auf, was sich
 geändert hat: Versuch, Anzeige, Kabel, Polung des Magneten).
 

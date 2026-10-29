@@ -49,6 +49,7 @@
 .live-wahl button { flex: 1 1 0; min-width: 0; padding-left: 4px; padding-right: 4px; }
 .live-wahl button[aria-pressed="true"] { background: #1d4f91; border-color: #1d4f91; color: #fff; }
 .live-feld button.gefahr { border-color: #c62828; color: #c62828; }
+.live-feld button.live-lehrer-qr { margin-top: 4px; font-size: 0.85rem; color: #4a5866; }
 
 /* … oder als kleiner Kasten unten links, wenn die Simulation keine Abgabeleiste hat */
 .live-kasten {

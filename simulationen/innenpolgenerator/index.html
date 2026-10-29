@@ -14,14 +14,16 @@
     <p>Der Magnet dreht sich, die Spulen stehen fest. Ändert sich das Magnetfeld im Spuleninneren, wird eine Spannung induziert.</p>
   </div>
 
-  <!-- Diagramme B–t und U–t auf derselben Zeitachse -->
+  <!-- Diagramme B–t (nur im Erklärmodus) und U–t auf derselben Zeitachse -->
   <div class="plot-box" id="plotBox">
-    <div class="plot-title">
-      <span>B im Spuleninneren in mT</span>
-      <span class="legende" data-zwei hidden><i class="linie s1"></i>Spule 1 <i class="linie s2"></i>Spule 2</span>
-      <span class="legende" id="slopeLegend" hidden><i class="linie tangente"></i>Änderung von B</span>
+    <div id="plotBPart">   <!-- nur im Erklärmodus -->
+      <div class="plot-title">
+        <span>B im Spuleninneren in mT</span>
+        <span class="legende" data-zwei hidden><i class="linie s1"></i>Spule 1 <i class="linie s2"></i>Spule 2</span>
+        <span class="legende" id="slopeLegend" hidden><i class="linie tangente"></i>Änderung von B</span>
+      </div>
+      <canvas id="plotB"></canvas>
     </div>
-    <canvas id="plotB"></canvas>
     <div class="plot-title">
       <span>U am Messgerät in V</span>
       <span class="legende" data-zwei hidden><i class="linie s1 duenn"></i>U₁ <i class="linie s2 duenn"></i>U₂ <i class="linie summe"></i>U</span>
@@ -34,10 +36,10 @@
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
   </div>
 
-  <aside class="panel" id="panel">
-    <section>
-      <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
-      <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+  <!-- Bedienfeld des Erklärmodus (links unter der Überschrift, wie bei generator-leiterschleife): Magnetfeld –
+       Feldlinien, B im Spuleninneren, Tangente an die B-Kurve, reale Physik -->
+  <aside class="popup" id="explainBox" aria-label="Erklärung" hidden>
+      <h2>Erklärung: Magnetfeld</h2>
       <button id="lineModelBtn" class="state modell-btn" type="button" aria-pressed="false">Reale Physik</button>
       <p class="status" id="lineModelInfo">Feldlinienmodell: B in der Spule und Spannung ergeben sich aus der Zahl der
         Feldlinien durch die Spule. Spannung nur, wenn sich diese Zahl ändert.</p>
@@ -46,16 +48,15 @@
       <label class="check"><input id="fieldCheck" type="checkbox" /> Magnetfeld (Feldlinien)</label>
       <label class="check"><input id="insideCheck" type="checkbox" /> <span class="farbe innen"></span>Feldlinien im
         Inneren der Spule färben</label>
-      <button id="holdBtn" class="state" type="button" aria-pressed="false">Magnet festhalten</button>
-      <div id="holdBox" hidden>
-        <p class="status">Der Magnet dreht sich nur, wenn du ihn mit dem Regler oder der Kurbel drehst – lässt du
-          los, bleibt er stehen.</p>
-        <label class="slider">
-          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
-          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
-        </label>
-      </div>
-      <button id="slowBtn" class="state" type="button" aria-pressed="false">Zeitlupe</button>
+      <label class="check"><input id="bCheck" type="checkbox" /> B im Spuleninneren</label>
+      <label class="check"><input id="slopeCheck" type="checkbox" /> Änderung von B (Tangente)</label>
+  </aside>
+
+  <aside class="panel" id="panel">
+    <section>
+      <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
+      <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+      <button id="explainBtn" class="explain-btn" type="button">Erklärung: Magnetfeld in den Spulen</button>
     </section>
     <section>
       <h2>Aufbau</h2>
@@ -64,18 +65,12 @@
         <button id="ironBtn" type="button">Mit Eisenkern</button>
       </div>
       <p class="status" id="ironStatus"></p>
-      <div class="segmented" role="group" aria-label="Anzahl der Spulen" style="margin-top:8px">
-        <button id="oneCoilBtn" type="button">1 Spule</button>
-        <button id="twoCoilsBtn" type="button">2 Spulen</button>
+      <p class="status">Die beiden Spulen in Reihe verbinden:</p>
+      <div class="segmented" role="group" aria-label="Verbindung der Spulen">
+        <button id="wiringOkBtn" type="button">Ende – Ende</button>
+        <button id="wiringSwapBtn" type="button">Ende – Anfang</button>
       </div>
-      <div id="wiringBox" hidden>
-        <p class="status">Spulen in Reihe verbinden:</p>
-        <div class="segmented" role="group" aria-label="Verbindung der Spulen">
-          <button id="wiringOkBtn" type="button">Ende – Ende</button>
-          <button id="wiringSwapBtn" type="button">Ende – Anfang</button>
-        </div>
-        <p class="status" id="wiringStatus"></p>
-      </div>
+      <p class="status" id="wiringStatus"></p>
     </section>
     <section>
       <h2>Antrieb</h2>
@@ -93,16 +88,21 @@
       </div>
       <p class="status" id="crankInfo" hidden>Fasse die Kurbel vorne an der Welle an und drehe sie. Lässt du los,
         läuft der Magnet langsam aus.</p>
+      <button id="holdBtn" class="state" type="button" aria-pressed="false">Magnet festhalten</button>
+      <div id="holdBox" hidden>
+        <p class="status">Der Magnet dreht sich nur, wenn du ihn mit dem Regler oder der Kurbel drehst – lässt du
+          los, bleibt er stehen.</p>
+        <label class="slider">
+          <span class="row">Drehwinkel <output id="holdOut">0°</output></span>
+          <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
+        </label>
+      </div>
+      <button id="slowBtn" class="state" type="button" aria-pressed="false">Zeitlupe</button>
       <p class="status">Frequenz der Wechselspannung: <strong id="freqOut">–</strong></p>
     </section>
     <section>
-      <h2>Anzeigen</h2>
-      <label class="check"><input id="bCheck" type="checkbox" /> B im Spuleninneren</label>
-      <label class="check"><input id="plotCheck" type="checkbox" /> Diagramme B–t und U–t</label>
-      <label class="check"><input id="slopeCheck" type="checkbox" /> Änderung von B (Tangente)</label>
-    </section>
-    <section>
       <h2>Messgerät</h2>
+      <label class="check"><input id="plotCheck" type="checkbox" /> <span id="plotLabel">Diagramm U–t</span></label>
       <p class="status">Messbereich</p>
       <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
     </section>

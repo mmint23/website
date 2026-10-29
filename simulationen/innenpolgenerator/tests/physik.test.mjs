@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { state } from '../js/state.js';
 import { linienInSpule, linien, imInneren } from '../js/feldlinienModell.js';
-import { B_MAX, TURNS, CORE_AREA } from '../js/config.js';
+import { B_MAX, TURNS, CORE_AREA, COIL } from '../js/config.js';
 import {
   rotor, needle, coilField, coilFieldRate, coilVoltage, meterVoltage, frequency, stepPhysics, resetPhysics,
   startCrank, crankTo, endCrank, setHold, holdTo, linesInCoil,
@@ -159,7 +159,7 @@ test('Feldlinien: geschlossen durch den Magneten, gefärbte Stücke liegen in de
   assert.equal(alle.length, 10);
   const innen = alle.flat().filter(([x, y]) => imInneren(x, y, 0));
   assert.ok(innen.length > 100, 'Linien laufen durch Spule 1');
-  assert.ok(innen.every(([x, y]) => Math.abs(x) < 2.4 && y > 8.8 && y < 14.1));
+  assert.ok(innen.every(([x, y]) => Math.abs(x) < COIL.WIND_R + 0.05 && y > COIL.WIND_IN - 0.1 && y < COIL.WIND_OUT + 0.1));
   const quer = linien(Math.PI / 2, 1).flat().filter(([x, y]) => imInneren(x, y, 0)).length;
   assert.ok(quer < innen.length / 4, `quer: höchstens kurze Stücke quer durch die Wicklung (${quer})`);
 });

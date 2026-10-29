@@ -9,7 +9,7 @@
 // seinen Zustand etwa 30-mal pro Sekunde mit der Zeit des Bilds; das andere rechnet nicht selbst, ist gesperrt und
 // zeigt den Zustand leicht verzögert und geglättet an (glaetten.js), damit ungleichmäßige Ankunft nicht ruckelt.
 // ------------------------------------------------------------------
-import { verbindungStarten, aufNachricht, aufStatus, senden, halloErgaenzen, adresseFuer } from '../verbindung.js';
+import { verbindungStarten, aufNachricht, aufStatus, senden, halloErgaenzen, adresseFuer, netz } from '../verbindung.js';
 import { Glaetter } from './glaetten.js';
 import { showLink, hideLink } from '../link.js';
 import { stilLaden } from '../stil.js';
@@ -88,7 +88,8 @@ function bannerAnlegen() {
   document.body.insertAdjacentHTML('beforeend', '<div class="live-banner" id="liveBanner" role="status" hidden></div>');
 }
 
-// Bedienfeld der Lehrerseite: als eigene Spalte in der Abgabeleiste (wenn es sie gibt), sonst als kleiner Kasten
+// Bedienfeld der Lehrerseite: als eigene Spalte in der Abgabeleiste (wenn es sie gibt), sonst als kleiner Kasten.
+// Im Kasten zusätzlich „Lehrerseite auf anderem Gerät“ (in der Abgabeleiste gibt es den Knopf schon, abgabe.js).
 function lehrerFeldAnlegen() {
   const html = `
     <div class="live-feld" id="liveFeld" aria-label="Live-Steuerung">
@@ -100,10 +101,18 @@ function lehrerFeldAnlegen() {
       </div>
       <button id="liveAbgeben" type="button">Steuerung abgeben</button>
       <button id="liveTrennen" class="gefahr" type="button" hidden>Trennen</button>
+      <button id="liveLehrerQr" class="live-lehrer-qr" type="button" hidden>Lehrerseite auf anderem Gerät</button>
     </div>`;
   const kopf = document.querySelector('#abgaben .abgaben-kopf');
   if (kopf) kopf.insertAdjacentHTML('afterend', html);
-  else document.body.insertAdjacentHTML('beforeend', `<div class="live-kasten">${html}</div>`);
+  else {
+    document.body.insertAdjacentHTML('beforeend', `<div class="live-kasten">${html}</div>`);
+    // Lehrerseite auf dem iPad o. Ä.: nur auf Knopfdruck, damit die Schüler den Code am Beamer nicht mitscannen
+    $('liveLehrerQr').hidden = false;
+    $('liveLehrerQr').addEventListener('click', () => showLink(adresseFuer({ lehrer: '' }),
+      'Lehrerseite – nur für die Lehrkraft. Mit einem eigenen Gerät (z. B. iPad) scannen'
+      + (netz.pinNoetig ? ', dort die PIN eingeben' : '') + '; das Gerät kommt in denselben Raum und kann mit „Ich steuere“ übernehmen.'));
+  }
   $('liveAbgeben').addEventListener('click', () => senden({ typ: 'live-abgeben' }));
   $('liveSchueler').addEventListener('click', () => senden({ typ: 'live-umschalten', an: 'schueler' }));
   $('liveIch').addEventListener('click', () => senden({ typ: 'live-umschalten', an: 'lehrer' }));
