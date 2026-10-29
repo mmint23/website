@@ -40,6 +40,18 @@ export const STAND = { Z: -5, DEPTH: 1, WIDTH: 4, BAR_W: 32, BAR_H: 3 };   // Mi
 export const SHAFT = { R: 0.5, Z_MIN: -4.5, Z_MAX: 5.9 };
 export const CRANK = { Z: 5.2, ARM: 5, KNOB_LEN: 3.5, OFFSET: Math.PI / 2 };
 
+// Antrieb „Wind“ (wie in generator-leiterschleife): Rotor einer Windkraftanlage auf derselben Welle, hinter dem
+// Ständer. Didaktisch vereinfacht: ab CUT_IN dreht er proportional zum Wind (bei 12 m/s 14 U/min wie im Windpark).
+export const TURBINE = {
+  CUT_IN: 3,                  // Einschaltgeschwindigkeit in m/s
+  RPM_PER_WIND: 14 / 12,      // Drehzahl in U/min je m/s Wind
+  SPIN_TIME: 1.5,             // Trägheit: Drehzahl folgt mit dieser Zeitkonstante (s)
+  Z: -8.5,                    // Lage der Nabe auf der Welle (hinter dem Ständer)
+  BLADE: 1.45,                // Größe der Blätter (1: wie in generator-leiterschleife, 9 cm lang; hier gut 13 cm,
+                              // damit sie hinter Magnet und Spulen herausragen)
+};
+export const WIND_MAX = 20;   // Wind-Regler bis 20 m/s
+
 // Physikalische Modellgrößen (SI)
 export const B_MAX = 0.1;                                    // größte Flussdichte im Spulenkern in T
 export const TURNS = 500;                                    // Windungen je Spule
@@ -70,4 +82,5 @@ export const B_ARROW = 4.6;
 
 // Diagramme: so viele Sekunden (Simulationszeit) sind sichtbar; B-Achse bis ±B_PLOT mT
 export const PLOT_SECONDS = 4;
+export const PLOT_SECONDS_WIND = 12;   // beim Antrieb „Wind“ (langsame Rotordrehung: eine Umdrehung dauert 4–20 s)
 export const B_PLOT = 120;

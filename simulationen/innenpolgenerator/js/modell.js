@@ -7,7 +7,7 @@
 // Wicklung, innen, oben) und E (Ende der Wicklung, außen, unten); dort beginnen die Kabel (messgeraet.js).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND, GEN_ROT } from './config.js';
+import { MAGNET, COIL, YOKE, SHAFT, CRANK, B_MAX, B_ARROW, TABLE_TOP, STAND, GEN_ROT, TURBINE } from './config.js';
 import { state } from './state.js';
 import { rotor, coilField } from './physik.js';
 import { addMesh, makeLabel, makeTextSprite } from './hilfen.js';
@@ -56,6 +56,41 @@ arm.position.y = CRANK.ARM / 2;
 const grip = addMesh(new THREE.CylinderGeometry(0.6, 0.6, CRANK.KNOB_LEN, 20), mat.wood, crank);
 grip.rotation.x = Math.PI / 2;
 grip.position.set(0, CRANK.ARM, CRANK.KNOB_LEN / 2 + 0.4);
+
+// Antrieb „Wind“ (statt der Kurbel): kleiner Rotor mit drei Blättern hinter dem Ständer auf der verlängerten Welle
+// (vorne würde er den Magneten verdecken) – zeigt, dass der Magnet im Windrad vom Rotor angetrieben wird. Blätter wie
+// in generator-leiterschleife, hier in der Bildebene (Welle entlang z).
+const windRotor = new THREE.Group();
+windRotor.position.z = TURBINE.Z;
+windRotor.visible = false;
+rotorGroup.add(windRotor);
+{
+  const verlaengerung = SHAFT.Z_MIN - TURBINE.Z;
+  const welle = addMesh(new THREE.CylinderGeometry(SHAFT.R, SHAFT.R, verlaengerung, 16), mat.steel, windRotor);
+  welle.rotation.x = Math.PI / 2;
+  welle.position.z = verlaengerung / 2;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.45 });
+  const nabe = addMesh(new THREE.SphereGeometry(1.3, 20, 14), white, windRotor);
+  nabe.scale.z = 1.4;
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.6, 0);
+  shape.lineTo(-1.4, 2.2);
+  shape.quadraticCurveTo(-0.9, 6, -0.25, 9);
+  shape.lineTo(0.3, 9);
+  shape.quadraticCurveTo(0.9, 4.5, 1.0, 1.6);
+  shape.lineTo(0.6, 0);
+  shape.closePath();
+  const bladeGeometry = new THREE.ExtrudeGeometry(shape, { depth: 0.25, bevelEnabled: false });
+  bladeGeometry.translate(0, 0, -0.125);
+  bladeGeometry.scale(TURBINE.BLADE, TURBINE.BLADE, 1);
+  for (let k = 0; k < 3; k++) {
+    const armRotor = new THREE.Group();
+    armRotor.rotation.z = k * 2 * Math.PI / 3;
+    windRotor.add(armRotor);
+    const blade = addMesh(bladeGeometry, white, armRotor);
+    blade.rotation.y = 0.6;   // leicht angestellt
+  }
+}
 
 // Unsichtbare, größere Grifffläche für Finger und Maus (Arm und Griff)
 export const crankTargets = [];
@@ -136,7 +171,7 @@ COIL.THETA.forEach((theta, k) => {
   }
   addMesh(new THREE.TubeGeometry(new Wendel(), COIL.TURNS_SHOWN * 40, 0.3, 8, false), copper, group);
   // Zuleitungen vom Anfang der Wicklung (innen) zu A und vom Ende (außen) zu E; Anschlüsse als Messingknöpfe
-  // mit Schild. up: Richtung (±x in der Spule), die nach dem Drehen des Generators nach oben zeigt – A liegt bei
+  // (ohne Beschriftung, ebenso die Spulen). up: Richtung (±x in der Spule), die nach dem Drehen des Generators nach oben zeigt – A liegt bei
   // beiden Spulen oben, E unten.
   const up = Math.sin(theta + GEN_ROT) > 0 ? 1 : -1;
   const tx = up * COIL.TERMINAL_X, ty = COIL.TERMINAL_Y, tz = COIL.TERMINAL_Z;
@@ -144,15 +179,10 @@ COIL.THETA.forEach((theta, k) => {
   wire([[0, COIL.WIND_IN, COIL.WIND_R], [0, COIL.WIND_IN, front], [tx, COIL.WIND_OUT + 0.2, front], [tx, ty, tz]], 0.16, copper, group);
   wire([[0, COIL.WIND_OUT, COIL.WIND_R], [-tx, COIL.WIND_OUT + 0.4, tz], [-tx, ty, tz]], 0.16, copper, group);
   const ends = {};
-  // Schilder A₁/E₁ bzw. A₂/E₂ gut lesbar über bzw. unter dem äußeren Ende der Spule (passend zum Bedienfeld:
-  // „E von Spule 1 ist mit E von Spule 2 verbunden“)
   for (const [name, x] of [['a', tx], ['e', -tx]]) {
     const knob = addMesh(new THREE.SphereGeometry(0.6, 16, 12), mat.brass, group);
     knob.position.set(x, ty, tz);
     ends[name] = knob;
-    const schild = makeTextSprite(name.toUpperCase() + '₁₂'[k], 1.7, '#1d2733');
-    schild.position.set(Math.sign(x) * (COIL.WIND_R + 2), ty - 1.4, tz + 0.5);
-    group.add(schild);
   }
   // B im Kern: Pfeil in der Mitte der Wicklung, Beschriftung daneben
   const arrow = makeArrow(B_COLOR);
@@ -161,9 +191,6 @@ COIL.THETA.forEach((theta, k) => {
   const bLabel = makeTextSprite('B', 2.2, B_COLOR);
   group.add(bLabel);
   bLabel.position.set(up * (COIL.WIND_R + 2.4), COIL.WIND_IN + 0.8, 0);
-  const name = makeTextSprite(`Spule ${k + 1}`, 1.8, '#4a5866');
-  group.add(name);
-  name.position.set(-up * (COIL.WIND_R + 3.2), COIL.WIND_IN + 1, 0);
   // Halter: verbindet den äußeren Flansch der Spule mit dem Balken des Ständers hinten
   const halterZ0 = -2.6, halterZ1 = STAND.Z + STAND.DEPTH / 2;
   const halter = addMesh(new THREE.BoxGeometry(1.6, 0.8, halterZ0 - halterZ1), mat.stand, group);
@@ -221,6 +248,8 @@ let seeThrough = null, magnetSeeThrough = null;
 
 export function syncModel() {
   rotorGroup.rotation.z = rotor.phi;
+  crank.visible = state.drive !== 'wind';
+  windRotor.visible = state.drive === 'wind';
   const two = state.coils === 2;
   coils[1].group.visible = bars[1].visible = two;
   yoke.visible = two && state.iron;   // Joch nur mit Eisenkernen

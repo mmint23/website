@@ -12,7 +12,7 @@ die rotierende Leiterschleife in `generator-leiterschleife`).
 
 ## Kernidee
 
-In der Standardansicht sieht man den Generator mit zwei Spulen, deutlich beschrifteten Anschlüssen (A₁/E₁, A₂/E₂),
+In der Standardansicht sieht man den Generator mit zwei Spulen (ohne Beschriftung von Spulen und Anschlüssen),
 Kabeln, Messgerät und dem U–t-Diagramm. Das Magnetfeld gibt es nur im **Erklärmodus** („Erklärung: Magnetfeld in
 den Spulen“): Dort sieht man zu jeder Spule B im Spuleninneren (Pfeil) und zwei Diagramme übereinander auf
 derselben Zeitachse: oben B–t, unten U–t. So wird sichtbar, was oft falsch vermutet wird:
@@ -60,14 +60,23 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   - Verbinden: **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
     **Ende – Anfang** (E₁ mit A₂): Spannungen heben sich auf, das Messgerät zeigt nichts.
     Die Kabel liegen dabei sichtbar anders (alle schwarz – Wechselspannung; das Kabel von Spule 2 zum Messgerät
-    liegt vorne auf dem Tisch); die Anschlüsse sind groß mit A₁/E₁ und A₂/E₂ beschriftet. Die Knöpfe
+    liegt vorne auf dem Tisch); Spulen und Anschlüsse sind in der Szene nicht beschriftet. Die Knöpfe
     beschreiben nur die Verbindung, nicht, welche richtig ist.
     Im U–t-Diagramm stehen U₁, U₂ (dünn) und U am Messgerät (dick); im B–t-Diagramm B in beiden Spulen.
   - Physik und Tests können weiterhin mit einer Spule rechnen (`state.coils = 1`); im Bedienfeld gibt es das nicht
     mehr.
-- **Antrieb:** Drehzahl-Regler −3 … +3 Umdrehungen pro Sekunde, „Anhalten“; oder **Kurbel** vorne an der Welle
-  mit Maus oder Finger drehen (wer die Kurbel greift, schaltet auf diesen Antrieb; losgelassen läuft der Magnet
-  langsam aus).
+- **Antrieb:**
+  - **Wind** (wie in `generator-leiterschleife`): Statt der Kurbel sitzt ein kleiner Rotor mit drei Blättern hinter
+    dem Ständer auf der verlängerten Welle (vorne würde er den Magneten verdecken). Rotor und Magnet drehen auf
+    derselben Welle (Generator ohne Getriebe), Wind-Regler 0 … 20 m/s. **Didaktisch vereinfacht:** Ab 3 m/s dreht
+    der Rotor proportional zum Wind, bei 12 m/s wie im Windpark 14 U/min; die Drehzahl stellt sich träge ein
+    (Zeitkonstante 1,5 s). Scheitelwert bei 12 m/s mit Eisenkern und „Ende – Ende“ etwa 0,13 V, ohne Eisenkern
+    etwa ein Drittel davon. Die Diagramme zeigen dann 12 s statt 4 s.
+    Aus dem Windpark gekommen (`?von=windpark&wind=…`) ist dieser Antrieb mit dem Wind von dort eingestellt;
+    „← Zurück zum Windpark“ nimmt den hier eingestellten Wind mit.
+  - **Drehzahl-Regler** −3 … +3 Umdrehungen pro Sekunde, „Anhalten“.
+  - **Kurbel** vorne an der Welle mit Maus oder Finger drehen (wer die Kurbel greift, schaltet auf diesen Antrieb;
+    losgelassen läuft der Magnet langsam aus).
 - **Magnet festhalten** und **Zeitlupe** (¼) als Knöpfe unter dem Antrieb (in beiden Ansichten): Festgehalten
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
 - **Frequenz der Wechselspannung** (bei einem Polpaar gleich der Drehzahl).

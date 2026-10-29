@@ -3,9 +3,9 @@
 // Färbung im Spuleninneren, B im Spuleninneren, B–t-Diagramm mit Tangente);
 // Aufbau (mit oder ohne Eisenkern, Verbindung der beiden Spulen), Antrieb mit Festhalten und Zeitlupe, Messgerät
 // ------------------------------------------------------------------
-import { METER, SPEED_MAX } from './config.js';
-import { state } from './state.js';
-import { endCrank, setHold, holdTo, rotor, frequency } from './physik.js';
+import { METER, SPEED_MAX, WIND_MAX, TURBINE } from './config.js';
+import { state, ausWindpark } from './state.js';
+import { endCrank, setHold, holdTo, rotor, frequency, park } from './physik.js';
 import { updateMeterFace } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { fitView, controls } from './szene.js';
@@ -13,7 +13,7 @@ import { formatNumber } from './hilfen.js';
 import { showLink } from '../../../gemeinsam/link.js';
 
 const $ = id => document.getElementById(id);
-const DRIVES = [['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
+const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 const IRON = [['airBtn', false], ['ironBtn', true]];
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
 const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot'], ['slopeCheck', 'showSlope']];
@@ -38,6 +38,9 @@ function updateUi() {
     : 'E von Spule 1 ist mit E von Spule 2 verbunden.';
   for (const [id, drive] of DRIVES) segment(id, state.drive === drive);
   $('speedBox').hidden = state.drive !== 'speed' || state.hold;
+  $('windBox').hidden = state.drive !== 'wind' || state.hold;
+  $('windOut').textContent = `${formatNumber(state.wind, 1).replace(',0', '')} m/s`;
+  $('windSlider').value = state.wind;
   $('crankInfo').hidden = state.drive !== 'crank' || state.hold;
   $('speedOut').textContent = (state.speed < 0 ? '−' : '') + formatNumber(Math.abs(state.speed), 1) + ' U/s';
   $('holdBtn').setAttribute('aria-pressed', String(state.hold));
@@ -125,6 +128,10 @@ export function updateReadout() {
     if (!holdSliderActive) $('holdSlider').value = deg.toFixed(0);
     $('holdOut').textContent = Math.round(deg) % 360 + '°';
   }
+  if (state.drive === 'wind') {
+    $('rotorStatus').textContent = park.rpm < 0.05 ? `Der Rotor steht – zu wenig Wind (unter ${TURBINE.CUT_IN} m/s).`
+      : `Rotor: ${formatNumber(park.rpm, 1)} Umdrehungen pro Minute`;
+  }
   const f = frequency();
   $('freqOut').textContent = f < 0.005 ? '–' : formatNumber(f, 2) + ' Hz';
 }
@@ -148,6 +155,9 @@ export function initUi() {
       updateUi();
     });
   }
+  const wind = $('windSlider');
+  Object.assign(wind, { min: 0, max: WIND_MAX, step: 0.5, value: state.wind });
+  wind.addEventListener('input', () => { state.wind = Number(wind.value); updateUi(); });
   const speed = $('speedSlider');
   Object.assign(speed, { min: -SPEED_MAX, max: SPEED_MAX, step: 0.05, value: state.speed });
   speed.addEventListener('input', () => { state.speed = Number(speed.value); updateUi(); });
@@ -180,13 +190,17 @@ export function initUi() {
   $('explainBtn').addEventListener('click', () => setExplain(!state.explain));
   $('resetView').addEventListener('click', resetView);
   $('linkBtn').addEventListener('click', () => showLink());
-  // Aus dem Windpark gekommen (?von=windpark): Knopf zurück, mit Wind und Uhrzeit, damit der Windpark wieder so aussieht
-  const parameter = new URLSearchParams(location.search);
-  if (parameter.get('von') === 'windpark') {
-    const zurueck = new URLSearchParams();
-    for (const name of ['wind', 'zeit']) if (parameter.has(name)) zurueck.set(name, parameter.get(name));
-    $('windparkLink').href = '../generator-windpark/' + (zurueck.size ? '?' + zurueck : '');
+  // Aus dem Windpark gekommen (?von=windpark, Antrieb „Wind“ mit dem Wind von dort, state.js): Knopf zurück, mit dem
+  // Wind wie hier eingestellt und der Uhrzeit, damit der Windpark wieder so aussieht
+  if (ausWindpark) {
+    const zeit = new URLSearchParams(location.search).get('zeit');
     $('windparkLink').hidden = false;
+    $('windparkLink').addEventListener('click', event => {
+      event.preventDefault();
+      const zurueck = new URLSearchParams({ wind: state.wind });
+      if (zeit !== null) zurueck.set('zeit', zeit);
+      location.href = '../generator-windpark/?' + zurueck;
+    });
   }
   onCrankGrab(updateUi);
   controls.addEventListener('start', () => { verschoben = true; });

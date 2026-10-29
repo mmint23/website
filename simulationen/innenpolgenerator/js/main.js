@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { renderer, scene, camera, controls } from './szene.js';
 import { state } from './state.js';
-import { stepPhysics } from './physik.js';
+import { stepPhysics, stepPark } from './physik.js';
 import { syncModel } from './modell.js';
 import { syncFeld } from './feldlinien.js';
 import { syncMeter, syncCables } from './messgeraet.js';
@@ -18,6 +18,7 @@ const SLOW_MOTION = 0.25;
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
+  stepPark(dt);   // Rotor beim Antrieb „Wind“ (Echtzeit, wie in der Leiterschleife)
   stepPhysics(state.slowMotion ? dt * SLOW_MOTION : dt);
   syncModel();
   syncFeld();

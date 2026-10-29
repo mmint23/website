@@ -6,7 +6,7 @@ import { linienInSpule, linien, imInneren } from '../js/feldlinienModell.js';
 import { B_MAX, TURNS, CORE_AREA, COIL } from '../js/config.js';
 import {
   rotor, needle, coilField, coilFieldRate, coilVoltage, meterVoltage, frequency, stepPhysics, resetPhysics,
-  startCrank, crankTo, endCrank, setHold, holdTo, linesInCoil,
+  startCrank, crankTo, endCrank, setHold, holdTo, linesInCoil, park, stepPark, turbineTargetRpm,
 } from '../js/physik.js';
 
 const TWO_PI = 2 * Math.PI;
@@ -185,4 +185,23 @@ test('ohne Eisenkern: weniger Feldlinien und kleineres B, beide Modelle passen z
     near(coilVoltage(0, 0, TWO_PI), 0, 1e-3, 'Nordpol auf Spule: U ≈ 0');
   }
   Object.assign(state, { iron: true, lineModel: false });
+});
+
+test('Antrieb Wind: Rotor auf derselben Welle, Drehzahl proportional zum Wind ab 3 m/s', () => {
+  resetPhysics();
+  Object.assign(state, { drive: 'wind', hold: false, wind: 12 });
+  assert.equal(turbineTargetRpm(2.5), 0);
+  near(turbineTargetRpm(12), 14, 1e-9, '12 m/s wie im Windpark');
+  near(turbineTargetRpm(20) / turbineTargetRpm(10), 2, 1e-9, 'doppelter Wind, doppelte Drehzahl');
+  for (let i = 0; i < 1200; i++) {   // 20 s: träge eingeschwungen (Zeitkonstante 1,5 s)
+    stepPark(1 / 60);
+    stepPhysics(1 / 60);
+  }
+  near(park.rpm, 14, 0.01, 'Drehzahl eingeschwungen');
+  near(rotor.omega, TWO_PI * 14 / 60, 1e-3, 'Magnet dreht mit dem Rotor');
+  state.wind = 2;
+  for (let i = 0; i < 1200; i++) stepPark(1 / 60);
+  assert.equal(park.rpm, 0, 'unter 3 m/s steht der Rotor');
+  Object.assign(state, { drive: 'speed', wind: 8 });
+  resetPhysics();
 });
