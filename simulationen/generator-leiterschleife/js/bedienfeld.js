@@ -67,7 +67,7 @@ export function updateUi() {
   $('schuelerModusBtn').setAttribute('aria-pressed', String(modus.schueler));
   for (const id of ['coilBtn', 'explainCoilBtn']) $(id).setAttribute('aria-pressed', String(state.coil));
   $('coilStatus').textContent = (state.coil
-    ? `${COIL.TURNS} Windungen hintereinander: ${COIL.TURNS}-fache Spannung.`
+    ? `${COIL.TURNS} Windungen hintereinander.`
     : 'Einzelne Leiterschleife (1 Windung).') + ' Zum Vergleich im U-t-Diagramm: Messbereich ±15 mV.';
   $('showManyBtn').disabled = state.coil;   // „viele e⁻“ nur bei der Leiterschleife (Kette von Ende zu Ende)
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';

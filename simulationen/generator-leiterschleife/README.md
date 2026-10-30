@@ -11,6 +11,10 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
 
 ## Funktionen
 
+In der Simulation stehen **keine Erklärtexte, die den physikalischen Inhalt vorwegnehmen** (z. B. dass beim Drehen
+eine Wechselspannung entsteht oder dass die Spule die Spannung vervielfacht) – das sollen die Schüler selbst
+herausfinden. Es bleiben Überschrift, Bedienhinweise und rein beschreibende Angaben.
+
 - Modell auf einem Tisch (wie bei der Leiterschaukel, mit Schatten): Der Hufeisenmagnet steht mit dem unteren
   Polblock auf dem Tisch, die Welle liegt in zwei Lagerböcken, das Messgerät steht daneben. Im Erklärmodus sind Tisch
   und Lagerböcke ausgeblendet (dann lässt sich die Ansicht auch von unten drehen). Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit rechteckiger
