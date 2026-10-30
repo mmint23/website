@@ -21,7 +21,7 @@ export const state = {
   explain: false,     // Erklärmodus: nur hier Magnetfeld (Feldlinien, B-Pfeil, B–t-Diagramm, Tangente, reale Physik)
   showB: false,       // Pfeil für B im Spuleninneren (Spule und Kern dann durchsichtig)
   showPlot: false,    // Diagramm U–t (im Erklärmodus dazu B–t); zu Beginn aus
-  paused: false,      // Bewegung angehalten (Knopf „Pause“, nur im Erklärmodus)
+  paused: false,      // Bewegung angehalten (Knopf „Pause“ beim Antrieb)
 };
 
 // Mit ?erklaerung in der Adresse (QR-Code „für den Erklärmodus“) startet die Simulation gleich im Erklärmodus

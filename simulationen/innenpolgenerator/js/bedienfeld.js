@@ -36,8 +36,6 @@ export function updateUi() {
   document.body.classList.toggle('erklaer-an', state.explain);   // Live-Steuerung: Kasten dann rechts (CSS)
   requestAnimationFrame(erklaerLage);   // Höhe des Erklär-Bedienfelds (auch wenn der Erklärmodus live umschaltet)
   $('aufbauSection').hidden = state.explain;
-  $('stopBtn').hidden = state.explain;   // im Erklärmodus gibt es Pause
-  $('pauseBtn').hidden = !state.explain;
   $('pauseBtn').setAttribute('aria-pressed', String(state.paused));
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
   for (const [id, iron] of IRON) segment(id, state.iron === iron);
@@ -190,11 +188,6 @@ export function initUi() {
   const speed = $('speedSlider');
   Object.assign(speed, { min: -SPEED_MAX, max: SPEED_MAX, step: 0.05, value: state.speed });
   speed.addEventListener('input', () => { state.speed = Number(speed.value); updateUi(); });
-  $('stopBtn').addEventListener('click', () => {
-    state.speed = 0;
-    speed.value = 0;
-    updateUi();
-  });
   $('holdBtn').addEventListener('click', () => { setHold(!state.hold); updateUi(); });
   $('slowBtn').addEventListener('click', () => { state.slowMotion = !state.slowMotion; updateUi(); });
   $('pauseBtn').addEventListener('click', () => {
