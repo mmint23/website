@@ -13,7 +13,6 @@
 
   <div class="header">
     <h1 id="title">Generator: Leiterschleife im Magnetfeld</h1>
-    <p id="subtitle">Dreht sich die Leiterschleife im Magnetfeld, entsteht eine Wechselspannung.</p>
   </div>
 
   <!-- U-t-Diagramm (per Knopf): überall anfassen und verschieben, unten rechts vergrößern -->
@@ -34,65 +33,63 @@
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
   </div>
 
-  <!-- Bedienfeld des Erklärmodus: nur Schalter für die Größen und den Ablauf. Im Schülermodus das einzige Bedienfeld:
-       dann kommen oben Schülermodus/QR-Code (Lehrkraft) und „Erklärung“/„Zurück zum Modell“ dazu, darunter Antrieb
-       und Magnet umdrehen (bedienfeld.js hängt sie aus dem rechten Bedienfeld hierher um); Schleifringe, Spule und
-       U-t-Diagramm stehen dann ganz unten (Reihenfolge per CSS) -->
+  <!-- Linkes Bedienfeld: im Erklärmodus und im Schülermodus das einzige. Ganz oben die Tafel, dann (umgehängt aus dem
+       rechten Bedienfeld, bedienfeld.js) Link, Schülermodus/QR-Code und „Erklärung“ bzw. „Zurück zum Modell“; darunter
+       Antrieb (mit Pause, Zeitlupe, Festhalten), Erklärung und Aufbau. Was nur im Erklärmodus gilt: Klasse nur-erklaerung -->
   <aside class="popup" id="explainPanel" aria-label="Erklärung" hidden>
-    <div id="schuelerOben" hidden></div>
-    <div id="erklaerInhalt">
-    <h2>Erklärung</h2>
-    <div class="toggles three groessen" role="group" aria-label="Größen">
-      <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
-      <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
-      <button id="showFBtn" class="ohne-im-schuelermodus" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
-    </div>
-    <div class="toggles three" role="group" aria-label="Elektronen">
-      <button id="showElectronBtn" type="button"><span class="dot" style="background:#1565c0"></span>e⁻</button>
-      <button id="showTwoBtn" type="button"><span class="dot" style="background:#1565c0"></span>2 e⁻</button>
-      <button id="showManyBtn" type="button"><span class="dot" style="background:#1565c0"></span>viele e⁻</button>
-    </div>
-    <button id="showRingsBtn" class="state unten-im-schuelermodus" type="button">Schleifringe</button>
-    <button id="explainCoilBtn" class="state unten-im-schuelermodus" type="button">Spule mit 5 Windungen</button>
-    <div class="toggles two" role="group" aria-label="Ablauf">
-      <button id="pauseBtn" class="state" type="button">Pause</button>
-      <button id="explainSlowBtn" class="state" type="button">Zeitlupe</button>
-    </div>
-    <button id="explainHoldBtn" class="state" type="button">Festhalten</button>
-    <button id="sideViewBtn" class="state" type="button">Ansicht von rechts</button>
-    <button id="magnetGlassBtn" class="state" type="button">Magnet durchsichtig</button>
-    <button id="explainPlotBtn" class="state unten-im-schuelermodus" type="button">U-t-Diagramm</button>
-    <button id="tafelBtn" class="tafel-btn" type="button">Tafel öffnen (zeichnen)</button>
-    </div>
-    <div id="schuelerUnten" hidden>
+    <button id="tafelBtn" class="tafel-btn nur-erklaerung" type="button">Tafel öffnen (zeichnen)</button>
+    <div id="obenPlatz"></div>
+    <section id="popupAntrieb">
       <h2>Antrieb</h2>
-      <div id="schuelerAntrieb"></div>
-      <h2>Magnet</h2>
-      <div id="schuelerMagnet"></div>
-    </div>
+      <div id="antriebPlatz"></div>
+      <div class="nur-erklaerung">
+        <div class="toggles two" role="group" aria-label="Ablauf">
+          <button id="pauseBtn" class="state" type="button">Pause</button>
+          <button id="explainSlowBtn" class="state" type="button">Zeitlupe</button>
+        </div>
+        <button id="explainHoldBtn" class="state" type="button">Festhalten</button>
+      </div>
+    </section>
+    <section id="erklaerInhalt" class="nur-erklaerung">
+      <h2>Erklärung</h2>
+      <div class="toggles three groessen" role="group" aria-label="Größen">
+        <button id="showBBtn" type="button"><span class="dot" style="background:#1565c0"></span>B</button>
+        <button id="showVBtn" type="button"><span class="dot" style="background:#2e7d32"></span>v</button>
+        <button id="showFBtn" class="ohne-im-schuelermodus" type="button"><span class="dot" style="background:#c62828"></span>F_L</button>
+      </div>
+      <div class="toggles three" role="group" aria-label="Elektronen">
+        <button id="showElectronBtn" type="button"><span class="dot" style="background:#1565c0"></span>e⁻</button>
+        <button id="showTwoBtn" type="button"><span class="dot" style="background:#1565c0"></span>2 e⁻</button>
+        <button id="showManyBtn" type="button"><span class="dot" style="background:#1565c0"></span>viele e⁻</button>
+      </div>
+      <button id="sideViewBtn" class="state" type="button">Ansicht von rechts</button>
+      <button id="magnetGlassBtn" class="state" type="button">Magnet durchsichtig</button>
+      <button id="explainPlotBtn" class="state" type="button">U-t-Diagramm</button>
+    </section>
+    <section id="popupAufbau">
+      <h2>Aufbau</h2>
+      <div id="magnetPlatz"></div>
+      <div class="nur-erklaerung">
+        <button id="showRingsBtn" class="state" type="button">Schleifringe</button>
+        <button id="explainCoilBtn" class="state" type="button">Spule mit 5 Windungen</button>
+      </div>
+    </section>
   </aside>
 
-  <!-- Bedienfeld -->
+  <!-- Rechtes Bedienfeld (Modell), in derselben Reihenfolge wie das linke im Erklärmodus: oben Link, Schülermodus,
+       Erklärung; Antrieb; Anzeige; Aufbau -->
   <aside class="panel" id="modelPanel">
     <section>
       <a id="windparkLink" class="zurueck-btn" href="../generator-windpark/" hidden>← Zurück zum Windpark</a>
-      <button id="linkBtn" class="link-btn" type="button">Link / QR-Code zeigen</button>
+      <button id="linkBtn" class="link-btn nur-lehrkraft" type="button">Link / QR-Code zeigen</button>
       <button id="schuelerModusBtn" class="state nur-lehrkraft" type="button" aria-pressed="false">Schülermodus (ohne F_L)</button>
       <button id="schuelerQrBtn" class="link-btn nur-lehrkraft" type="button">QR-Code für den Schülermodus</button>
-    </section>
-    <section>
-      <h2>Erklärung</h2>
       <button id="explainBtn" type="button">Erklärung: Elektronen in der Schleife</button>
-    </section>
-    <section>
-      <h2>Leiter</h2>
-      <button id="coilBtn" class="state" type="button">Spule mit 5 Windungen</button>
-      <p class="status" id="coilStatus"></p>
     </section>
     <section>
       <h2>Antrieb</h2>
       <div class="segmented" role="group" aria-label="Antrieb" id="driveButtons">
-        <button id="driveWindBtn" class="ohne-im-schuelermodus" type="button">Wind</button>
+        <button id="driveWindBtn" type="button">Wind</button>
         <button id="driveSpeedBtn" type="button">Drehzahl</button>
         <button id="driveCrankBtn" type="button">Kurbel</button>
       </div>
@@ -109,11 +106,12 @@
           <input id="speedSlider" type="range" />
         </label>
         <p class="status">links: rückwärts · Mitte: Stillstand · rechts: vorwärts</p>
-        <button id="stopBtn" class="ohne-im-schuelermodus" type="button">Anhalten</button>
+        <button id="stopBtn" type="button">Anhalten</button>
       </div>
       <p class="status" id="crankInfo" hidden>Fasse die Kurbel links an der Welle an und drehe sie. Lässt du los,
         läuft die Schleife langsam aus.</p>
-      <button id="holdBtn" class="state" type="button">Leiterschleife festhalten</button>
+      <button id="slowBtn" class="state" type="button">Zeitlupe</button>
+      <button id="holdBtn" class="state" type="button">Festhalten</button>
       <div id="holdBox" hidden>
         <p class="status">Die Schleife dreht sich nur, wenn du sie mit der Kurbel oder dem Regler drehst.</p>
         <label class="slider">
@@ -121,12 +119,6 @@
           <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
         </label>
       </div>
-      <label class="check"><input id="slowCheck" type="checkbox" /> Zeitlupe</label>
-    </section>
-    <section>
-      <h2>Magnet</h2>
-      <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
-      <p class="status" id="magnetStatus"></p>
     </section>
     <section id="meterSection">
       <h2>Anzeige</h2>
@@ -138,6 +130,13 @@
       <p class="status">Messbereich in mV (Messgerät und U-t-Diagramm)</p>
       <div class="segmented" role="group" aria-label="Messbereich in mV" id="rangeButtons"></div>
       <button id="plotBtn" class="state" type="button">U-t-Diagramm</button>
+    </section>
+    <section>
+      <h2>Aufbau</h2>
+      <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
+      <p class="status" id="magnetStatus"></p>
+      <button id="coilBtn" class="state" type="button">Spule mit 5 Windungen</button>
+      <p class="status" id="coilStatus"></p>
     </section>
   </aside>
 
