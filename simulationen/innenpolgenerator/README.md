@@ -46,7 +46,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 In der Simulation stehen **keine Erklärtexte, die den physikalischen Inhalt vorwegnehmen** (z. B. dass eine
 Spannung induziert wird, wenn sich das Magnetfeld ändert, oder dass der Eisenkern die Feldlinien bündelt) – das
-sollen die Schüler selbst herausfinden. Es bleiben Überschrift, Bedienhinweise und rein beschreibende Angaben.
+sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Untertitel), Bedienhinweise und rein beschreibende Angaben.
 
 - **Aus dem Windpark** (Windrad antippen in der Simulation Generator-Windpark, Adresse `?von=windpark&wind=…&zeit=…`):
   Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
