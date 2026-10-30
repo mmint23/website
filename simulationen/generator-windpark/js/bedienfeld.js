@@ -24,15 +24,14 @@ const resetView = () => {
 const BEAUFORT = [0.3, 1.6, 3.4, 5.5, 8, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7];
 const beaufort = v => BEAUFORT.findIndex(limit => v < limit + 1e-9);
 
-const TEXTS = {
-  park: ['Windpark', 'Der Wind dreht die Rotoren – in der Gondel sitzt der Generator.',
-    'Ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen · Rechte Maustaste: verschieben'],
-  room: ['Im Haus', 'Woher kommt die elektrische Energie für die Lampe?',
-    'Ziehen: umschauen · Mausrad/zwei Finger: näher heran'],
+// Bedienhinweis je Ansicht (ohne Überschrift und Erklärtext)
+const HINWEISE = {
+  park: 'Ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen · Rechte Maustaste: verschieben',
+  room: 'Ziehen: umschauen · Mausrad/zwei Finger: näher heran',
 };
 
 function updateUi() {
-  [$('title').textContent, $('subtitle').textContent, $('hintText').textContent] = TEXTS[state.view];
+  $('hintText').textContent = HINWEISE[state.view];
   $('parkPanel').hidden = state.view !== 'park';
   $('roomPanel').hidden = state.view !== 'room';
   $('windOut').textContent = `${formatNumber(state.wind, 1).replace(',0', '')} m/s`;
