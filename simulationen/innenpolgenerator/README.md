@@ -44,6 +44,10 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 ## Funktionen
 
+In der Simulation stehen **keine Erklärtexte, die den physikalischen Inhalt vorwegnehmen** (z. B. dass eine
+Spannung induziert wird, wenn sich das Magnetfeld ändert, oder dass der Eisenkern die Feldlinien bündelt) – das
+sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Untertitel), Bedienhinweise und rein beschreibende Angaben.
+
 - **Aus dem Windpark** (Windrad antippen in der Simulation Generator-Windpark, Adresse `?von=windpark&wind=…&zeit=…`):
   Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
 - **Erklärung: Magnetfeld in den Spulen** (oben im Bedienfeld; „Zurück zum Modell“ beendet ihn). Die Schalter zum
@@ -57,8 +61,8 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
   Im Erklärmodus gibt es **nur ein Bedienfeld (links)**, das rechte ist ausgeblendet: oben Link/QR-Code und
   „Zurück zum Modell“, dann der **Antrieb** (wie in `generator-leiterschleife`): Wind, Drehzahl oder Kurbel mit
   Regler, darunter **Pause** und **Zeitlupe** nebeneinander, dann **Magnet festhalten** mit Drehwinkel-Regler;
-  danach das Magnetfeld und ganz unten die Anzeige (Diagramme, Messbereich). Pause gibt es nur im Erklärmodus,
-  „Anhalten“ nur im Modell. (`bedienfeld.js` hängt die Abschnitte aus dem rechten Feld um und wieder zurück.) **Aufbau** (Eisenkern, Verbindung der Spulen) gibt es
+  danach das Magnetfeld und ganz unten die Anzeige (Diagramme, Messbereich). Der Antrieb sieht im Modell genauso aus
+  (rechts); „Anhalten“ gibt es nicht mehr. (`bedienfeld.js` hängt die Abschnitte aus dem rechten Feld um und wieder zurück.) **Aufbau** (Eisenkern, Verbindung der Spulen) gibt es
   nur im Modell, ganz unten im rechten Bedienfeld; darüber, ebenfalls nur im Modell, **Rechnung**:
   „Reale Physik“ und „Feldlinienmodell“ als zwei Knöpfe nebeneinander (Standard: Feldlinienmodell).
 - **Anzeige** (nur im Modell): statt des Messgeräts eine **LED** oder eine **Glühlampe** auf einer Steckplatte
@@ -90,13 +94,13 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
     etwa ein Drittel davon. Die Diagramme zeigen dann 12 s statt 4 s.
     Aus dem Windpark gekommen (`?von=windpark&wind=…`) ist dieser Antrieb mit dem Wind von dort eingestellt;
     „← Zurück zum Windpark“ nimmt den hier eingestellten Wind mit.
-  - **Drehzahl-Regler** −3 … +3 Umdrehungen pro Sekunde, „Anhalten“.
+  - **Drehzahl-Regler** −3 … +3 Umdrehungen pro Sekunde (Mitte: Stillstand).
   - **Kurbel** vorne an der Welle mit Maus oder Finger drehen (wer die Kurbel greift, schaltet auf diesen Antrieb;
     losgelassen läuft der Magnet langsam aus).
-- **Zeitlupe** (¼) und **Magnet festhalten** als Knöpfe unter dem Antrieb (im Modell rechts, im Erklärmodus links,
-  dort mit **Pause** neben der Zeitlupe): Festgehalten
+- **Pause** und **Zeitlupe** (¼) nebeneinander und **Magnet festhalten** als Knöpfe unter dem Antrieb (im Modell
+  rechts, im Erklärmodus links): Festgehalten
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
-- **Frequenz der Wechselspannung** (bei einem Polpaar gleich der Drehzahl).
+- **Frequenz der Spannung** (bei einem Polpaar gleich der Drehzahl).
 - **Diagramm U–t** (Haken bei der Anzeige, zu Beginn aus).
 - **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 V. Ab etwa 2 Umdrehungen pro
   Sekunde kann der träge Zeiger nicht mehr folgen und zittert nur um die Null – wie ein echtes
