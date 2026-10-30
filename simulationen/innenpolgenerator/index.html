@@ -11,7 +11,7 @@
 
   <div class="header">
     <h1>Innenpolgenerator</h1>
-    <p>Der Magnet dreht sich, die Spulen stehen fest. Ändert sich das Magnetfeld im Spuleninneren, wird eine Spannung induziert.</p>
+    <p>Der Magnet dreht sich, die Spulen stehen fest.</p>
   </div>
 
   <!-- U–t-Diagramm -->
@@ -87,7 +87,7 @@
           <input id="holdSlider" type="range" min="0" max="360" step="1" value="0" />
         </label>
       </div>
-      <p class="status">Frequenz der Wechselspannung: <strong id="freqOut">–</strong></p>
+      <p class="status">Frequenz der Spannung: <strong id="freqOut">–</strong></p>
     </section>
     <section id="anzeigeSection">
       <h2>Anzeige</h2>
@@ -108,10 +108,6 @@
         <button id="realBtn" type="button">Reale Physik</button>
         <button id="lineModelBtn" type="button">Feldlinien&shy;modell</button>
       </div>
-      <p class="status" id="lineModelInfo">Feldlinienmodell: B in der Spule und Spannung ergeben sich aus der Zahl der
-        Feldlinien durch die Spule. Spannung nur, wenn sich diese Zahl ändert.</p>
-      <p class="status" id="realInfo" hidden>Reale Physik: B in der Spule ändert sich wie cos des Drehwinkels –
-        unabhängig von den gezeichneten Feldlinien.</p>
     </section>
     <!-- Aufbau nur im Modell (im Erklärmodus ausgeblendet) -->
     <section id="aufbauSection">
@@ -120,7 +116,6 @@
         <button id="airBtn" type="button">Ohne Eisenkern</button>
         <button id="ironBtn" type="button">Mit Eisenkern</button>
       </div>
-      <p class="status" id="ironStatus"></p>
       <p class="status">Die beiden Spulen in Reihe verbinden:</p>
       <div class="segmented" role="group" aria-label="Verbindung der Spulen">
         <button id="wiringOkBtn" type="button">Ende – Ende</button>

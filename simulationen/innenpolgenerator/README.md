@@ -44,6 +44,10 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 
 ## Funktionen
 
+In der Simulation stehen **keine Erklärtexte, die den physikalischen Inhalt vorwegnehmen** (z. B. dass eine
+Spannung induziert wird, wenn sich das Magnetfeld ändert, oder dass der Eisenkern die Feldlinien bündelt) – das
+sollen die Schüler selbst herausfinden. Es bleiben Überschrift, Bedienhinweise und rein beschreibende Angaben.
+
 - **Aus dem Windpark** (Windrad antippen in der Simulation Generator-Windpark, Adresse `?von=windpark&wind=…&zeit=…`):
   Ganz oben im Bedienfeld erscheint „← Zurück zum Windpark“; Wind und Uhrzeit gehen zurück mit.
 - **Erklärung: Magnetfeld in den Spulen** (oben im Bedienfeld; „Zurück zum Modell“ beendet ihn). Die Schalter zum
@@ -96,7 +100,7 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 - **Zeitlupe** (¼) und **Magnet festhalten** als Knöpfe unter dem Antrieb (im Modell rechts, im Erklärmodus links,
   dort mit **Pause** neben der Zeitlupe): Festgehalten
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
-- **Frequenz der Wechselspannung** (bei einem Polpaar gleich der Drehzahl).
+- **Frequenz der Spannung** (bei einem Polpaar gleich der Drehzahl).
 - **Diagramm U–t** (Haken bei der Anzeige, zu Beginn aus).
 - **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 V. Ab etwa 2 Umdrehungen pro
   Sekunde kann der träge Zeiger nicht mehr folgen und zittert nur um die Null – wie ein echtes

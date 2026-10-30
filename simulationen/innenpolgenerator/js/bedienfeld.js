@@ -43,9 +43,6 @@ export function updateUi() {
   for (const [id, iron] of IRON) segment(id, state.iron === iron);
   for (const [id, display] of DISPLAYS) segment(id, state.display === display);
   $('displayButtons').hidden = state.explain;   // Auswahl nur im Modell
-  $('ironStatus').textContent = state.iron
-    ? 'Der Eisenkern bündelt die Feldlinien: Mehr Linien gehen durch die Spule.'
-    : 'Luftspule: Nur ein Teil der Feldlinien geht durch die Spule.';
   for (const [id, reversed] of WIRING) segment(id, state.reversed === reversed);
   $('wiringStatus').textContent = state.reversed
     ? 'E von Spule 1 ist mit A von Spule 2 verbunden.'
@@ -66,8 +63,6 @@ export function updateUi() {
   segment('lineModelBtn', state.lineModel);
   segment('realBtn', !state.lineModel);
   $('rechnungSection').hidden = state.explain;   // nur im Modell
-  $('lineModelInfo').hidden = !state.lineModel;
-  $('realInfo').hidden = state.lineModel;
   updateMeterFace();
 }
 
