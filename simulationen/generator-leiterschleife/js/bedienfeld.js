@@ -24,7 +24,7 @@ const DISPLAYS = [['displayMeterBtn', 'meter'], ['displayLedBtn', 'led'], ['disp
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
 const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'], ['showTwoBtn', 'showTwoElectrons'],
   ['showManyBtn', 'showManyElectrons'], ['showRingsBtn', 'showRings'], ['magnetGlassBtn', 'magnetGlass'], ['plotBtn', 'showPlot'], ['explainPlotBtn', 'showPlot'],
-  ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
+  ['pauseBtn', 'paused'], ['explainSlowBtn', 'slowMotion'], ['slowBtn', 'slowMotion'], ['explainHoldBtn', 'hold'], ['holdBtn', 'hold']];
 
 // Startansicht: im Erklärmodus nah an der Schleife (schräg von vorne oder von rechts)
 const resetView = () => {
@@ -32,12 +32,16 @@ const resetView = () => {
   else resetModelView();
 };
 
-// Schülermodus: nur ein Bedienfeld (links). Diese Bedienelemente wandern dann aus dem rechten Bedienfeld nach links
-// (Ziel: Element im linken Feld) und beim Ausschalten wieder an ihren Platz zurück (Merkzeichen an der alten Stelle)
-const UMZUG = [['laserBtn', 'schuelerOben'], ['schuelerModusBtn', 'schuelerOben'], ['schuelerQrBtn', 'schuelerOben'], ['explainBtn', 'schuelerOben'],
-  ['driveButtons', 'schuelerAntrieb'], ['speedBox', 'schuelerAntrieb'], ['crankInfo', 'schuelerAntrieb'], ['flipBtn', 'schuelerMagnet']];
+// Nur ein Bedienfeld (links) im Erklärmodus und im Schülermodus. Diese Bedienelemente wandern dann aus dem rechten
+// Bedienfeld nach links (Ziel: Element im linken Feld) und wieder an ihren Platz zurück (Merkzeichen an der alten Stelle)
+const UMZUG = [['windparkLink', 'obenPlatz'], ['linkBtn', 'obenPlatz'], ['laserBtn', 'obenPlatz'], ['schuelerModusBtn', 'obenPlatz'],
+  ['schuelerQrBtn', 'obenPlatz'], ['explainBtn', 'obenPlatz'],
+  ['driveButtons', 'antriebPlatz'], ['windBox', 'antriebPlatz'], ['speedBox', 'antriebPlatz'], ['crankInfo', 'antriebPlatz'],
+  ['flipBtn', 'magnetPlatz']];
 const merkzeichen = new Map();
+const nurLinks = () => state.explain || modus.schueler;
 function bedienfeldUmhaengen() {
+  const linksAn = nurLinks();
   for (const [id, ziel] of UMZUG) {
     const element = $(id);
     if (!merkzeichen.has(id)) {
@@ -45,19 +49,22 @@ function bedienfeldUmhaengen() {
       element.before(merkzeichen.get(id));
     }
     const links = $(ziel).contains(element);
-    if (modus.schueler && !links) $(ziel).append(element);
-    if (!modus.schueler && links) merkzeichen.get(id).after(element);
+    if (linksAn && !links) $(ziel).append(element);
+    if (!linksAn && links) merkzeichen.get(id).after(element);
   }
-  $('schuelerOben').hidden = $('schuelerUnten').hidden = !modus.schueler;
-  document.body.classList.toggle('erklaer-an', state.explain);
+  $('explainPanel').hidden = !linksAn;
+  $('modelPanel').hidden = linksAn;
+  $('stopBtn').hidden = linksAn;   // links gibt es Pause bzw. den Regler in der Mitte
+  for (const element of document.querySelectorAll('.nur-erklaerung')) element.hidden = !state.explain;
+  document.body.classList.toggle('links-feld', linksAn);
   requestAnimationFrame(bildVersetzen);
 }
 
-// Schülermodus: Modell in die Mitte der freien Fläche rechts neben dem einzigen Bedienfeld (nicht in schmalen
-// Fenstern, dort liegt das Bedienfeld oben)
+// Nur das linke Bedienfeld: Modell in die Mitte der freien Fläche rechts daneben (nicht in schmalen Fenstern, dort
+// liegt das Bedienfeld oben)
 function bildVersetzen() {
   const feld = $('explainPanel').getBoundingClientRect();
-  const frei = modus.schueler && innerWidth > 700 && !$('explainPanel').hidden;
+  const frei = nurLinks() && innerWidth > 700 && !$('explainPanel').hidden;
   setBildVersatz(frei ? (feld.right + 12 + innerWidth - 16) / 2 - innerWidth / 2 : 0);
 }
 
@@ -67,13 +74,11 @@ export function updateUi() {
   $('schuelerModusBtn').setAttribute('aria-pressed', String(modus.schueler));
   for (const id of ['coilBtn', 'explainCoilBtn']) $(id).setAttribute('aria-pressed', String(state.coil));
   $('coilStatus').textContent = (state.coil
-    ? `${COIL.TURNS} Windungen hintereinander: ${COIL.TURNS}-fache Spannung.`
+    ? `${COIL.TURNS} Windungen hintereinander.`
     : 'Einzelne Leiterschleife (1 Windung).') + ' Zum Vergleich im U-t-Diagramm: Messbereich ±15 mV.';
   $('showManyBtn').disabled = state.coil;   // „viele e⁻“ nur bei der Leiterschleife (Kette von Ende zu Ende)
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';
   $('explainBtn').classList.toggle('active', state.explain);
-  $('explainPanel').hidden = !state.explain && !modus.schueler;   // im Schülermodus das einzige Bedienfeld
-  $('erklaerInhalt').hidden = !state.explain;
   $('meterSection').hidden = state.explain;
   for (const [id, key] of TOGGLES) $(id).setAttribute('aria-pressed', String(state[key]));
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
@@ -103,7 +108,6 @@ export function updateUi() {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   }
-  $('slowCheck').checked = state.slowMotion;
   updateMeterFace();
 }
 
@@ -189,7 +193,6 @@ export function initUi() {
   // Schülermodus ein/aus (Lehrkraft, z. B. am Beamer): ein → gleich in den Erklärmodus, B, v und F_L aus
   $('schuelerModusBtn').addEventListener('click', () => {
     modus.schueler = !modus.schueler;
-    if (modus.schueler && state.drive === 'wind') state.drive = 'speed';   // Wind gibt es im Schülermodus nicht
     if (modus.schueler) setExplain(true);
     updateUi();
   });
@@ -226,7 +229,6 @@ export function initUi() {
   holdSlider.addEventListener('focus', () => { holdSliderActive = true; });
   holdSlider.addEventListener('blur', () => { holdSliderActive = false; });
   window.addEventListener('pointerup', () => { if (document.activeElement !== holdSlider) holdSliderActive = false; });
-  $('slowCheck').addEventListener('change', e => { state.slowMotion = e.target.checked; updateUi(); });
   $('resetView').addEventListener('click', resetView);
   // Ansicht von rechts ein/aus; dreht man die Ansicht selbst, ist sie nicht mehr „von rechts“
   $('sideViewBtn').addEventListener('click', () => {
@@ -253,7 +255,6 @@ export function initUi() {
 
   applyMagnetPoles();
   document.body.classList.toggle('schueler-geraet', modus.festgelegt);
-  if (modus.schueler && state.drive === 'wind') state.drive = 'speed';   // Wind gibt es im Schülermodus nicht
   if (modus.schueler) setExplain(true);   // Größen sind dabei aus (setExplain), F_L bleibt es
   else resetView();
   updateUi();

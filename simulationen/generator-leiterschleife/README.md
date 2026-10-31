@@ -11,6 +11,15 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
 
 ## Funktionen
 
+**Bedienfeld im Modell (rechts)**, in derselben Reihenfolge wie das linke Feld im Erklärmodus: oben Link/QR-Code,
+Schülermodus und „Erklärung“; **Antrieb** (Wind, Drehzahl oder Kurbel, „Anhalten“, Zeitlupe, Festhalten mit
+Drehwinkel-Regler); **Anzeige** (Messgerät, LED oder Glühlampe, Messbereich, U-t-Diagramm); **Aufbau** (Magnet
+umdrehen, Spule mit 5 Windungen).
+
+In der Simulation stehen **keine Erklärtexte, die den physikalischen Inhalt vorwegnehmen** (z. B. dass beim Drehen
+eine Wechselspannung entsteht oder dass die Spule die Spannung vervielfacht) – das sollen die Schüler selbst
+herausfinden. Es bleiben Überschrift, Bedienhinweise und rein beschreibende Angaben.
+
 - Modell auf einem Tisch (wie bei der Leiterschaukel, mit Schatten): Der Hufeisenmagnet steht mit dem unteren
   Polblock auf dem Tisch, die Welle liegt in zwei Lagerböcken, das Messgerät steht daneben. Im Erklärmodus sind Tisch
   und Lagerböcke ausgeblendet (dann lässt sich die Ansicht auch von unten drehen). Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit rechteckiger
@@ -37,7 +46,7 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
   bei hoher Drehzahl), nach oben ziehen streckt sie. Am Laptop geht das auch mit dem Mausrad über der Achse.
   Doppeltippen auf die Achse oder ein anderer Messbereich stellt sie zurück. Es schreibt die
   Spannung der letzten 4 s mit – die Sinuskurve der Wechselspannung wird sichtbar. Die U-Achse folgt dem Messbereich.
-- **Leiterschleife festhalten:** Die Schleife bleibt in ihrer Stellung (auch wenn der Drehzahl-Regler
+- **Festhalten** (im Modell unter dem Antrieb, nach „Zeitlupe“): Die Schleife bleibt in ihrer Stellung (auch wenn der Drehzahl-Regler
   läuft). Mit der Kurbel oder dem Regler „Drehwinkel“ (0°–360°) lässt sie sich in jede Stellung drehen;
   beim Loslassen bleibt sie stehen.
 - Magnet umdrehen (N ↔ S), Zeitlupe (¼).
@@ -47,7 +56,7 @@ Eigenständige Simulation; die Simulation **Generator-Windpark** bettet sie ein:
 
 ## Spule statt Leiterschleife
 
-Der Knopf **„Spule mit 5 Windungen“** (im Bedienfeld unter „Leiter“ und im Erklärmodus) ersetzt die Leiterschleife
+Der Knopf **„Spule mit 5 Windungen“** (im Bedienfeld unter „Aufbau“, auch im Erklärmodus) ersetzt die Leiterschleife
 durch eine Spule: Die Leiterschleife ist die erste Windung, vier weitere liegen darüber (quer zur Ebene der Schleife),
 alle hintereinander verbunden – nur Anfang und Ende führen zu den Schleifringen. Die Spannung wird fünfmal so groß
 (U = −N · B · A · ω · sin φ).
@@ -86,8 +95,12 @@ U-t-Diagramm bleiben. In der Simulation steht bewusst kein Erklärtext – die E
 
 Der Knopf „Erklärung: Elektronen in der Schleife“ blendet Messgerät und Kabel aus, zeigt die Schleife dick
 und durchsichtig – zunächst mit zwei **offenen Enden** (A vorne, B hinten), ohne Schleifringe und Bürsten – und
-geht mit der Kamera näher heran. Links erscheint ein kleines Bedienfeld – bewusst ohne
-Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
+geht mit der Kamera näher heran. Dann gibt es **nur ein Bedienfeld (links)** – bewusst ohne Erklärtexte, nur mit
+Schaltern (zu Beginn ist keine Größe eingeblendet). Von oben nach unten: **Tafel** (grün), Link/QR-Code und „Zurück
+zum Modell“, **Antrieb** (Wind, Drehzahl oder Kurbel; Pause und Zeitlupe nebeneinander, Festhalten mit
+Drehwinkel-Regler), **Erklärung** (B, v, F_L, Elektronen, Ansicht von rechts, Magnet durchsichtig, U-t-Diagramm) und
+**Aufbau** (Magnet umdrehen, Schleifringe, Spule mit 5 Windungen). „Anhalten“ gibt es nur im Modell. Das Modell
+rückt in die freie Fläche neben dem Feld, das U-t-Diagramm steht unten rechts. Die einzelnen Schalter:
 
 - **B:** Feldlinien zwischen den Polen (von N nach S)
 - **v:** Geschwindigkeit der beiden Längsseiten
@@ -106,7 +119,7 @@ Erklärtexte, nur mit Schaltern (zu Beginn ist keine Größe eingeblendet):
   die Bürsten von unten (beim Abnehmen rückwärts, insgesamt 1,8 s).
   Die Pole „−“ und „+“ stehen dann über den Ringen – so sieht man, welcher Pol an welchem Ring liegt.
 - **Pause / Weiter, Zeitlupe, Festhalten** (dieselben Schalter wie rechts); festgehalten erscheint der
-  Drehwinkel-Regler im Erklärmodus direkt darunter im linken Feld (sonst rechts unter „Leiterschleife festhalten“)
+  Drehwinkel-Regler im Erklärmodus direkt darunter im linken Feld (sonst rechts unter „Festhalten“)
 - **Magnet durchsichtig:** Polblöcke und Joch werden durchsichtig (Deckkraft 0,3), so sieht man die Schleife auch
   von oben oder unten durch den Magneten. Beim Verlassen des Erklärmodus wieder aus.
 - **Ansicht von rechts:** Blick genau entlang der Welle, von der Seite der Schleifringe. Die Schleife erscheint als
@@ -144,12 +157,8 @@ Zeichnungen geteilt wurden (die Koordinaten beziehen sich auf das Bild).
 Der **Erklärmodus ohne den Knopf F_L**: Die Schüler arbeiten mit B, v, Elektronen, Schleifringen, Spule, Pause,
 Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulation die Lorentzkraft vorwegnimmt.
 
-- **Nur ein Bedienfeld (links):** Das rechte Bedienfeld fällt weg. Alles steht untereinander (passt es nicht ganz,
-  scrollt das Feld): oben „Zurück zum Modell“ bzw. „Erklärung“ (auf der Lehrerseite auch Schülermodus-Schalter und
-  QR-Code), darunter **Antrieb** (Drehzahl-Regler oder Kurbel; ohne Wind und ohne „Anhalten“) und **Magnet
-  umdrehen**, dann die Erklär-Knöpfe und ganz unten Schleifringe, Spule mit 5 Windungen und U-t-Diagramm. Das
-  Modell rückt in die freie Fläche daneben, das U-t-Diagramm steht unten rechts.
-  Nach „Zurück zum Modell“ bleibt das Feld mit Antrieb und Magnet (Messgerät mit ±3 mV).
+- **Nur ein Bedienfeld (links)**, aufgebaut wie im Erklärmodus (siehe dort), nur ohne F_L. Nach „Zurück zum
+  Modell“ bleibt das Feld mit Antrieb und Aufbau (Magnet umdrehen; Messgerät mit ±3 mV).
 - **„Schülermodus (ohne F_L)“** (oben im Bedienfeld) schaltet ihn auf diesem Gerät ein und aus, z. B. am
   Beamer; beim Einschalten geht es gleich in den Erklärmodus.
 - **„QR-Code für den Schülermodus“** zeigt einen QR-Code zu `…/generator-leiterschleife/?schueler`. Wer ihn scannt,
@@ -161,14 +170,14 @@ Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulatio
 - „Zurück zum Modell“ bleibt; auch dort und beim erneuten Öffnen des Erklärmodus fehlt F_L.
 - Kein Schutz: Wer `?schueler` aus der Adresse löscht, hat wieder alle Knöpfe.
 - Technik: `modus` in `state.js` (gehört zum Gerät, wird nicht live übertragen); im Schülermodus ist die Klasse
-  `ohne-im-schuelermodus` (F_L, Wind, Anhalten) ausgeblendet, `unten-im-schuelermodus` steht ganz unten, auf dem
-  Schülergerät ist zusätzlich `nur-lehrkraft` ausgeblendet.
-  `bedienfeld.js` hängt die Bedienelemente aus dem rechten Feld ins linke um (`UMZUG`) und zurück; das Bild rückt
+  `ohne-im-schuelermodus` (F_L) ausgeblendet, auf dem Schülergerät zusätzlich `nur-lehrkraft`.
+  `bedienfeld.js` hängt im Erklär- und Schülermodus die Bedienelemente aus dem rechten Feld ins linke um (`UMZUG`)
+  und zurück; `nur-erklaerung` gibt es nur im Erklärmodus; das Bild rückt
   per `setBildVersatz` (szene.js) neben das Feld, die Kamera selbst bleibt.
 
 ## Laserpointer
 
-Der Knopf **„Laserpointer“** (oben im Bedienfeld unter „Link / QR-Code zeigen“, im Schülermodus oben im linken Feld, und in der Werkzeugleiste der Tafel, am Laptop auch die Taste **L**) schaltet einen Zeigestift ein: Mit
+Der Knopf **„Laserpointer“** (oben im Bedienfeld unter „Link / QR-Code zeigen“, im Erklär- und Schülermodus oben im linken Feld, und in der Werkzeugleiste der Tafel, am Laptop auch die Taste **L**) schaltet einen Zeigestift ein: Mit
 **Apple Pencil oder Maus** markiert man Stellen, um zu zeigen, wovon man gerade spricht. Die Spur leuchtet rot über
 allem und verblasst etwa 1,5 Sekunden nach dem Absetzen; an der Simulation und an der Tafel ändert sich nichts.
 Solange er an ist, bedienen Stift und Maus die Simulation nicht (kein Drehen der Ansicht, keine Kurbel, kein Schreiben auf der Tafel);

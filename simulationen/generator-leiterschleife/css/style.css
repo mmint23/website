@@ -206,7 +206,10 @@ html, body {
 .model-badge.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* Knopf „Tafel öffnen“ im Erklärmodus (Tafel selbst: gemeinsam/tafel/) */
-.popup button.tafel-btn { margin-top: 14px; border-color: #5c3a1c; color: #5c3a1c; font-weight: 600; }
+.popup button.link-btn { border-color: #1d4f91; color: #1d4f91; font-weight: 600; }
+/* Tafel ganz oben im linken Feld, grün */
+.popup button.tafel-btn { margin-top: 0; background: #2e7d32; border-color: #2e7d32; color: #fff; font-weight: 600; }
+.popup button.tafel-btn:hover { background: #256b29; }
 
 /* Lehrerseite (Abgabeleiste unten: gemeinsam/tafel/tafel.css) */
 :root { --abgaben-rechts: 312px; }   /* Abgabeleiste endet vor dem Bedienfeld */
@@ -251,30 +254,19 @@ body.lehrer:not(.lehrerfeld-klein) .popup { max-height: calc(100% - 380px); }
    (?schueler) auch ohne die Knöpfe der Lehrkraft (bedienfeld.js) */
 body.schueler-modus .ohne-im-schuelermodus, body.schueler-geraet .nur-lehrkraft { display: none !important; }
 body.schueler-modus .popup .toggles.groessen { grid-template-columns: 1fr 1fr; }
-/* Schülermodus: nur ein Bedienfeld (links) – das rechte fällt weg, Antrieb und Magnet hängen links (bedienfeld.js) */
-body.schueler-modus #modelPanel { display: none; }
-/* … und das U-t-Diagramm unten rechts statt über dem Bedienfeld (verschieben geht wie immer) */
-@media (min-width: 701px) { body.schueler-modus .plot-box { left: auto; right: 16px; width: min(440px, calc(100% - 330px)); } }
-/* … alles untereinander; das Feld reicht bis zum unteren Rand und scrollt, wenn es nicht ganz passt (die
-   Hinweiszeile rückt dafür nach rechts unter das U-t-Diagramm) */
+/* Nur ein Bedienfeld (links) im Erklärmodus und im Schülermodus (Klasse links-feld, bedienfeld.js): das U-t-Diagramm
+   unten rechts statt über dem Bedienfeld (verschieben geht wie immer); das Feld reicht bis zum unteren Rand und
+   scrollt, wenn es nicht ganz passt (die Hinweiszeile rückt dafür nach rechts) */
 @media (min-width: 701px) {
-  body.schueler-modus .popup { max-height: calc(100% - 126px); }
-  body.schueler-modus .hint { left: auto; right: 16px; }
+  body.links-feld .plot-box { left: auto; right: 16px; width: min(440px, calc(100% - 330px)); }
+  body.links-feld:not(.lehrer) .popup, body.links-feld.lehrerfeld-klein .popup { max-height: calc(100% - 126px); }
+  body.links-feld .hint { left: auto; right: 16px; }
 }
-.popup #schuelerOben { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #d5dce3; }
-.popup #schuelerOben button:first-child { margin-top: 0; }
-/* Reihenfolge im Schülermodus: oben, Antrieb und Magnet, Erklärung, ganz unten Schleifringe, Spule, U-t-Diagramm
-   (#erklaerInhalt löst sich dafür auf, seine Knöpfe ordnen sich direkt im Bedienfeld ein) */
-body.schueler-modus .popup { display: flex; flex-direction: column; }
-body.schueler-modus .popup > * { flex: none; }
-body.schueler-modus #erklaerInhalt { display: contents; }
-body.schueler-modus #schuelerOben { order: 0; }
-body.schueler-modus #schuelerUnten { order: 1; }
-body.schueler-modus #erklaerInhalt > * { order: 2; }
-body.schueler-modus #erklaerInhalt > .unten-im-schuelermodus { order: 3; }
-body.schueler-modus.erklaer-an .popup #schuelerUnten { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #d5dce3; }
-.popup #schuelerUnten h2 + div > :first-child { margin-top: 0; }
-.popup #schuelerUnten h2:not(:first-child) { margin-top: 12px; }
+/* Abschnitte im linken Feld: oben (Link, Modus, Erklärung/Zurück), Antrieb, Erklärung, Aufbau */
+.popup #obenPlatz:not(:empty) { margin-top: 8px; }
+.popup #obenPlatz > :first-child { margin-top: 0; }
+.popup section { margin-top: 12px; padding-top: 10px; border-top: 1px solid #d5dce3; }
+.popup #antriebPlatz > :first-child, .popup #magnetPlatz > :first-child { margin-top: 0; }
 .popup .segmented button { flex: 1 1 0; min-width: 0; margin-top: 0; }
 .popup .segmented button.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
 .panel #schuelerModusBtn { margin-top: 8px; }
