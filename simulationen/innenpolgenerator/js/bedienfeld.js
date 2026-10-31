@@ -231,7 +231,11 @@ export function initUi() {
       event.preventDefault();
       const zurueck = new URLSearchParams({ wind: state.wind });
       if (zeit !== null) zurueck.set('zeit', zeit);
-      location.href = '../generator-windpark/?' + zurueck;
+      // Lehrerseite: Rolle und Raumcode (steht inzwischen in der Adresse) mit zurück, damit der nächste Wechsel
+      // wieder als Lehrerseite im selben Raum ankommt
+      const hier = new URLSearchParams(location.search);
+      const lehrer = hier.has('lehrer') ? 'lehrer&' + (hier.get('raum') ? `raum=${hier.get('raum')}&` : '') : '';
+      location.href = '../generator-windpark/?' + lehrer + zurueck;
     });
   }
   onCrankGrab(updateUi);

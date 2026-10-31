@@ -34,7 +34,7 @@ const resetView = () => {
 
 // Nur ein Bedienfeld (links) im Erklärmodus und im Schülermodus. Diese Bedienelemente wandern dann aus dem rechten
 // Bedienfeld nach links (Ziel: Element im linken Feld) und wieder an ihren Platz zurück (Merkzeichen an der alten Stelle)
-const UMZUG = [['windparkLink', 'obenPlatz'], ['linkBtn', 'obenPlatz'], ['schuelerModusBtn', 'obenPlatz'],
+const UMZUG = [['windparkLink', 'obenPlatz'], ['linkBtn', 'obenPlatz'], ['laserBtn', 'obenPlatz'], ['schuelerModusBtn', 'obenPlatz'],
   ['schuelerQrBtn', 'obenPlatz'], ['explainBtn', 'obenPlatz'],
   ['driveButtons', 'antriebPlatz'], ['windBox', 'antriebPlatz'], ['speedBox', 'antriebPlatz'], ['crankInfo', 'antriebPlatz'],
   ['flipBtn', 'magnetPlatz']];
@@ -204,7 +204,11 @@ export function initUi() {
       event.preventDefault();
       const zurueck = new URLSearchParams({ wind: state.wind });
       if (zeit !== null) zurueck.set('zeit', zeit);
-      location.href = '../generator-windpark/?' + zurueck;
+      // Lehrerseite: Rolle und Raumcode (steht inzwischen in der Adresse) mit zurück, damit der nächste Wechsel
+      // wieder als Lehrerseite im selben Raum ankommt
+      const hier = new URLSearchParams(location.search);
+      const lehrer = hier.has('lehrer') ? 'lehrer&' + (hier.get('raum') ? `raum=${hier.get('raum')}&` : '') : '';
+      location.href = '../generator-windpark/?' + lehrer + zurueck;
     });
     $('modelBadge').classList.add('show');
     setTimeout(() => $('modelBadge').classList.remove('show'), 2500);

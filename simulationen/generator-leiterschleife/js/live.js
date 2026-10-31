@@ -2,12 +2,13 @@
 // Live-Steuerung (gemeinsamer Baustein gemeinsam/live/): ein Schülergerät steuert die Simulation am Beamer.
 // Gespiegelt werden die Einstellungen (state.js), die Bewegung (Drehung, Elektronen, Zeiger, Glühdraht, Umbau
 // Leiterschleife ↔ Spule, Windrotor, Simulationszeit für das U-t-Diagramm), die Ansicht und die Tafel des steuernden
-// Geräts (offen/zu, Seite, Striche; gemeinsam/tafel/). Eigene Tafel und Abgaben des zuschauenden Geräts bleiben
+// Geräts (offen/zu, Seite, Striche; gemeinsam/tafel/) samt seinen Laserpointer-Spuren (Szene und Tafel; gemeinsam/laser/). Eigene Tafel und Abgaben des zuschauenden Geräts bleiben
 // unberührt. Der Schülermodus gehört zum Gerät und wird nicht übertragen; ist er an, öffnet „Steuerung abgeben“ das
 // Schülergerät im Schülermodus.
 // ------------------------------------------------------------------
 import { initLive, zuschauen, zustandUebernehmen } from '../../../gemeinsam/live/live.js';
 import { tafelLiveDaten, fremdeTafel } from '../../../gemeinsam/tafel/index.js';
+import { laserDaten, fremdeLaser } from '../../../gemeinsam/laser/laser.js';
 import { state, modus } from './state.js';
 import { rotor, electrons, needle, lamp, spule, park, clock, endCrank } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
@@ -34,6 +35,7 @@ function lesen() {
     clock: { t: clock.t },
     view: { position: camera.position.toArray(), target: controls.target.toArray() },
     tafel: tafelLiveDaten(),
+    laserSpuren: laserDaten(),   // Laserpointer an/aus bleibt auf jedem Gerät für sich
   };
 }
 
@@ -46,6 +48,7 @@ function schreiben(daten) {
     [lamp, daten.lamp], [spule, daten.spule], [park, daten.park], [clock, daten.clock]]) Object.assign(ziel, quelle);
   ansicht = daten.view;
   if (daten.tafel) fremdeTafel(daten.tafel);
+  fremdeLaser(daten.laserSpuren);
   // Teile, die sonst setExplain bzw. die Knöpfe nachziehen (ohne den Zustand dabei zurückzusetzen)
   if (vorher.explain !== state.explain) setRingsInstant();   // Schleifringe an/ab animiert syncModel selbst
   if (vorher.explain !== state.explain || vorher.display !== state.display) {
@@ -67,6 +70,7 @@ export function ansichtUebernehmen() {
 // Wechsel zwischen Zuschauen und Steuern: laufendes Kurbeln beenden; wer wieder steuert, hat seine eigene Tafel
 function beiWechsel(zuschauen) {
   endCrank();
+  fremdeLaser([]);
   if (!zuschauen) {
     ansicht = null;
     fremdeTafel(null);

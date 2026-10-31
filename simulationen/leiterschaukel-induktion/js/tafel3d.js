@@ -10,6 +10,7 @@ import {
   initTafel, oeffneTafel, aufAnzeige, aktuellesDokument, tafelBild, zeichneAlle,
 } from '../../../gemeinsam/tafel/index.js';
 import { axisHeight } from './config.js';
+import { laserKnopf } from '../../../gemeinsam/laser/laser.js';
 import { state } from './state.js';
 import { mat } from './materialien.js';
 import { addMesh } from './hilfen.js';
@@ -102,20 +103,13 @@ export function syncTafel() {
 
 // Gemeinsame Tafel einrichten: Bild, Stifte und der Laserpointer in ihrer Werkzeugleiste
 export function initTafel3d() {
-  const laser = document.createElement('button');
-  laser.className = 'laser-btn live-frei';   // auch beim Zuschauen (Live-Steuerung) bedienbar
-  laser.type = 'button';
-  laser.dataset.laser = '';
-  laser.setAttribute('aria-pressed', 'false');
-  laser.title = 'Mit Apple Pencil oder Maus markieren (Taste L)';
-  laser.textContent = 'Laserpointer';
   initTafel({
     id: 'leiterschaukel-induktion',
     bild: 'bilder/tafel.jpg',
     bildText: 'Leiter mit Elektron zwischen den Polen des Hufeisenmagneten',
     seitenverhaeltnis: 1.6,
     stifte: STIFTE,
-    leisteZusatz: [laser],
+    leisteZusatz: [laserKnopf()],   // auch beim Zuschauen (Live-Steuerung) bedienbar
   });
   aufAnzeige(() => { texturVeraltet = true; });
   document.getElementById('tafelBtn').addEventListener('click', oeffneTafel);

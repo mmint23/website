@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // Live-Steuerung (gemeinsamer Baustein gemeinsam/live/): ein Schülergerät steuert die Leiterschaukel am Beamer.
 // Gespiegelt wird der ganze Zustand aus state.js (außer Laserpointer an/aus, das bleibt auf jedem Gerät für sich);
-// dazu kommen die sichtbaren Laserspuren des steuernden Geräts (laser.js), das andere Gerät zeichnet sie mit, und
+// dazu kommen die sichtbaren Laserspuren des steuernden Geräts (gemeinsam/laser/), das andere Gerät zeichnet sie mit, und
 // die Tafel des steuernden Geräts (offen/zu, Seite, Striche; gemeinsam/tafel/). Die eigene Tafel und die Abgaben des
 // zuschauenden Geräts bleiben dabei unberührt; steuert es wieder, ist alles wie vorher.
 // Beim Übernehmen werden nur die Teile neu aufgebaut, die sich geändert haben (Versuch, Anzeige, Kabel, Pole).
@@ -14,7 +14,7 @@ import { applyDisplay, buildCables, setMeterAngle } from './messgeraet.js';
 import { uiAbgleichen } from './bedienfeld.js';
 import { cancelDrag } from './ziehen.js';
 import { table } from './szene.js';
-import { laserDaten, fremdeLaser } from './laser.js';
+import { laserDaten, fremdeLaser } from '../../../gemeinsam/laser/laser.js';
 import { tafelLiveDaten, fremdeTafel } from '../../../gemeinsam/tafel/index.js';
 
 // Bewegte Größen, die beim Zuschauen zwischen zwei empfangenen Zuständen geglättet werden (alles andere springt)
@@ -29,9 +29,9 @@ const AUFBAU = ['explain', 'setup', 'longMagnet', 'display', 'cablesSwapped'];
 const einstellungen = () => JSON.stringify(Object.entries(state).filter(([, w]) => typeof w !== 'object'));
 
 // Laserpointer: Ein/Aus bleibt auf jedem Gerät für sich, die sichtbaren Spuren gehen mit – auf der Szene wie auf der
-// Tafel (laser.js)
+// Tafel (gemeinsam/laser/)
 function lesen() {
-  const { laser, ...daten } = zustandAlsDaten();
+  const daten = zustandAlsDaten();
   daten.laserSpuren = laserDaten();
   daten.tafel = tafelLiveDaten();
   return daten;
@@ -41,7 +41,6 @@ function schreiben(daten) {
   const vorher = { ...state, flip: { ...state.flip } };
   const einstellungenVorher = einstellungen();
   const { laserSpuren, tafel } = daten;
-  delete daten.laser;
   delete daten.laserSpuren;
   delete daten.tafel;
   fremdeLaser(laserSpuren);

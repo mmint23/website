@@ -14,6 +14,7 @@ gemeinsam/            gemeinsame Bausteine für alle Simulationen
   link.js             „Link / QR-Code zeigen“
   tafel/              Zeichentafel mit Abgabe an die Lehrkraft (Anleitung: gemeinsam/tafel/README.md)
   live/               Live-Steuerung: Schülergerät steuert die Simulation am Beamer (gemeinsam/live/README.md)
+  laser/              Laserpointer: mit Stift/Maus markieren, auch auf der Tafel und live (gemeinsam/laser/README.md)
   verbindung.js       Verbindung zum Abgabe-Server (von tafel/ und live/ genutzt)
 simulationen/<name>/  je eine Simulation mit eigener index.html
 server/               Abgabe-Server für das Klassenzimmer (Node.js, läuft auf dem Lehrer-Laptop)

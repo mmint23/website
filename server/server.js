@@ -302,17 +302,15 @@ function liveMelden(raum) {
   live.schueler?.senden({ typ: 'live-status', quelle });
 }
 
-// Schülergerät meldet sich mit dem Code aus dem QR-Code: bekommt zuerst den aktuellen Zustand (damit am Beamer
-// nichts springt) und steuert dann – nach dem ersten Scannen sofort, nach einem Neuladen wie zuvor
+// Schülergerät meldet sich mit dem Code aus dem QR-Code: bekommt den aktuellen Zustand und sieht mit. Nach dem ersten
+// Scannen steuert weiter die Lehrkraft, bis sie „Schüler steuert“ wählt; nach einem Neuladen bleibt es, wie es war
 function liveSchuelerKommt(v, code) {
   const live = raeume.get(v.raum)?.live;
   if (!live?.code || !code || code !== live.code) return v.senden({ typ: 'live-ende' });
-  const zuerst = !live.schueler && live.quelle !== 'schueler';
   if (live.schueler && live.schueler !== v) live.schueler.live = false;
   live.schueler = v;
   v.live = true;
   if (live.letzter) v.senden({ typ: 'zustand', daten: live.letzter });
-  if (zuerst) live.quelle = 'schueler';
   liveMelden(v.raum);
 }
 
@@ -449,7 +447,7 @@ server.on('upgrade', (req, socket) => {
   if (v) verbunden(v);
 });
 
-// Simulationen mit Zeichentafel oder Live-Steuerung (binden gemeinsam/tafel/ bzw. gemeinsam/live/ ein) – für die
+// Simulationen mit Zeichentafel oder Live-Steuerung (binden gemeinsam/tafel/ bzw. gemeinsam/live/ ein) oder mit Weitergabe der Lehrerrolle – für die
 // Übersicht beim Start
 function mitTafel() {
   const ordner = path.join(ROOT, 'simulationen');
@@ -458,7 +456,9 @@ function mitTafel() {
     const js = path.join(ordner, name, 'js');
     if (!fs.existsSync(js)) continue;
     const dateien = fs.readdirSync(js).filter(d => d.endsWith('.js'));
-    if (dateien.some(d => /gemeinsam\/(tafel|live)\//.test(fs.readFileSync(path.join(js, d), 'utf8')))) liste.push(name);
+    // Tafel oder Live-Steuerung eingebunden – oder die Lehrerrolle wird an andere Simulationen weitergegeben
+    // (generator-windpark: has('lehrer') in uebergang.js)
+    if (dateien.some(d => /gemeinsam\/(tafel|live)\/|has\('lehrer'\)/.test(fs.readFileSync(path.join(js, d), 'utf8')))) liste.push(name);
   }
   return liste;
 }

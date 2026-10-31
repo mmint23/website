@@ -13,7 +13,8 @@ import { updatePlot } from './diagramm.js';
 import { initUi, updateHoldSlider, updateParkStatus } from './bedienfeld.js';
 import { syncExplain } from './erklaerung.js';
 import './ziehen.js';
-import { initTafel, oeffneTafel, tafelOffen } from '../../../gemeinsam/tafel/index.js';
+import { initTafel, oeffneTafel, tafelOffen, zuTafel, vonTafel } from '../../../gemeinsam/tafel/index.js';
+import { initLaser, laserKnopf } from '../../../gemeinsam/laser/laser.js';
 import { initLiveSteuerung, zuschauen, ansichtUebernehmen } from './live.js';
 
 initUi();
@@ -35,8 +36,10 @@ initTafel({
     },
   ],
   seitenverhaeltnis: 1.6,
+  leisteZusatz: [laserKnopf()],   // Laserpointer auch auf der Tafel (und beim Zuschauen bedienbar)
 });
 document.getElementById('tafelBtn').addEventListener('click', oeffneTafel);
+initLaser({ renderer, camera, controls, tafel: { offen: tafelOffen, zu: zuTafel, von: vonTafel } });
 initLiveSteuerung();   // nach initTafel: das Bedienfeld kommt in die Abgabeleiste der Lehrerseite
 
 const SLOW_MOTION = 0.25;

@@ -4,7 +4,9 @@
 //    (raum.js) bzw. Ausblenden und Wechsel zur Simulation Generator-Leiterschleife (eigene Seite). Antippen während
 //    der Fahrt springt direkt zur Überblendung.
 //  Beim Wechsel zu einer anderen Simulation gehen Wind und Uhrzeit in der Adresse mit (?von=windpark&wind=…&zeit=…);
-//  dort führt „Zurück zum Windpark“ wieder her.
+//  dort führt „Zurück zum Windpark“ wieder her. Ist der Windpark als Lehrerseite geöffnet (?lehrer&raum=…, über den
+//  Abgabe-Server), gehen auch diese Angaben mit: Die Simulation ist dann gleich Lehrerseite (Live-Steuerung, Abgaben)
+//  im selben Raum, und auf dem Rückweg kommen sie wieder mit – alles in einem Tab.
 //  · Windrad antippen → Kamerafahrt zur Gondel → Gondel wird durchsichtig (Welle und Generator) → die Ansicht
 //    bleibt stehen, bis noch einmal getippt wird → Ausblenden und Wechsel zur Simulation Innenpolgenerator (eigene
 //    Seite; Wind und Uhrzeit gehen in der Adresse mit, dort führt „Zurück zum Windpark“ wieder her). Antippen
@@ -100,8 +102,17 @@ function zurGondel() {
 // Zu einer anderen Simulation (Nachbarordner); Wind und Uhrzeit für den Rückweg in der Adresse
 export function zurSimulation(ordner) {
   const ziel = new URL(`../${ordner}/`, location.href);
-  ziel.search = new URLSearchParams({ von: 'windpark', wind: state.wind, zeit: state.time }).toString();
+  ziel.search = lehrerAngaben() + new URLSearchParams({ von: 'windpark', wind: state.wind, zeit: state.time });
   location.href = ziel.href;
+}
+
+// Lehrerseite: „lehrer&raum=…&“ vorne an die Adresse der anderen Simulation (den Raumcode legt sonst die Lehrerseite
+// dort selbst an und gibt ihn auf dem Rückweg mit); sonst nichts
+function lehrerAngaben() {
+  const hier = new URLSearchParams(location.search);
+  if (!hier.has('lehrer')) return '';
+  const raum = (hier.get('raum') ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+  return 'lehrer&' + (raum ? `raum=${raum}&` : '');
 }
 
 // Jedes Bild (dt in s Echtzeit)
