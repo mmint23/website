@@ -4,11 +4,15 @@
 // Kommt der Stecker auf dem Bildschirm nah genug an eine freie Buchse, rastet er dort ein; lässt man ihn woanders
 // los, bleibt er dort hängen (in Koordinaten der Spule – er wandert mit, wenn man die Spule bewegt).
 // Welche Buchse belegt ist, steht in state.plugs; daraus bestimmt physik.js, was das Messgerät anzeigt.
+// Stecken beide Stecker im Messgerät, laufen die Kabel ab einem Bündelpunkt hinten auf der Drehachse der Spule
+// nebeneinander zum Messgerät. Dreht man die Spule, verdrillen sie sich: je Umdrehung der Spule eine Windung der
+// Kabel umeinander – gezählt ab dem Einstecken (drall.null). Lerneffekt: Eine Spule mit festen Kabeln lässt sich
+// nicht immer weiter drehen (deshalb Schleifringe beim Generator).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { COIL } from './config.js';
 import { state } from './state.js';
-import { multimeterRefresh } from './physik.js';
+import { multimeterRefresh, bodies } from './physik.js';
 import { addMesh } from './hilfen.js';
 import { mat } from './materialien.js';
 import { scene, camera } from './szene.js';
@@ -75,6 +79,51 @@ function cablePoints(terminal, ende, heraus) {
   return [t, oben, mitte, raus, ende];
 }
 
+// ---------------- Verdrillte Kabel (beide Stecker im Messgerät)
+
+// Die Kabel verlassen die Spule hinten auf ihrer Drehachse (Bündelpunkt) und laufen als Paar hinter der Spule in
+// einem Bogen zum Messgerät (das hinter der Spule steht). Dreht man die Spule um ihre Achse, dreht sich das Bündel an diesem Ende mit – so verdrillen sich
+// die Kabel umeinander (je Umdrehung eine Windung), am Messgerät bleiben sie fest.
+const ABSTAND = 0.3;     // halber Abstand der Kabelmitten im Bündel (Kabel liegen aneinander, Radius 0,25)
+const PUNKTE = 200;      // Stützpunkte entlang des Bündels
+const drall = { null: 0, gesteckt: false };   // Spulenwinkel beim Einstecken; stecken beide?
+
+// Verdrillung (rad): wie weit die Spule seit dem Einstecken gedreht wurde
+const verdrillung = () => bodies.coil.angle - drall.null;
+// Wird die Anzeige der Spule auf eine Umdrehung zurückgesetzt (bedienfeld.js), bleibt die Verdrillung
+export function drallVerschieben(winkel) { drall.null -= winkel; }
+
+function buendelPunkte(teile) {
+  coilGroup.updateMatrixWorld();
+  const hinten = new THREE.Vector3(0, 0, -1);
+  const start = coilGroup.position.clone().addScaledVector(hinten, COIL.R_FLANGE + 1.5);
+  const enden = ['red', 'black'].map(f => teile[f].ende.clone().addScaledVector(teile[f].heraus, 3));
+  const ziel = enden[0].clone().add(enden[1]).multiplyScalar(0.5).add(new THREE.Vector3(0, 0, 1.5));
+  const mitte = start.clone().lerp(ziel, 0.5);
+  mitte.y = Math.min(start.y, ziel.y) - 7;   // tiefer und seitlich neben der Spule: das Bündel ist gut zu sehen
+  mitte.x -= 4;
+  const linie = new THREE.CatmullRomCurve3([start, start.clone().addScaledVector(hinten, 2.5), mitte, ziel], false, 'centripetal');
+  // mitgeführter Rahmen (ohne Sprünge): am Anfang b = +x, n = +y (das Bündel beginnt entlang der Drehachse, nach hinten)
+  let t = linie.getTangent(0);
+  const n = new THREE.Vector3(0, 1, 0).addScaledVector(t, -t.y).normalize();
+  const b = new THREE.Vector3().crossVectors(t, n);
+  const winkel = verdrillung(), drehung = new THREE.Quaternion();
+  const kabel = { red: [], black: [] };
+  for (let i = 0; i <= PUNKTE; i++) {
+    const s = i / PUNKTE, p = linie.getPoint(s), tNeu = linie.getTangent(s);
+    drehung.setFromUnitVectors(t, tNeu);
+    n.applyQuaternion(drehung);
+    b.applyQuaternion(drehung);
+    t = tNeu;
+    // an der Spule um den Spulenwinkel gedreht (rot dann auf der Seite von A), am Messgerät nicht
+    const phi = winkel * (1 - s);
+    const quer = b.clone().multiplyScalar(Math.cos(phi)).addScaledVector(n, Math.sin(phi)).multiplyScalar(ABSTAND);
+    kabel.red.push(p.clone().add(quer));
+    kabel.black.push(p.clone().sub(quer));
+  }
+  return kabel;
+}
+
 let verlegt = null;
 export function syncCables() {
   const teile = {};
@@ -83,9 +132,15 @@ export function syncCables() {
     const ende = spitze.clone().addScaledVector(heraus, PIN + KOERPER);
     teile[farbe] = { spitze, heraus, ende, terminal: welt(terminalLocal[plugs[farbe].terminal]) };
   }
-  const schluessel = JSON.stringify(Object.values(teile).map(t => [t.spitze, t.heraus, t.terminal].map(v => v.toArray().map(z => z.toFixed(3)))));
+  // Beide im Messgerät? Beim Einstecken des zweiten Steckers beginnt die Verdrillung bei null
+  const gesteckt = Boolean(state.plugs.red && state.plugs.black && gezogen === null);
+  if (gesteckt && !drall.gesteckt) drall.null = bodies.coil.angle;
+  drall.gesteckt = gesteckt;
+  const schluessel = JSON.stringify([gesteckt, verdrillung().toFixed(4),
+    ...Object.values(teile).map(t => [t.spitze, t.heraus, t.terminal].map(v => v.toArray().map(z => z.toFixed(3))))]);
   if (schluessel === verlegt) return;
   verlegt = schluessel;
+  const buendel = gesteckt ? buendelPunkte(teile) : null;
   for (const [farbe, { spitze, heraus, ende, terminal }] of Object.entries(teile)) {
     const p = plugs[farbe];
     p.group.position.copy(spitze);
@@ -94,8 +149,13 @@ export function syncCables() {
       p.cable.geometry.dispose();
       scene.remove(p.cable);
     }
-    const curve = new THREE.CatmullRomCurve3(cablePoints(terminal, ende, heraus), false, 'centripetal');
-    p.cable = addMesh(new THREE.TubeGeometry(curve, 120, 0.25, 10, false), p.material, scene);
+    // gesteckt: vom Anschluss kurz nach oben, ins Bündel, verdrillt zum Messgerät, aus dem Bündel in den Stecker
+    const punkte = buendel
+      ? [terminal, welt(terminalLocal[p.terminal].clone().add(new THREE.Vector3(0, 0.8, -1.5))), ...buendel[farbe],
+        ende.clone().addScaledVector(heraus, 1.5), ende]
+      : cablePoints(terminal, ende, heraus);
+    const curve = new THREE.CatmullRomCurve3(punkte, false, 'centripetal');
+    p.cable = addMesh(new THREE.TubeGeometry(curve, buendel ? 600 : 120, 0.25, 10, false), p.material, scene);
   }
 }
 
@@ -111,10 +171,12 @@ export function ausstecken() {
 // ---------------- Live-Steuerung: lose Stecker (Koordinaten der Spule) und ein gerade gezogener Stecker
 
 export const kabelDaten = () => ({
+  drall: drall.null,
   lose: Object.fromEntries(Object.entries(plugs).map(([farbe, p]) => [farbe, p.lose.toArray()])),
   gezogen: gezogen && { farbe: gezogen.farbe, buchse: gezogen.buchse, punkt: gezogen.punkt.toArray() },
 });
 export function kabelUebernehmen(daten) {
+  if (Number.isFinite(daten?.drall)) drall.null = daten.drall;
   for (const [farbe, p] of Object.entries(plugs)) if (daten?.lose?.[farbe]) p.lose.fromArray(daten.lose[farbe]);
   gezogen = daten?.gezogen ? { ...daten.gezogen, punkt: new THREE.Vector3().fromArray(daten.gezogen.punkt) } : null;
 }

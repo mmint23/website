@@ -12,16 +12,17 @@ Server (GitHub Pages) ist der Baustein unsichtbar.
 
 1. Lehrerseite öffnen, z. B. <http://localhost:8080/lehrer/leiterschaukel-induktion>. In der Abgabeleiste unten
    steht die Spalte **„Live-Steuerung“**.
-2. **„Steuerung abgeben“** → großer QR-Code. Ein Schüler scannt ihn; sein Gerät übernimmt zuerst genau den Stand am
-   Beamer (es springt nichts) und steuert dann. Der QR-Code schließt sich von selbst.
-3. Am Beamer steht „Ein Schülergerät steuert die Simulation“; Bedienfelder sind gedämpft und gesperrt.
+2. **„Steuerung abgeben“** → großer QR-Code. Ein Schüler scannt ihn; sein Gerät übernimmt genau den Stand am
+   Beamer und sieht mit („Die Lehrkraft steuert gerade – du siehst mit“). Die Lehrkraft steuert weiter, bis sie
+   abgibt („Schülergerät verbunden – abgeben mit „Schüler steuert““). Der QR-Code schließt sich von selbst.
+3. **„Schüler steuert“**: Jetzt steuert das Schülergerät. Am Beamer steht „Ein Schülergerät steuert die Simulation“; Bedienfelder sind gedämpft und gesperrt.
    Laserpointer und „Link / QR-Code zeigen“ bleiben bedienbar. Auf dem Schülergerät steht „Du steuerst die
    Simulation am Beamer“.
-4. **„Ich steuere“**: Die Lehrkraft bedient wieder selbst, das Schülergerät zeigt mit („Die Lehrkraft steuert
-   gerade – du siehst mit“). **„Schüler steuert“**: zurück an denselben Schüler – ohne neues Scannen.
+4. **„Ich steuere“**: Die Lehrkraft bedient wieder selbst, das Schülergerät sieht wieder mit. **„Schüler steuert“**:
+   zurück an denselben Schüler – ohne neues Scannen.
 5. Das Schülergerät bleibt verbunden, auch nach Neuladen oder einer kurzen WLAN-Unterbrechung.
    **„Steuerung abgeben“** erzeugt einen neuen QR-Code für den nächsten Schüler – das bisherige Gerät verliert die
-   Steuerung sofort. **„Trennen“** beendet die Live-Steuerung.
+   Verbindung sofort, das neue sieht zuerst mit. **„Trennen“** beendet die Live-Steuerung.
 
 Sicherheit: Der Code im QR-Code ist zufällig und gilt nur, bis ein neuer erzeugt oder getrennt wird. Wer die
 Adresse abtippt oder `?steuern=…` errät, bekommt nichts. Es steuert immer genau ein Gerät.

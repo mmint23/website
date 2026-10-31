@@ -35,6 +35,7 @@
       <p class="status" id="realInfo" hidden>Reale Physik: Spannung aus dem echten Magnetfeld – auch dort, wo keine
         Feldlinie gezeichnet ist.</p>
       <label class="check"><input id="fieldCheck" type="checkbox" /> Magnetfeld (Feldlinien)</label>
+      <p class="status" id="fieldInfo" hidden>Feldlinien gibt es nur mit einem Magneten.</p>
       <label class="check"><input id="insideCheck" type="checkbox" /> <span class="farbe innen"></span>Feldlinien im
         Inneren der Spule färben</label>
     </section>
@@ -67,12 +68,22 @@
       </label>
       <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
       <p class="status" id="magnetStatus"></p>
+      <button id="secondMagnetBtn" class="state" type="button" aria-pressed="false">Zweiter Magnet</button>
+      <div id="magnet2Box" hidden>
+        <label class="slider">
+          <span class="row">Drehung Magnet 2 <output id="magnet2AngleOut">0°</output></span>
+          <input id="magnet2Angle" type="range" min="-180" max="180" step="1" value="0" />
+        </label>
+        <button id="flip2Btn" type="button">Magnet 2 umdrehen (N ↔ S)</button>
+        <p class="status" id="magnet2Status"></p>
+      </div>
     </section>
     <section>
       <h2>Spule</h2>
       <p class="status">Windungszahl</p>
       <div class="segmented" role="group" aria-label="Windungszahl" id="turnsButtons"></div>
       <p class="status" id="coilStatus"></p>
+      <button id="manyTurnsBtn" class="state" type="button" aria-pressed="false">Mehrere Umdrehungen (bis 4 × 360°)</button>
       <label class="slider">
         <span class="row">Drehung <output id="coilAngleOut">0°</output></span>
         <input id="coilAngle" type="range" min="-180" max="180" step="1" value="0" />

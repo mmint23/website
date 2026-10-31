@@ -2,8 +2,8 @@
 // Live-Steuerung: Ein Schülergerät steuert die Simulation am Beamer (Lehrerseite). Nur über den Abgabe-Server
 // auf dem Lehrer-Laptop (website/server/); ohne Server bleibt alles unsichtbar. Anleitung: README.md.
 //
-// Ablauf: Lehrerseite „Steuerung abgeben“ → QR-Code mit Einmal-Code → das Schülergerät scannt, übernimmt zuerst
-// den aktuellen Stand und steuert dann. Mit „Schüler steuert“ / „Ich steuere“ wird hin- und hergeschaltet; das
+// Ablauf: Lehrerseite „Steuerung abgeben“ → QR-Code mit Einmal-Code → das Schülergerät scannt, übernimmt den
+// aktuellen Stand und sieht mit; die Lehrkraft steuert weiter, bis sie „Schüler steuert“ wählt. Mit „Schüler steuert“ / „Ich steuere“ wird hin- und hergeschaltet; das
 // Schülergerät bleibt verbunden, bis die Lehrkraft trennt oder einen neuen QR-Code erzeugt.
 // Gespiegelt wird der Zustand der Simulation (nicht die Eingaben): Das Gerät, das steuert, rechnet und schickt
 // seinen Zustand etwa 30-mal pro Sekunde mit der Zeit des Bilds; das andere rechnet nicht selbst, ist gesperrt und
@@ -83,7 +83,8 @@ function anzeigen() {
   }
   $('liveStatus').textContent = !stand.offen ? 'Keine Verbindung zum Server …'
     : !stand.aktiv ? 'Kein Schülergerät verbunden.'
-      : stand.verbunden ? 'Schülergerät verbunden.' : 'Warte auf das Schülergerät (QR-Code scannen) …';
+      : !stand.verbunden ? 'Warte auf das Schülergerät (QR-Code scannen) …'
+        : stand.quelle === 'schueler' ? 'Schülergerät verbunden.' : 'Schülergerät verbunden – abgeben mit „Schüler steuert“.';
   $('liveWahl').hidden = !stand.aktiv;
   $('liveTrennen').hidden = !stand.aktiv;
   for (const [id, an] of [['liveSchueler', stand.quelle === 'schueler'], ['liveIch', stand.quelle === 'lehrer' && stand.ich]]) {
@@ -139,7 +140,7 @@ function lehrerFeldAnlegen() {
   $('liveTrennen').addEventListener('click', () => senden({ typ: 'live-trennen' }));
   aufNachricht('live-code', nachricht => {
     showLink(adresseFuer({ ...optionen.steuernAngaben?.(), steuern: nachricht.code }),
-      'Steuerung abgeben: mit dem Schülergerät scannen. Danach steuert dieses Gerät die Simulation am Beamer.');
+      'Steuerung abgeben: mit dem Schülergerät scannen. Es sieht dann mit; mit „Schüler steuert“ übernimmt es die Simulation am Beamer.');
   });
 }
 

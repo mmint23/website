@@ -51,7 +51,7 @@ export const Y_MAX = 10;
 export const Y_SNAP = 0.5;
 export const FOLLOW_TIME = 0.03;   // s
 export const TURN_TIME = 0.06;     // s
-export const START = { magnet: -17, coil: 8 };
+export const START = { magnet: -17, coil: 8, magnet2: 19 };   // magnet2: zweiter Magnet (Knopf), rechts der Spule
 
 // Messbereich als Text (unter 0,01 V in mV), z. B. „±1 mV“, „±0,3 V“
 export const rangeText = range => (range < 0.01 ? `±${Math.round(range * 1000)}\u00a0mV` : `±${String(range).replace('.', ',')} V`);

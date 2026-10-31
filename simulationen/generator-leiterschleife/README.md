@@ -169,7 +169,8 @@ Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulatio
 ## Live-Steuerung: Schüler steuert am Beamer
 
 Über den Abgabe-Server (gemeinsamer Baustein `gemeinsam/live/`, wie bei der Leiterschaukel): In der Abgabeleiste der
-Lehrerseite zeigt **„Steuerung abgeben“** einen QR-Code; das Schülergerät steuert dann die Simulation am Beamer.
+Lehrerseite zeigt **„Steuerung abgeben“** einen QR-Code; das Schülergerät sieht nach dem Scannen zuerst mit und
+steuert die Simulation am Beamer, sobald die Lehrkraft „Schüler steuert“ wählt.
 Gespiegelt werden alle Einstellungen, Drehung, Elektronen, Zeiger, LED/Glühlampe, Umbau Leiterschleife ↔ Spule,
 Windrotor, U-t-Diagramm, Ansicht und die **Tafel** des steuernden Geräts (offen/zu, Seite, Striche schon beim
 Zeichnen). Eigene Tafel und Abgaben des zuschauenden Geräts bleiben unberührt; Teilen funktioniert wie immer.

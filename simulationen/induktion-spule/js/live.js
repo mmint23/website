@@ -13,7 +13,7 @@ import { updateUi } from './bedienfeld.js';
 import { cancelDrag } from './ziehen.js';
 import { camera, controls } from './szene.js';
 
-const TEILE = ['magnet', 'coil'];
+const TEILE = ['magnet', 'magnet2', 'coil'];
 
 // Stetige Größen, die beim Zuschauen zwischen zwei empfangenen Zuständen geglättet werden
 const GLAETTEN = [
@@ -23,7 +23,7 @@ const GLAETTEN = [
 ];
 
 // Einstellungen, bei deren Änderung der Fluss springt, ohne dass sich etwas bewegt (kein Spannungsstoß)
-const SPRUNG = ['northRight', 'strength', 'turns', 'lineModel'];
+const SPRUNG = ['northRight', 'northRight2', 'secondMagnet', 'strength', 'turns', 'lineModel'];
 
 function lesen() {
   return {

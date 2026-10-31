@@ -17,14 +17,15 @@ const B_COLOR = '#1565c0';
 
 // ---------------- Stabmagnet: rote Hälfte Nordpol, grüne Südpol; im Modell zeigt der Nordpol nach +x.
 // magnetGroup: Lage und Drehung; darin magnetBody, beim Umdrehen um die senkrechte Achse gewendet (die
-// Beschriftung vorne bleibt lesbar). Die Feldlinien hängen an magnetBody.
+// Beschriftung vorne bleibt lesbar). Die Feldlinien hängen an magnetBody (nur beim ersten Magneten).
 
-export const magnetGroup = new THREE.Group();
-scene.add(magnetGroup);
-export const magnetBody = new THREE.Group();
-magnetGroup.add(magnetBody);
+// Gemeinsame Materialien beider Magnete (für das Durchsichtig-Schalten)
 const magnetMat = { north: mat.north.clone(), south: mat.south.clone() };
-{
+function stabmagnet() {
+  const magnetGroup = new THREE.Group();
+  scene.add(magnetGroup);
+  const magnetBody = new THREE.Group();
+  magnetGroup.add(magnetBody);
   const half = MAGNET.LENGTH / 2, w = MAGNET.WIDTH;
   const geometry = new THREE.BoxGeometry(half, w, w);
   addMesh(geometry, magnetMat.north, magnetBody).position.x = half / 2;
@@ -38,11 +39,16 @@ const magnetMat = { north: mat.north.clone(), south: mat.south.clone() };
       magnetBody.add(label);
     }
   }
+  // Unsichtbare, etwas größere Grifffläche
+  const magnetTarget = new THREE.Mesh(new THREE.BoxGeometry(MAGNET.LENGTH + 1, MAGNET.WIDTH + 2, MAGNET.WIDTH + 2),
+    new THREE.MeshBasicMaterial({ visible: false }));
+  magnetBody.add(magnetTarget);
+  return { magnetGroup, magnetBody, magnetTarget };
 }
-// Unsichtbare, etwas größere Grifffläche
-export const magnetTarget = new THREE.Mesh(new THREE.BoxGeometry(MAGNET.LENGTH + 1, MAGNET.WIDTH + 2, MAGNET.WIDTH + 2),
-  new THREE.MeshBasicMaterial({ visible: false }));
-magnetBody.add(magnetTarget);
+export const { magnetGroup, magnetBody, magnetTarget } = stabmagnet();
+// Zweiter Magnet (Knopf „Zweiten Magneten dazu“, state.secondMagnet); ohne Feldlinien
+const zweiter = stabmagnet();
+export const magnet2Target = zweiter.magnetTarget;
 
 // ---------------- Spule: durchsichtiger Spulenkörper mit Flanschen, Kupferwicklung, zwei Anschlüsse
 
@@ -200,6 +206,10 @@ export function syncModel() {
   magnetGroup.rotation.z = bodies.magnet.angle;
   magnetBody.rotation.y = state.northRight ? 0 : Math.PI;
   magnetGroup.position.y = bodies.magnet.y;
+  zweiter.magnetGroup.visible = state.secondMagnet;
+  zweiter.magnetGroup.position.set(bodies.magnet2.x, bodies.magnet2.y, 0);
+  zweiter.magnetGroup.rotation.z = bodies.magnet2.angle;
+  zweiter.magnetBody.rotation.y = state.northRight2 ? 0 : Math.PI;
   coilGroup.position.x = bodies.coil.x;
   coilGroup.position.y = bodies.coil.y;
   coilGroup.rotation.z = bodies.coil.angle;
