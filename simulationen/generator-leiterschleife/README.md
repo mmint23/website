@@ -166,13 +166,24 @@ Zeitlupe, Festhalten, Ansichten, U-t-Diagramm und Tafel, ohne dass die Simulatio
   `bedienfeld.js` hängt die Bedienelemente aus dem rechten Feld ins linke um (`UMZUG`) und zurück; das Bild rückt
   per `setBildVersatz` (szene.js) neben das Feld, die Kamera selbst bleibt.
 
+## Laserpointer
+
+Der Knopf **„Laserpointer“** (oben im Bedienfeld unter „Link / QR-Code zeigen“, im Schülermodus oben im linken Feld, und in der Werkzeugleiste der Tafel, am Laptop auch die Taste **L**) schaltet einen Zeigestift ein: Mit
+**Apple Pencil oder Maus** markiert man Stellen, um zu zeigen, wovon man gerade spricht. Die Spur leuchtet rot über
+allem und verblasst etwa 1,5 Sekunden nach dem Absetzen; an der Simulation und an der Tafel ändert sich nichts.
+Solange er an ist, bedienen Stift und Maus die Simulation nicht (kein Drehen der Ansicht, keine Kurbel, kein Schreiben auf der Tafel);
+**Finger** funktionieren weiter wie gewohnt, Knöpfe und Regler auch mit Stift oder Maus. Läuft auch ohne
+Abgabe-Server. Bei der **Live-Steuerung** erscheinen die Spuren des steuernden Geräts auch auf dem anderen – in der
+Szene am selben Teil des Modells, auf der Tafel an derselben Stelle des Tafelbilds; der Laserpointer-Knopf bleibt auch beim Zuschauen bedienbar (die Spuren
+sieht dann nur das eigene Gerät). Gemeinsamer Baustein der Website: `gemeinsam/laser/` (wie in der Leiterschaukel).
+
 ## Live-Steuerung: Schüler steuert am Beamer
 
 Über den Abgabe-Server (gemeinsamer Baustein `gemeinsam/live/`, wie bei der Leiterschaukel): In der Abgabeleiste der
 Lehrerseite zeigt **„Steuerung abgeben“** einen QR-Code; das Schülergerät sieht nach dem Scannen zuerst mit und
 steuert die Simulation am Beamer, sobald die Lehrkraft „Schüler steuert“ wählt.
 Gespiegelt werden alle Einstellungen, Drehung, Elektronen, Zeiger, LED/Glühlampe, Umbau Leiterschleife ↔ Spule,
-Windrotor, U-t-Diagramm, Ansicht und die **Tafel** des steuernden Geräts (offen/zu, Seite, Striche schon beim
+Windrotor, U-t-Diagramm, Ansicht, Laserpointer-Spuren und die **Tafel** des steuernden Geräts (offen/zu, Seite, Striche schon beim
 Zeichnen). Eigene Tafel und Abgaben des zuschauenden Geräts bleiben unberührt; Teilen funktioniert wie immer.
 „Ich steuere“ / „Schüler steuert“ schaltet hin und her (bei offener Tafel steht „Ich steuere“ im Hinweis unten).
 Technik: `js/live.js`.

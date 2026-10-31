@@ -108,6 +108,17 @@ Hilfen dafür: **Magnet festhalten** (mit Drehwinkel-Regler oder Kurbel Stellung
 - Die Startansicht passt sich der Fenstergröße an (Laptop, iPad quer und hochkant), solange man die Ansicht nicht
   selbst gedreht hat.
 
+## Laserpointer
+
+Der Knopf **„Laserpointer“** (oben im Bedienfeld unter „Link / QR-Code zeigen“, im Erklärmodus oben im linken Feld, am Laptop auch die Taste **L**) schaltet einen Zeigestift ein: Mit
+**Apple Pencil oder Maus** markiert man Stellen, um zu zeigen, wovon man gerade spricht. Die Spur leuchtet rot über
+allem und verblasst etwa 1,5 Sekunden nach dem Absetzen; an der Simulation ändert sich nichts.
+Solange er an ist, bedienen Stift und Maus die Simulation nicht (kein Drehen der Ansicht, keine Kurbel);
+**Finger** funktionieren weiter wie gewohnt, Knöpfe und Regler auch mit Stift oder Maus. Läuft auch ohne
+Abgabe-Server. Bei der **Live-Steuerung** erscheinen die Spuren des steuernden Geräts auch auf dem anderen – in der
+Szene am selben Teil des Modells; der Laserpointer-Knopf bleibt auch beim Zuschauen bedienbar (die Spuren
+sieht dann nur das eigene Gerät). Gemeinsamer Baustein der Website: `gemeinsam/laser/` (wie in der Leiterschaukel).
+
 ## Live-Steuerung: Schüler steuert am Beamer
 
 Über den Abgabe-Server (im Ordner `website/` `npm start`, Lehrerseite <http://localhost:8080/lehrer/innenpolgenerator>;
@@ -115,7 +126,7 @@ gemeinsamer Baustein `gemeinsam/live/`, wie bei `induktion-spule`): Der Innenpol
 steht das Bedienfeld der Live-Steuerung als kleiner Kasten unten links (im Erklärmodus unten rechts, wo dann kein
 Bedienfeld ist), mit „Steuerung abgeben“ (QR-Code), „Schüler steuert“ / „Ich steuere“, „Trennen“ und „Lehrerseite
 auf anderem Gerät“. Gespiegelt werden alle Einstellungen (auch Erklärmodus, Feldlinien, Anzeige), die Drehung des
-Magneten, Zeiger, Glühdraht, Windrotor, U–t-Diagramm und die Ansicht; Feldlinien, B-Pfeile, Spannung und LED rechnet
+Magneten, Zeiger, Glühdraht, Windrotor, U–t-Diagramm, die Ansicht und die Laserpointer-Spuren; Feldlinien, B-Pfeile, Spannung und LED rechnet
 das zuschauende Gerät aus der übernommenen Stellung selbst. Technik: `js/live.js`.
 
 ## Physikalisches Modell

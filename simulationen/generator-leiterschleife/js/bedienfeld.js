@@ -34,7 +34,7 @@ const resetView = () => {
 
 // Schülermodus: nur ein Bedienfeld (links). Diese Bedienelemente wandern dann aus dem rechten Bedienfeld nach links
 // (Ziel: Element im linken Feld) und beim Ausschalten wieder an ihren Platz zurück (Merkzeichen an der alten Stelle)
-const UMZUG = [['schuelerModusBtn', 'schuelerOben'], ['schuelerQrBtn', 'schuelerOben'], ['explainBtn', 'schuelerOben'],
+const UMZUG = [['laserBtn', 'schuelerOben'], ['schuelerModusBtn', 'schuelerOben'], ['schuelerQrBtn', 'schuelerOben'], ['explainBtn', 'schuelerOben'],
   ['driveButtons', 'schuelerAntrieb'], ['speedBox', 'schuelerAntrieb'], ['crankInfo', 'schuelerAntrieb'], ['flipBtn', 'schuelerMagnet']];
 const merkzeichen = new Map();
 function bedienfeldUmhaengen() {

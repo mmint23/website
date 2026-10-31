@@ -14,8 +14,10 @@ import { updatePlot } from './diagramm.js';
 import { initUi, updateReadout } from './bedienfeld.js';
 import './ziehen.js';
 import { initLiveSteuerung, zuschauen, ansichtUebernehmen } from './live.js';
+import { initLaser } from '../../../gemeinsam/laser/laser.js';
 
 initUi();
+initLaser({ renderer, camera, controls });   // Laserpointer (ohne Tafel: Spuren nur auf der Szene)
 initLiveSteuerung();   // Live-Steuerung (nur über den Abgabe-Server; sonst unsichtbar)
 
 const SLOW_MOTION = 0.25;

@@ -13,16 +13,16 @@ import { initUi, animateFlip, updateValue, updateHoldSlider } from './bedienfeld
 import { syncExplain } from './erklaerung.js';
 import './ziehen.js';
 import { showLink } from '../../../gemeinsam/link.js';
-import { tafelOffen } from '../../../gemeinsam/tafel/index.js';
+import { tafelOffen, zuTafel, vonTafel } from '../../../gemeinsam/tafel/index.js';
 import { initTafel3d, syncTafel } from './tafel3d.js';
-import { initLaser } from './laser.js';
+import { initLaser } from '../../../gemeinsam/laser/laser.js';
 import { initLiveSteuerung } from './live.js';
 import { zuschauen } from '../../../gemeinsam/live/live.js';
 
 initUi();
 document.getElementById('linkBtn').addEventListener('click', () => showLink());
-initTafel3d();   // vor initLaser: legt den Laser-Knopf in der Werkzeugleiste der Tafel an
-initLaser();
+initTafel3d();   // mit dem Laser-Knopf in der Werkzeugleiste der Tafel
+initLaser({ renderer, camera, controls, tafel: { offen: tafelOffen, zu: zuTafel, von: vonTafel } });
 initLiveSteuerung();   // nach initTafel3d: das Bedienfeld kommt in die Abgabeleiste der Lehrerseite
 resetView();
 

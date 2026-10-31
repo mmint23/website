@@ -1,28 +1,29 @@
 // ------------------------------------------------------------------
-// Laserpointer: Mit Apple Pencil oder Maus Bereiche markieren, um zu zeigen, wovon man gerade spricht.
-// Die Spur leuchtet rot über allem und verblasst kurz nach dem Absetzen; an der Simulation ändert sich nichts.
+// Laserpointer (gemeinsamer Baustein): Mit Apple Pencil oder Maus Bereiche markieren, um zu zeigen, wovon man gerade
+// spricht. Die Spur leuchtet rot über allem und verblasst kurz nach dem Absetzen; an der Simulation ändert sich nichts.
+// Anleitung: README.md.
 //
-// Eingeschaltet (state.laser.on, Knöpfe mit data-laser, Taste L) fängt die Seite Stift und Maus ab, bevor
+// Eingeschaltet (Knöpfe mit data-laser bzw. laserKnopf(), Taste L) fängt die Seite Stift und Maus ab, bevor
 // Simulation oder Tafel sie bekommen. Finger bedienen alles weiter wie gewohnt, ebenso Knöpfe und Eingabefelder
 // (auch mit Stift oder Maus, damit man den Laser wieder ausschalten kann). Läuft nur im Browser, ohne Server.
 //
-// Live-Steuerung (live.js): Die Spuren des steuernden Geräts werden mit übertragen – als Punkte in der 3D-Szene
+// Live-Steuerung (gemeinsam/live/): Die Spuren des steuernden Geräts werden mit übertragen – als Punkte in der 3D-Szene
 // (auf der Ebene durch den Drehpunkt der Ansicht), damit sie auf jedem Bildschirm am selben Teil der Simulation
 // liegen, auch wenn Größe und Seitenverhältnis verschieden sind. Spuren auf der großen Tafel gehen stattdessen in
 // Tafeleinheiten mit (ort 'tafel'): Sie liegen auf jedem Gerät an derselben Stelle des Tafelbilds. Das zuschauende
 // Gerät zeichnet sie zusätzlich – Tafelspuren nur bei offener Tafel, Szenenspuren nur bei geschlossener.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { state } from './state.js';
-import { renderer, camera, controls } from './szene.js';
-import { tafelOffen, zuTafel, vonTafel } from '../../../gemeinsam/tafel/index.js';
+import { stilLaden } from '../stil.js';
 
 const HALTEN = 400;     // ms: so lange bleibt die Spur nach dem Absetzen voll sichtbar …
 const VERBLASSEN = 1100; // … und verblasst dann in dieser Zeit
 const BEDIENELEMENTE = 'button, input, select, textarea, a, label';
 
-const canvas = document.getElementById('laserCanvas');
-const ctx = canvas.getContext('2d');
+let an = false;
+let szene = null;           // { renderer, camera, controls } der Simulation (initLaser)
+let tafel = null;           // { offen, zu, von } aus gemeinsam/tafel/, wenn die Simulation eine Tafel hat
+let canvas = null, ctx = null;
 // Spuren: { id, ort ('szene' | 'tafel'), punkte: [{ x, y }] (Bildschirm), welt: Punkte zum Übertragen – in der
 // Szene [x, y, z], auf der Tafel [x, y] in Tafeleinheiten –, ende: Zeitpunkt des Absetzens oder null }
 const spuren = [];
@@ -37,6 +38,7 @@ const runden = v => Math.round(v * 100) / 100;
 
 // Bildschirmpunkt → Punkt auf der Ebene durch den Drehpunkt der Ansicht, senkrecht zur Blickrichtung
 function zuWelt(x, y) {
+  const { renderer, camera, controls } = szene;
   const r = renderer.domElement.getBoundingClientRect();
   strahl.setFromCamera({ x: (x - r.left) / r.width * 2 - 1, y: 1 - (y - r.top) / r.height * 2 }, camera);
   camera.getWorldDirection(blick);
@@ -46,16 +48,16 @@ function zuWelt(x, y) {
 
 // Punkt der Szene → Bildschirmpunkt (null, wenn hinter der Kamera)
 function zuBild(p) {
-  punkt.fromArray(p).project(camera);
+  punkt.fromArray(p).project(szene.camera);
   if (punkt.z > 1) return null;
-  const r = renderer.domElement.getBoundingClientRect();
+  const r = szene.renderer.domElement.getBoundingClientRect();
   return { x: r.left + (punkt.x + 1) / 2 * r.width, y: r.top + (1 - punkt.y) / 2 * r.height };
 }
 
 function merken(s, x, y) {
   s.punkte.push({ x, y });
   if (s.ort === 'tafel') {
-    const t = zuTafel(x, y);
+    const t = tafel.zu(x, y);
     if (t) s.welt.push([runden(t.x), runden(t.y)]);
     return;
   }
@@ -64,7 +66,8 @@ function merken(s, x, y) {
 }
 
 // Übertragenen Punkt einer fremden Spur auf diesem Bildschirm (null: hier gerade nicht zu sehen)
-const aufBild = (ort, p) => (ort === 'tafel' ? vonTafel(p[0], p[1]) : zuBild(p));
+const tafelOffen = () => Boolean(tafel?.offen());
+const aufBild = (ort, p) => (ort === 'tafel' ? tafel.von(p[0], p[1]) : zuBild(p));
 const sichtbar = ort => (ort === 'tafel') === tafelOffen();
 
 function groesse() {
@@ -121,7 +124,7 @@ function anstossen() {
 }
 
 // Gehört dieses Ereignis dem Laser? Nur Stift und Maus, nur eingeschaltet, nicht auf Bedienelementen
-const fuerLaser = event => state.laser.on && (event.pointerType === 'pen' || event.pointerType === 'mouse')
+const fuerLaser = event => an && (event.pointerType === 'pen' || event.pointerType === 'mouse')
   && !event.target.closest?.(BEDIENELEMENTE);
 const abfangen = event => {
   event.preventDefault();
@@ -159,7 +162,7 @@ window.addEventListener('pointerup', absetzen, { capture: true });
 window.addEventListener('pointercancel', absetzen, { capture: true });
 // kein Klick und kein Kontextmenü aus einem Laserstrich
 window.addEventListener('click', event => { if (fuerLaser(event)) abfangen(event); }, { capture: true });
-window.addEventListener('contextmenu', event => { if (state.laser.on && !event.target.closest?.(BEDIENELEMENTE)) event.preventDefault(); }, { capture: true });
+window.addEventListener('contextmenu', event => { if (an && !event.target.closest?.(BEDIENELEMENTE)) event.preventDefault(); }, { capture: true });
 
 // Live-Steuerung, steuerndes Gerät: sichtbare Spuren zum Übertragen ({ welt, alter }, neueste zuerst begrenzt)
 export function laserDaten() {
@@ -179,27 +182,53 @@ export function laserDaten() {
 // Live-Steuerung, zuschauendes Gerät: Spuren des steuernden Geräts übernehmen (leere Liste: keine)
 export function fremdeLaser(daten) {
   fremde = Array.isArray(daten) ? daten.filter(s => Array.isArray(s?.welt) && Number.isFinite(s.alter))
-    .map(s => ({ ...s, ort: s.ort === 'tafel' ? 'tafel' : 'szene' })) : [];
+    .map(s => ({ ...s, ort: s.ort === 'tafel' && tafel ? 'tafel' : 'szene' })) : [];
   if (fremde.length) anstossen();
 }
 
-export function setzeLaser(an) {
-  state.laser.on = an;
+export function setzeLaser(wert) {
+  an = wert;
   document.body.classList.toggle('laser-an', an);
   for (const knopf of document.querySelectorAll('[data-laser]')) knopf.setAttribute('aria-pressed', String(an));
   if (!an) for (const s of spuren) s.ende ??= performance.now();
 }
+export const laserAn = () => an;
 
-export function initLaser() {
+// Knopf „Laserpointer“ für eine Werkzeugleiste, z. B. die der Tafel (initTafel({ leisteZusatz: [laserKnopf()] })).
+// Knöpfe in der index.html bekommen stattdessen data-laser (Muster in README.md). Auch beim Zuschauen bedienbar.
+export function laserKnopf() {
+  const knopf = document.createElement('button');
+  knopf.className = 'laser-btn live-frei laser-btn-fertig';   // fertig: initLaser hängt keinen zweiten Klick an
+  knopf.type = 'button';
+  knopf.dataset.laser = '';
+  knopf.setAttribute('aria-pressed', String(an));
+  knopf.title = 'Mit Apple Pencil oder Maus markieren (Taste L)';
+  knopf.textContent = 'Laserpointer';
+  knopf.addEventListener('click', () => setzeLaser(!an));
+  return knopf;
+}
+
+// optionen: { renderer, camera, controls } der Simulation; tafel: { offen, zu, von } (tafelOffen, zuTafel,
+// vonTafel aus gemeinsam/tafel/), wenn sie eine Tafel hat
+export function initLaser(optionen) {
+  stilLaden(new URL('./laser.css', import.meta.url));
+  szene = { renderer: optionen.renderer, camera: optionen.camera, controls: optionen.controls };
+  tafel = optionen.tafel ?? null;
+  canvas = document.createElement('canvas');
+  canvas.id = 'laserCanvas';
+  canvas.setAttribute('aria-hidden', 'true');   // Spur über allem, nimmt selbst keine Berührungen an
+  document.body.append(canvas);
+  ctx = canvas.getContext('2d');
   groesse();
   window.addEventListener('resize', groesse);
-  for (const knopf of document.querySelectorAll('[data-laser]')) {
-    knopf.addEventListener('click', () => setzeLaser(!state.laser.on));
+  for (const knopf of document.querySelectorAll('[data-laser]:not(.laser-btn-fertig)')) {
+    knopf.classList.add('laser-btn-fertig');
+    knopf.addEventListener('click', () => setzeLaser(!an));
   }
   // Taste L am Laptop (nicht beim Tippen in ein Eingabefeld)
   window.addEventListener('keydown', event => {
     if (event.key.toLowerCase() !== 'l' || event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target.closest?.('input, textarea, select')) return;
-    setzeLaser(!state.laser.on);
+    setzeLaser(!an);
   });
 }
