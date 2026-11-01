@@ -104,9 +104,9 @@ Links erscheint ein eigenes Bedienfeld für den Erklärmodus:
 - **Elektronen zurücksetzen**
 - **Tafel:** Unter dem Magneten steht eine kleine Tafel mit einem festen Bild des Leiters im Magnetfeld
   (`bilder/tafel.jpg`). Antippen (oder „Tafel öffnen“ im Bedienfeld) öffnet sie groß. Dort zeichnet man mit
-  Apple Pencil, Finger oder Maus: Stifte v (grün), B (blau), F_L (rot), Stift (schwarz), Radierer, Freihand oder
-  gerader Pfeil, Rückgängig, Alles löschen. Der Stiftdruck bestimmt die Strichbreite; sobald der Pencil benutzt
-  wurde, werden Finger und Handballen auf der Zeichenfläche ignoriert. Die Zeichnung bleibt im Browser gespeichert.
+  Apple Pencil oder Maus: Stifte v (grün), B (blau), F_L (rot), Stift (schwarz), Radierer, Freihand oder
+  gerader Pfeil, Rückgängig, Alles löschen. Der Stiftdruck bestimmt die Strichbreite. Finger zeichnen nicht; mit
+  zwei Fingern wird das Tafelbild gezoomt und verschoben. Die Zeichnung bleibt im Browser gespeichert.
   Läuft die Seite über den Abgabe-Server (siehe unten), können Schüler sie mit „Teilen“ abgeben.
 
 - Pfeile am Elektron: Geschwindigkeit v des Leiters (grün) und Lorentzkraft F_L auf das Elektron (rot);
