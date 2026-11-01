@@ -131,18 +131,22 @@ Das U-t-Diagramm lässt sich auch hier per Knopf einblenden, so lässt sich verg
 
 ### Tafel
 
-„Tafel öffnen (zeichnen)“ (unten im Bedienfeld des Erklärmodus) öffnet eine große Zeichentafel mit dem Bild
-`bilder/tafel.svg`: oben die Leiterschleife zwischen Nord- und Südpol in den Stellungen φ = 0°, 90°, 180°, 270°
-und 360° (Blick entlang der Welle von rechts, Längsseite A ausgefüllt, B hohl, Drehsinn wie in der Simulation),
-darunter ein leeres U-t-Diagramm. Die Zeitmarken 0, T/4, T/2, 3T/4 und T stehen genau unter den Bildern
-(gestrichelte Hilfslinien): Aus den Stellungen – Schleife waagrecht: U = 0, Schleife senkrecht: |U| am größten –
-lässt sich die Sinuskurve punktweise einzeichnen.
+„Tafel öffnen (zeichnen)“ (unten im Bedienfeld des Erklärmodus) öffnet eine große Zeichentafel mit zwei Seiten
+(Knöpfe in der Werkzeugleiste):
 
-**Seite 2** (Knopf „Seite 2: 3D-Modell“ in der Werkzeugleiste, `bilder/tafel2.svg`): dieselbe Aufteilung, oben
-aber Screenshots des 3D-Modells im Erklärmodus in den fünf Stellungen – nur mit dem einzelnen Elektron in
-Längsseite A (weißer Rand), ohne Feldlinien und Pfeile. So lassen sich B, v und die Lorentzkraft direkt an das
-Elektron zeichnen. Die Bilder stecken als JPEG in der SVG-Datei: Nahaufnahmen der Schleife mit gerundeten Ecken (Elektron in der
-Mitte der Längsseite A; 90° von der anderen Seite aufgenommen; für 360° steht dasselbe Bild wie für 0°). Beide Seiten werden zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite.
+- **Seite 1: 3D-Modell** (`bilder/tafel.svg`): Screenshots des 3D-Modells im Erklärmodus in den Stellungen φ = 0°,
+  90°, 180°, 270° und 360°, groß in zwei Reihen (oben drei, darunter zwei), jeweils mit der Gradzahl darunter – nur
+  mit dem einzelnen Elektron in Längsseite A (weißer Rand), ohne Feldlinien und Pfeile. So lassen sich B, v und die
+  Lorentzkraft direkt an das Elektron zeichnen.
+- **Seite 2: U-t-Diagramm** (`bilder/tafel2.svg`): dieselben fünf Bilder kleiner nebeneinander, darunter ein leeres
+  U-t-Diagramm. Die Zeitmarken 0, T/4, T/2, 3T/4 und T stehen genau unter den Bildern (gestrichelte Hilfslinien):
+  Aus den Stellungen – Schleife waagrecht: U = 0, Schleife senkrecht: |U| am größten – lässt sich die Sinuskurve
+  punktweise einzeichnen.
+
+Die Bilder stecken als JPEG in den SVG-Dateien: Nahaufnahmen der Schleife mit gerundeten Ecken (Elektron in der Mitte
+der Längsseite A; 90° von der anderen Seite aufgenommen; für 360° steht dasselbe Bild wie für 0°). Beide Seiten werden
+zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite. Bis Ende Oktober 2026 zeigte Seite 1 ein
+gezeichnetes Schema mit U-t-Diagramm; ältere Zeichnungen auf Seite 1 passen nicht mehr zum neuen Bild.
 
 Zeichnen mit Apple Pencil, Finger oder Maus; über den
 Abgabe-Server können Schüler ihre Zeichnung an die Lehrkraft schicken (gemeinsamer Baustein der Website,
@@ -255,8 +259,8 @@ lädt, muss der Webserver im Ordner `website/` laufen, nicht im Ordner der Simul
 generator-leiterschleife/
 ├── index.html          # Seitengerüst, Bedienfeld, Diagramm
 ├── css/style.css
-├── bilder/tafel.svg    # Tafelbild Seite 1: Schleife in fünf Stellungen, leeres U-t-Diagramm
-├── bilder/tafel2.svg   # Tafelbild Seite 2: dieselben Stellungen als Bilder des 3D-Modells
+├── bilder/tafel.svg    # Tafelbild Seite 1: 3D-Modell in fünf Stellungen, groß
+├── bilder/tafel2.svg   # Tafelbild Seite 2: dieselben Bilder kleiner, leeres U-t-Diagramm
 ├── js/
 │   ├── main.js         # Start, Render-Schleife, Tafel einrichten (gemeinsam/tafel/)
 │   ├── config.js       # Maße und Modellgrößen

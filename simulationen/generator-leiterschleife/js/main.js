@@ -18,21 +18,21 @@ import { initLaser, laserKnopf } from '../../../gemeinsam/laser/laser.js';
 import { initLiveSteuerung, zuschauen, ansichtUebernehmen } from './live.js';
 
 initUi();
-// Tafel im Erklärmodus: Schleife in fünf Stellungen, darunter ein leeres U-t-Diagramm zum Einzeichnen
-// der Sinuskurve; Seite 2 zeigt dieselben Stellungen als Bilder des 3D-Modells mit dem einzelnen Elektron
-// (dort lassen sich B, v und F_L direkt einzeichnen). Mit Abgabe an die Lehrkraft, wenn die Seite über den Abgabe-Server läuft
+// Tafel im Erklärmodus: Seite 1 zeigt die Schleife in fünf Stellungen groß als Bilder des 3D-Modells mit dem
+// einzelnen Elektron (dort lassen sich B, v und F_L direkt einzeichnen); Seite 2 dieselben Bilder kleiner, darunter
+// ein leeres U-t-Diagramm zum Einzeichnen der Sinuskurve. Mit Abgabe an die Lehrkraft, wenn die Seite über den Abgabe-Server läuft
 initTafel({
   id: 'generator-leiterschleife',
   seiten: [
     {
       bild: 'bilder/tafel.svg',
-      bildText: 'Leiterschleife zwischen Nord- und Südpol in den Stellungen 0°, 90°, 180°, 270° und 360°, darunter ein leeres U-t-Diagramm',
-      titel: 'Seite 1: Schema',
+      bildText: 'Generator im 3D-Modell in den Stellungen 0°, 90°, 180°, 270° und 360° mit einem einzelnen Elektron in Längsseite A, große Bilder in zwei Reihen',
+      titel: 'Seite 1: 3D-Modell',
     },
     {
       bild: 'bilder/tafel2.svg',
       bildText: 'Generator im 3D-Modell in den Stellungen 0°, 90°, 180°, 270° und 360° mit einem einzelnen Elektron in Längsseite A, darunter ein leeres U-t-Diagramm',
-      titel: 'Seite 2: 3D-Modell',
+      titel: 'Seite 2: U-t-Diagramm',
     },
   ],
   seitenverhaeltnis: 1.6,
