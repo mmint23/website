@@ -65,6 +65,20 @@ ausgeblendet („Magnetfeld (Feldlinien)“ blendet sie ein) – gerechnet wird 
   umdrehen (N ↔ S). **Spule:** 1, 300, 600 oder 1200 Windungen (dichter gewickelt, dünnerer Draht); bei 1 steht
   statt der Spule eine einzelne Leiterschleife da (Drahtring mit dem Radius der Wicklung, Anschlüsse A und E dicht
   nebeneinander darüber).
+- **Zweiter Magnet** (Knopf im Abschnitt Magnet): ein zweiter Stabmagnet gleicher Stärke, zu Beginn rechts der Spule
+  (ist dort kein Platz, darüber oder darunter). Er lässt sich ziehen, mit eigenem Regler drehen und umdrehen
+  („Magnet 2 umdrehen“). Die Magnete durchdringen sich nicht. Mit zwei Magneten gibt es **keine Feldlinien** (die
+  Überlagerung wird nicht gezeichnet, der Haken ist ausgegraut); Spannung, Zeiger, B-Pfeil und Diagramme rechnen mit
+  beiden Magneten (Fluss addiert). Der Bildausschnitt wird dafür etwas breiter.
+- **Mehrere Umdrehungen (bis 4 × 360°)** (Knopf über dem Drehregler der Spule): Der Regler reicht dann von −1440°
+  bis +1440° statt ±180° – so lässt sich die Spule mehrmals hintereinander drehen. Beim Ausschalten springt die
+  Anzeige auf denselben Stand innerhalb einer Umdrehung (−180° … 180°), ohne Spannungsstoß.
+- **Verdrillte Kabel:** Stecken beide Stecker im Messgerät, verlassen die Kabel die Spule hinten auf ihrer
+  Drehachse und laufen als Paar hinter der Spule in einem Bogen zum Messgerät. Dreht man die Spule, verdrillen sie sich umeinander –
+  je Umdrehung eine Windung, bei 4 × 360° also viermal (gezählt ab dem Einstecken; „Kabel abziehen“ oder ein
+  herausgezogener Stecker löst die Verdrillung). Lerneffekt: Eine Spule mit fest angeschlossenen Kabeln lässt sich
+  nicht beliebig weiterdrehen – beim Generator lösen das Schleifringe. Die Verdrillung geht in der Live-Steuerung
+  mit (`kabel.js`).
 - **Magnet und Spule zurück an den Start** (Lage und Drehung; die Kabel bleiben gesteckt).
 - **Ganz oben im Bedienfeld:** „Reale Physik“ (statt Feldlinienmodell), Magnetfeld (Feldlinien mit Pfeilen; Spule
   und Magnet werden dafür halb durchsichtig) und „Feldlinien im Inneren der Spule färben“ (violett; nur mit
@@ -109,6 +123,8 @@ Pages) ist davon nichts zu sehen.
   halb eingetauchtem Magneten größer als im echten Feld; qualitativ (Vorzeichen, wann, schneller → mehr) stimmt es.
   B-Pfeil und B–t-Diagramm folgen in diesem Modell ebenfalls den Feldlinien.
 - Beim Ziehen folgt das Teil dem Finger mit 0,03 s Verzögerung; losgelassen bleibt es stehen.
+- Zwei Magnete: Der Fluss durch die Spule ist die Summe der Flüsse beider Magnete (im echten Modell exakt, im
+  Feldlinienmodell als Summe der Linien beider Magnete).
 - „Magnet umdrehen“ gilt als sofort – ohne Spannungsstoß; ebenso das Umschalten von Stärke und Windungszahl. (Wer
   den Magneten mit dem Regler dreht, bekommt den Spannungsstoß.)
 

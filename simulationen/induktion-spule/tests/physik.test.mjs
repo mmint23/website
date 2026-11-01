@@ -364,3 +364,34 @@ test('Zeiger ohne Skala: nur angeschlossen, vertauscht in die andere Richtung', 
   near(needleTarget(), -richtig, 1e-12);
   endDrag('magnet');
 });
+
+test('zweiter Magnet: Fluss addiert sich, Gegenpole heben sich auf, Magnete durchdringen sich nicht', async () => {
+  const { coilFlux, magnetsCollide, zweitenMagnetenSetzen } = await import('../js/physik.js');
+  const fluss = setup => {
+    resetPhysics();
+    Object.assign(state, { lineModel: false, turns: 600, strength: 'medium', northRight: true, northRight2: true, secondMagnet: false, ...setup });
+    bodies.magnet.x = bodies.magnet.target = -11;
+    if (state.secondMagnet) Object.assign(bodies.magnet2, { x: 27, target: 27, y: 0, yTarget: 0 });
+    stepPhysics(DT);
+    return coilFlux();
+  };
+  // Spule bei x = 8: Magnet 1 bei −11 und Magnet 2 bei 27 liegen symmetrisch
+  const einer = fluss({});
+  const gleich = fluss({ secondMagnet: true, northRight2: true });
+  const gegen = fluss({ secondMagnet: true, northRight2: false });
+  assert.ok(Math.abs(einer) > 1e-7);
+  near(gleich + gegen, 2 * einer, 1e-6 * Math.abs(einer), 'Summe der beiden Flüsse');
+  assert.ok(Math.abs(gleich) < 0.05 * Math.abs(einer) || Math.abs(gegen) < 0.05 * Math.abs(einer), 'symmetrisch: eine Polung hebt sich auf');
+  // Magnete durchdringen sich nicht
+  assert.ok(magnetsCollide({ x: 0, y: 0, angle: 0 }, { x: 5, y: 0, angle: 0 }));
+  assert.ok(!magnetsCollide({ x: 0, y: 0, angle: 0 }, { x: 11, y: 0, angle: 0 }));
+  assert.ok(magnetsCollide({ x: 0, y: 0, angle: 0 }, { x: 0, y: 1, angle: Math.PI / 2 }));
+  state.secondMagnet = true;
+  zweitenMagnetenSetzen();
+  bodies.magnet2.target = bodies.magnet.x;   // auf Magnet 1 zuziehen: bleibt vorher stehen
+  bodies.magnet2.yTarget = bodies.magnet.y;
+  for (let i = 0; i < 400; i++) stepPhysics(DT);
+  assert.ok(!magnetsCollide(bodies.magnet, bodies.magnet2), 'stehen nebeneinander, nicht ineinander');
+  Object.assign(state, { secondMagnet: false, northRight2: true, lineModel: true });
+  resetPhysics();
+});

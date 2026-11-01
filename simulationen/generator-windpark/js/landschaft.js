@@ -137,32 +137,50 @@ function makeTag(text) {
 
 // Innenleben der Gondel (nur beim Blick hinein sichtbar): Rotorwelle und direkt dahinter ein Innenpolgenerator wie in
 // der Simulation Innenpolgenerator (Generator ohne Getriebe): Auf der Welle dreht sich mit dem Rotor ein Stabmagnet
-// (Polrad, Nordpol rot, Südpol grün), außen stehen sechs Spulen mit Eisenkern auf einem Eisenring fest.
+// (Polrad, Nordpol rot, Südpol grün), rechts und links davon stehen zwei Spulen mit Eisenkern fest. Aus jeder Spule
+// laufen zwei Kabel außen an der Spule vorbei nach unten in den Turm.
 const copperMat = new THREE.MeshStandardMaterial({ color: 0xc46a2b, metalness: 0.8, roughness: 0.35 });
+const turnMat = new THREE.MeshStandardMaterial({ color: 0x8a4318, metalness: 0.7, roughness: 0.4 });
 const statorMat = new THREE.MeshStandardMaterial({ color: 0x6b7480, metalness: 0.6, roughness: 0.4 });
 const shaftMat = new THREE.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 1, roughness: 0.3 });
+const kabelMat = new THREE.MeshStandardMaterial({ color: 0x23262b, roughness: 0.7 });
 const northMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.45 });
 const southMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.45 });
-const GEN = { Z: 1.4, Y: 1.6, MAGNET: 1.8, KERN_INNEN: 1.05, KERN_AUSSEN: 1.85, SPULEN: 6 };   // in der Gondel, m
+const GEN = { Z: 1.4, Y: 1.6, MAGNET: 1.8, KERN_INNEN: 1.05, KERN_AUSSEN: 1.85, WICKLUNG_R: 0.42, WINDUNGEN: 7 };   // in der Gondel, m
+// Kabelverlauf der rechten Spule (Ständer-Koordinaten, Spule entlang +x): vom äußeren Wicklungsende außen an der Spule
+// vorbei nach unten, dann unter dem Generator zur Turmmitte und in den Turm hinein (Turmkopf bei y = −GEN.Y, z = −GEN.Z)
+const KABEL = [[1.68, -0.4, 0], [1.98, -0.75, 0], [1.98, -1.45, -0.2], [1.3, -1.95, -0.8], [0.55, -2.4, -1.25], [0.45, -5, -1.35]];
 function buildInterior(nacelle, rotor) {
   const inside = new THREE.Group();
   inside.visible = false;
   nacelle.add(inside);
-  // Ständer: Spulen mit Eisenkern, radial zur Welle, auf einem dünnen Eisenring (fest in der Gondel)
+  // Ständer: zwei gegenüberliegende Spulen mit Eisenkern, radial zur Welle (fest in der Gondel)
   const staender = new THREE.Group();
   staender.position.set(0, GEN.Y, GEN.Z);
   inside.add(staender);
-  const ring = add(new THREE.TorusGeometry(GEN.KERN_AUSSEN + 0.08, 0.1, 10, 48), statorMat, staender, false);
-  ring.scale.z = 3;   // flaches Band statt dünnem Ring
   const kernLaenge = GEN.KERN_AUSSEN - GEN.KERN_INNEN;
-  for (let k = 0; k < GEN.SPULEN; k++) {
+  const wicklungLaenge = kernLaenge * 0.7, wicklungMitte = GEN.KERN_INNEN + kernLaenge * 0.55;
+  for (const seite of [1, -1]) {
     const spule = new THREE.Group();
-    spule.rotation.z = k * 2 * Math.PI / GEN.SPULEN;
+    spule.rotation.z = -seite * Math.PI / 2;   // +y der Spule zeigt nach rechts (seite = 1) bzw. links
     staender.add(spule);
-    const kern = add(new THREE.CylinderGeometry(0.17, 0.17, kernLaenge, 12), statorMat, spule, false);
+    const kern = add(new THREE.CylinderGeometry(0.2, 0.2, kernLaenge, 16), statorMat, spule, false);
     kern.position.y = GEN.KERN_INNEN + kernLaenge / 2;
-    const wicklung = add(new THREE.CylinderGeometry(0.3, 0.3, kernLaenge * 0.6, 16), copperMat, spule, false);
-    wicklung.position.y = GEN.KERN_INNEN + kernLaenge * 0.55;
+    // Polschuh: breitere Platte am inneren Kernende, zum Magneten hin
+    add(new THREE.BoxGeometry(0.7, 0.08, 0.6), statorMat, spule, false).position.y = GEN.KERN_INNEN + 0.04;
+    const wicklung = add(new THREE.CylinderGeometry(GEN.WICKLUNG_R - 0.03, GEN.WICKLUNG_R - 0.03, wicklungLaenge, 20), copperMat, spule, false);
+    wicklung.position.y = wicklungMitte;
+    // einzelne Windungen als Wülste, damit man die Spule als Spule erkennt
+    for (let w = 0; w < GEN.WINDUNGEN; w++) {
+      const windung = add(new THREE.TorusGeometry(GEN.WICKLUNG_R - 0.02, 0.045, 8, 28), turnMat, spule, false);
+      windung.rotation.x = Math.PI / 2;
+      windung.position.y = wicklungMitte - wicklungLaenge / 2 + (w + 0.5) * wicklungLaenge / GEN.WINDUNGEN;
+    }
+    // zwei Kabel (Anfang und Ende der Wicklung) nebeneinander nach unten in den Turm
+    for (const dz of [-0.1, 0.1]) {
+      const punkte = KABEL.map(([x, y, z]) => new THREE.Vector3(seite * x, y, z + dz));
+      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(punkte), 48, 0.05, 8, false), kabelMat, staender, false);
+    }
   }
   // Polrad: dreht mit dem Rotor (in dessen Koordinaten; die Gondel-Mitte des Generators liegt bei z = GEN.Z)
   const spin = new THREE.Group();

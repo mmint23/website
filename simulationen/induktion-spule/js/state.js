@@ -10,6 +10,9 @@ export const state = {
   // 'com', 'v', 'ma', 'a' (Multimeter) – oder null (nicht eingesteckt). Zu Beginn steckt nichts.
   plugs: { red: null, black: null },
   northRight: true,   // Nordpol des Magneten rechts (bei Drehwinkel 0)
+  secondMagnet: false, // zweiter Stabmagnet (gleiche Stärke); dann keine Feldlinien (Überlagerung nicht gezeichnet)
+  northRight2: true,  // Nordpol des zweiten Magneten rechts (bei Drehwinkel 0)
+  manyTurns: false,   // Drehregler der Spule bis ±4 · 360° statt ±180°
   strength: 'medium', // Stärke des Magneten (STRENGTHS in config.js)
   turns: 600,         // Windungszahl der Spule (TURNS in config.js); 1: einzelne Leiterschleife
   freeMove: true,     // Magnet und Spule auch nach oben und unten verschieben (in der Simulation immer; false nur in Tests)

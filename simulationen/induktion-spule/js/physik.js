@@ -9,6 +9,9 @@
 // gleichmäßig verteilte Windungen, jede als Vieleck mit SEGMENTS Seiten – die Leiterschleife (Windungszahl 1) als
 // eine einzige Windung in ihrer Mitte.
 //
+// Zweiter Magnet (state.secondMagnet): Der Fluss beider Magnete durch die Spule wird addiert (im echten Modell
+// genau so, im Feldlinienmodell als Summe der Linien beider Magnete). Die Magnete durchdringen sich nicht.
+//
 // Magnet und Spule folgen beim Ziehen dem Finger (FOLLOW_TIME) bzw. beim Drehen dem Regler (TURN_TIME) und
 // bleiben beim Loslassen stehen. Ein Schritt, der den Magneten in die Wicklung schieben würde, wird nicht gemacht.
 // Messgeräte zeigen nur etwas, wenn die Stecker in den passenden Buchsen stecken (connection).
@@ -31,7 +34,9 @@ const TWO_PI = 2 * Math.PI;
 // Lage (x, y der Mitte in cm), Drehwinkel in rad (gegen den Uhrzeigersinn, in der Bildebene), Ziele beim Ziehen
 // bzw. Drehen. Magnet bei 0: Nordpol rechts (bzw. links, wenn umgedreht); Spule bei 0: Achse waagrecht.
 const startLage = name => ({ x: START[name], target: START[name], y: 0, yTarget: 0, angle: 0, angleTarget: 0, dragging: false });
-export const bodies = { magnet: startLage('magnet'), coil: startLage('coil') };
+export const bodies = { magnet: startLage('magnet'), coil: startLage('coil'), magnet2: startLage('magnet2') };
+// Magnete, die gerade da sind
+export const magnete = () => (state.secondMagnet ? ['magnet', 'magnet2'] : ['magnet']);
 export const needle = { pos: 0, vel: 0 };
 export const clock = { t: 0 };
 export const multimeter = { reading: null, next: 0 };   // angezeigter Wert (null: aus), Zeit des nächsten Messwerts
@@ -82,8 +87,9 @@ export function fluxPerTurn(magnet, coil) {
   return pro * summe / lagen.length;
 }
 
-const magnetPose = () => ({
-  x: bodies.magnet.x, y: bodies.magnet.y, angle: bodies.magnet.angle, north: state.northRight ? 1 : -1, B: STRENGTHS[state.strength].B,
+const magnetPose = (name = 'magnet') => ({
+  x: bodies[name].x, y: bodies[name].y, angle: bodies[name].angle,
+  north: (name === 'magnet' ? state.northRight : state.northRight2) ? 1 : -1, B: STRENGTHS[state.strength].B,
 });
 const coilPose = () => ({ x: bodies.coil.x, y: bodies.coil.y, angle: bodies.coil.angle, loop: Boolean(TURNS[state.turns].loop) });
 
@@ -123,6 +129,23 @@ function imSpulenkoerper(along, quer, z, loop) {
   if (Math.abs(along) > LOOP.TERMINAL_X + 0.6) return false;
   if (Math.abs(along) <= draht && Math.abs(rho - COIL.R_WIND) <= draht) return true;          // Ring
   return quer >= COIL.R_WIND - draht && quer <= LOOP.TERMINAL_Y + 0.5 && Math.abs(z) <= 0.5;  // Zuleitungen, Anschlüsse
+}
+
+// Zwei Magnete überlappen sich? (Rechtecke in der Bildebene, Trennachsen-Test)
+export function magnetsCollide(a, b) {
+  const ecken = m => {
+    const ux = Math.cos(m.angle), uy = Math.sin(m.angle), l = MAGNET.LENGTH / 2, w = MAGNET.WIDTH / 2;
+    return [[l, w], [l, -w], [-l, w], [-l, -w]].map(([s, t]) => [m.x + ux * s - uy * t, (m.y ?? 0) + uy * s + ux * t]);
+  };
+  const pa = ecken(a), pb = ecken(b);
+  for (const m of [a, b]) {
+    for (const [ax, ay] of [[Math.cos(m.angle), Math.sin(m.angle)], [-Math.sin(m.angle), Math.cos(m.angle)]]) {
+      const proj = ps => ps.map(([x, y]) => x * ax + y * ay);
+      const [qa, qb] = [proj(pa), proj(pb)];
+      if (Math.max(...qa) < Math.min(...qb) || Math.max(...qb) < Math.min(...qa)) return false;
+    }
+  }
+  return true;
 }
 
 export function collides(magnet, coil) {
@@ -165,6 +188,14 @@ export function turnTo(name, angle) {
 // Fluss springt, ohne dass etwas bewegt wurde (Magnet umgedreht, Stärke oder Windungszahl geändert):
 // kein Spannungsstoß in der Rechnung
 export const fluxChanged = () => { linkage = null; };
+
+// Zweiten Magneten dazustellen: an seinen Startplatz rechts der Spule – ist dort kein Platz, darüber oder darunter
+export function zweitenMagnetenSetzen() {
+  for (const [x, y] of [[START.magnet2, 0], [START.magnet2, 7], [START.magnet2, -7], [X_MIN + 6, 7], [X_MIN + 6, -7], [0, 8]]) {
+    Object.assign(bodies.magnet2, startLage('magnet2'), { x, target: x, y, yTarget: y });
+    if (!stoesst('magnet2')) return;
+  }
+}
 
 export function resetPhysics() {
   for (const [name, body] of Object.entries(bodies)) Object.assign(body, startLage(name));
@@ -218,11 +249,17 @@ export const multimeterRefresh = () => { multimeter.next = clock.t; };
 
 // Ein Schritt in die Wicklung wird nicht gemacht; beim schrägen Ziehen gleitet das Teil dann an der Spule entlang
 // (nur der Anteil in x bzw. nur der in y)
-function stepBodies(h) {
-  const [m, c] = [bodies.magnet, bodies.coil];
+// Stößt body (Name) in seiner jetzigen Lage an ein anderes Teil? (Magnet–Spule und Magnet–Magnet)
+function stoesst(name) {
   const loop = Boolean(TURNS[state.turns].loop);
-  const lage = body => ({ ...body, loop });
-  for (const body of [m, c]) {
+  const spule = { ...bodies.coil, loop };
+  if (name === 'coil') return magnete().some(m => collides(bodies[m], spule));
+  return collides(bodies[name], spule) || magnete().some(m => m !== name && magnetsCollide(bodies[name], bodies[m]));
+}
+
+function stepBodies(h) {
+  for (const name of [...magnete(), 'coil']) {
+    const body = bodies[name];
     const vorher = { x: body.x, y: body.y, angle: body.angle };
     const folgen = Math.min(1, h / FOLLOW_TIME);
     let x = body.x + (body.target - body.x) * folgen;
@@ -231,11 +268,9 @@ function stepBodies(h) {
     if (Math.abs(body.target - x) < 1e-4) x = body.target;
     if (Math.abs(body.yTarget - y) < 1e-4) y = body.yTarget;
     if (Math.abs(body.angleTarget - angle) < 1e-5) angle = body.angleTarget;
-    const andere = body === m ? c : m;
     const frei = probe => {
       Object.assign(body, probe);
-      const [a, b] = body === m ? [lage(body), lage(andere)] : [lage(andere), lage(body)];
-      return !collides(a, b);
+      return !stoesst(name);
     };
     // steckt schon fest (Spule gewechselt, während der Magnet schräg in der Leiterschleife war): frei bewegen lassen
     if (!frei(vorher)) {
@@ -271,12 +306,12 @@ export function stepPhysics(dt) {
   if (dt <= 0) return;
   const SUBSTEPS = 8, h = dt / SUBSTEPS;
   for (let i = 0; i < SUBSTEPS; i++) stepBodies(h);
-  // Fluss nur neu rechnen, wenn sich etwas geändert hat
-  const pose = magnetPose(), coil = coilPose();
-  const key = [pose.x, pose.y, pose.angle, pose.north, pose.B, coil.x, coil.y, coil.angle, coil.loop, state.lineModel].join(' ');
+  // Fluss nur neu rechnen, wenn sich etwas geändert hat; bei zwei Magneten die Summe
+  const posen = magnete().map(magnetPose), coil = coilPose();
+  const key = [...posen.flatMap(p => [p.x, p.y, p.angle, p.north, p.B]), coil.x, coil.y, coil.angle, coil.loop, state.lineModel].join(' ');
   if (key !== fluxKey) {
     fluxKey = key;
-    flux = state.lineModel ? fluxFromLines(pose, coil, state.strength) : fluxPerTurn(pose, coil);
+    flux = posen.reduce((summe, pose) => summe + (state.lineModel ? fluxFromLines(pose, coil, state.strength) : fluxPerTurn(pose, coil)), 0);
   }
   const now = state.turns * flux;
   voltage = linkage === null ? 0 : (linkage - now) / dt;   // = −dΨ/dt (so geschrieben, damit in Ruhe 0 statt −0 steht)

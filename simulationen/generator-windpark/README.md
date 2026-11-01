@@ -35,7 +35,7 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator
   (Schild „Innenpolgenerator“). Dargestellt ist ein Generator ohne Getriebe wie in der Simulation
   Innenpolgenerator: Auf der Rotorwelle dreht sich mit dem Rotor ein Stabmagnet (Polrad, Nordpol rot, Südpol grün),
-  außen stehen sechs Spulen mit Eisenkern auf einem Eisenring fest. Die Ansicht
+  rechts und links davon stehen zwei Spulen mit Eisenkern fest, aus denen Kabel nach unten in den Turm laufen. Die Ansicht
   bleibt stehen, bis noch einmal getippt wird (Hinweis unten); dann wird ausgeblendet und die Simulation
   **Innenpolgenerator** geöffnet (eigene Seite; so sind getriebelose Windkraftgeneratoren gebaut: das Magnetfeld
   dreht sich innen, die Spulen stehen außen fest). Wind und Uhrzeit gehen in der Adresse mit; „Zurück zum
@@ -49,6 +49,17 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   bleiben auch aus der Ferne gleich groß.
 - Alles ist aus einfachen Formen gebaut (keine geladenen 3D-Modelle), damit es schnell lädt und auf Tablets
   flüssig läuft.
+
+## Als Lehrerseite (Live-Steuerung und Teilen in einem Tab)
+
+Der Windpark selbst hat keine Live-Steuerung. Über den Abgabe-Server (im Ordner `website/` `npm start`) als
+Lehrerseite geöffnet – <http://localhost:8080/lehrer/generator-windpark> bzw. auf dem iPad
+`http://<Laptop-IP>:8080/lehrer/generator-windpark` – gibt er beim Wechsel `lehrer` und den Raumcode an
+Generator-Modell und Innenpolgenerator weiter (`uebergang.js`), und „← Zurück zum Windpark“ bringt beides wieder mit.
+Beide Simulationen sind dann gleich Lehrerseite (Live-Steuerung, Abgaben, QR-Codes mit Raumcode), immer im selben
+Raum – kein zweiter Tab nötig. Steuert gerade ein Schüler, ist auch „Zurück zum Windpark“ gesperrt: erst „Ich
+steuere“. Ein verbundenes Schülergerät bleibt verbunden, solange die Lehrkraft im Windpark ist (es sieht dann „Die
+Lehrkraft steuert gerade“); zurück im Innenpolgenerator gibt „Schüler steuert“ ohne neues Scannen wieder ab.
 
 ## Starten
 

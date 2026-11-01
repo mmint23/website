@@ -1,13 +1,14 @@
 // ------------------------------------------------------------------
 // Bedienfeld: ganz oben reale Physik statt Feldlinienmodell; Messgerät (Zeiger mit oder ohne Skala oder Multimeter,
-// Messbereich, Kabel abziehen), Magnet (Stärke, Drehung, umdrehen), Spule (Windungszahl bzw. einzelne
-// Leiterschleife, Drehung), Lagen zurücksetzen, Anzeigen (Feldlinien, B im Spuleninneren, Diagramme)
+// Messbereich, Kabel abziehen), Magnet (Stärke, Drehung, umdrehen; zweiter Magnet mit eigener Drehung), Spule
+// (Windungszahl bzw. einzelne Leiterschleife, Drehung – auf Wunsch bis ±4 · 360°), Lagen zurücksetzen, Anzeigen
+// (Feldlinien – nur mit einem Magneten –, B im Spuleninneren, Diagramme)
 // ------------------------------------------------------------------
 import { METER, STRENGTHS, TURNS, rangeText } from './config.js';
 import { state } from './state.js';
-import { bodies, fluxChanged, resetPhysics, turnTo } from './physik.js';
+import { bodies, fluxChanged, resetPhysics, turnTo, zweitenMagnetenSetzen } from './physik.js';
 import { updateMeterFace } from './messgeraet.js';
-import { ausstecken } from './kabel.js';
+import { ausstecken, drallVerschieben } from './kabel.js';
 import { clearPlot } from './diagramm.js';
 import { fitView, controls } from './szene.js';
 import { showLink } from '../../../gemeinsam/link.js';
@@ -31,9 +32,20 @@ export function updateUi() {
   for (const button of $('strengthButtons').children) segment(button.id, button.dataset.strength === state.strength);
   for (const button of $('turnsButtons').children) segment(button.id, Number(button.dataset.turns) === state.turns);
   $('coilStatus').textContent = TURNS[state.turns].loop ? 'Einzelne Leiterschleife (1 Windung)' : `Spule mit ${state.turns} Windungen`;
-  $('magnetStatus').textContent = state.northRight ? 'Nordpol (rot) rechts, Südpol (grün) links' : 'Nordpol (rot) links, Südpol (grün) rechts';
+  const pole = rechts => (rechts ? 'Nordpol (rot) rechts, Südpol (grün) links' : 'Nordpol (rot) links, Südpol (grün) rechts');
+  $('magnetStatus').textContent = pole(state.northRight);
+  segment('secondMagnetBtn', state.secondMagnet);
+  $('magnet2Box').hidden = !state.secondMagnet;
+  $('magnet2Status').textContent = pole(state.northRight2);
+  // Feldlinien nur mit einem Magneten (die Überlagerung zweier Magnete wird nicht gezeichnet)
+  $('fieldCheck').disabled = state.secondMagnet;
+  $('fieldInfo').hidden = !state.secondMagnet;
+  // Drehregler der Spule: ±180° oder ±4 · 360°
+  segment('manyTurnsBtn', state.manyTurns);
+  const grenze = state.manyTurns ? 4 * 360 : 180;
+  Object.assign($('coilAngle'), { min: -grenze, max: grenze });
   for (const [id, key] of CHECKS) $(id).checked = state[key];
-  $('insideCheck').disabled = !state.showField;   // färben geht nur bei eingeblendeten Feldlinien
+  $('insideCheck').disabled = !state.showField || state.secondMagnet;   // färben nur bei eingeblendeten Feldlinien
   $('lineModelBtn').setAttribute('aria-pressed', String(!state.lineModel));   // gedrückt: reale Physik
   $('lineModelInfo').hidden = !state.lineModel;
   $('realInfo').hidden = state.lineModel;
@@ -44,7 +56,9 @@ export function updateUi() {
 // ---------------- Startansicht
 
 // Magnet, Spule und Messgerät in der Bildebene (cm)
-const INHALT = { x: -4, y: 7, w: 52, h: 28 };
+const INHALT_EIN = { x: -4, y: 7, w: 52, h: 28 };
+const INHALT_ZWEI = { x: -1, y: 7, w: 58, h: 28 };   // mit dem zweiten Magneten rechts der Spule (bis x ≈ 25)
+const inhalt = () => (state.secondMagnet ? INHALT_ZWEI : INHALT_EIN);
 let verschoben = false;   // hat jemand die Ansicht gedreht oder gezoomt? Dann beim Größenwechsel nicht neu einpassen
 
 // Freie Fläche zwischen Überschrift, Bedienfeld, Diagrammen und Hinweis
@@ -60,14 +74,14 @@ function freieFlaeche() {
   const right = panel.left - 12;
   const unten = hint.offsetParent ? rect(hint).top - 8 : H - 16;
   if (!plot) return flaeche(16, right, unten);
-  const groesse = f => Math.min(f.w / INHALT.w, f.h / INHALT.h);
+  const groesse = f => Math.min(f.w / inhalt().w, f.h / inhalt().h);
   const daneben = flaeche(plot.right + 12, right, unten), darueber = flaeche(16, right, plot.top - 8);
   return groesse(darueber) > groesse(daneben) ? darueber : daneben;
 }
 
 function resetView() {
   verschoben = false;
-  fitView(freieFlaeche(), INHALT);
+  fitView(freieFlaeche(), inhalt());
 }
 
 // Knöpfe einer Auswahl anlegen: werte [[Wert, Text], …], beim Klick wählen(Wert)
@@ -85,7 +99,7 @@ function auswahl(id, werte, attribut, waehlen) {
 
 // ---------------- Drehregler: folgen dem tatsächlichen Winkel, solange man sie nicht selbst bedient
 
-const REGLER = [['magnetAngle', 'magnet'], ['coilAngle', 'coil']];
+const REGLER = [['magnetAngle', 'magnet'], ['magnet2Angle', 'magnet2'], ['coilAngle', 'coil']];
 const bedient = new Set();
 const grad = rad => Math.round(rad * 180 / Math.PI);
 
@@ -140,6 +154,33 @@ export function initUi() {
   $('flipBtn').addEventListener('click', () => {
     state.northRight = !state.northRight;
     fluxChanged();
+    updateUi();
+  });
+  $('flip2Btn').addEventListener('click', () => {
+    state.northRight2 = !state.northRight2;
+    fluxChanged();
+    updateUi();
+  });
+  // Zweiter Magnet dazu bzw. weg; mit zwei Magneten keine Feldlinien
+  $('secondMagnetBtn').addEventListener('click', () => {
+    state.secondMagnet = !state.secondMagnet;
+    if (state.secondMagnet) {
+      zweitenMagnetenSetzen();
+      Object.assign(state, { showField: false, colorInside: false });
+    }
+    fluxChanged();
+    updateUi();
+    if (!verschoben) resetView();   // Bildausschnitt mit bzw. ohne zweiten Magneten
+  });
+  // Spule über mehrere Umdrehungen drehen; zurück auf ±180°: Winkel auf denselben Stand innerhalb einer Umdrehung
+  $('manyTurnsBtn').addEventListener('click', () => {
+    state.manyTurns = !state.manyTurns;
+    if (!state.manyTurns) {
+      const coil = bodies.coil, voll = 2 * Math.PI * Math.round(coil.angle / (2 * Math.PI));
+      coil.angle -= voll;
+      coil.angleTarget -= voll;
+      drallVerschieben(voll);   // die Kabel bleiben so verdrillt, wie sie sind
+    }
     updateUi();
   });
   $('resetBtn').addEventListener('click', () => {

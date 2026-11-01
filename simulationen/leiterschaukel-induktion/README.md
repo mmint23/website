@@ -133,6 +133,7 @@ der Simulation und an der Tafel ändert sich nichts.
   auszuschalten.
 - Die Markierung ist nur auf dem eigenen Gerät zu sehen (für die Klasse: iPad per AirPlay/Kabel auf den Beamer
   spiegeln). Läuft vollständig im Browser, also auch auf GitHub Pages ohne Abgabe-Server.
+- Gemeinsamer Baustein der Website (`gemeinsam/laser/`), genauso im Generator-Modell und im Innenpolgenerator.
 
 ## Link zeigen
 
@@ -222,7 +223,6 @@ leiterschaukel-induktion/
 │   ├── state.js        # zentraler Zustand (Einstellungen, bewegte Teile, Ansicht)
 │   ├── tafel3d.js      # gemeinsame Tafel einrichten und als kleine Tafel in der Szene zeigen
 │   ├── live.js         # Live-Steuerung anbinden (gemeinsam/live/)
-│   ├── laser.js        # Laserpointer: Stift/Maus markieren, Spur verblasst
 │   ├── physik.js       # Schaukel, Induktionsspannung, Strom, Bremskraft, Zeiger (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Licht, Tisch
 │   ├── aufbau.js       # Stativ, Leiterschaukel, Hufeisenmagnet mit Drehgelenk

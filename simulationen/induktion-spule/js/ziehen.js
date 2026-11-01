@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { MULTI_MODES } from './config.js';
 import { state } from './state.js';
 import { bodies, startDrag, dragTo, endDrag, multimeterRefresh } from './physik.js';
-import { magnetTarget, coilTarget } from './modell.js';
+import { magnetTarget, magnet2Target, coilTarget } from './modell.js';
 import { multiKnob, updateMeterFace, meterGroup, moveMeter } from './messgeraet.js';
 import { steckerUnter, steckerGreifen, steckerZiehen, steckerLoslassen } from './kabel.js';
 import { renderer, camera, controls } from './szene.js';
@@ -21,7 +21,7 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const plane = new THREE.Plane();
 const hit = new THREE.Vector3(), blick = new THREE.Vector3();
-const ZIELE = [[magnetTarget, 'magnet'], [coilTarget, 'coil']];
+const ZIELE = [[magnetTarget, 'magnet'], [magnet2Target, 'magnet2'], [coilTarget, 'coil']];
 let aktiv = null;   // { id, name, versatz } bzw. { id, stecker } bzw. { id, geraet: true, versatz }
 
 function setRay(event) {
@@ -47,8 +47,9 @@ function lageUnterFinger(hoehe) {
 // Was liegt unter dem Finger? Der Magnet hat Vorrang: Steckt er in der Spule, greift man ihn dort (die Spule
 // dann außerhalb des Magneten, z. B. an den Flanschen)
 function gegriffen() {
-  const getroffen = new Set(raycaster.intersectObjects(ZIELE.map(([ziel]) => ziel), false).map(t => t.object));
-  return ZIELE.find(([ziel]) => getroffen.has(ziel))?.[1] ?? null;
+  const ziele = ZIELE.filter(([, name]) => name !== 'magnet2' || state.secondMagnet);   // zweiter Magnet nur, wenn da
+  const getroffen = new Set(raycaster.intersectObjects(ziele.map(([ziel]) => ziel), false).map(t => t.object));
+  return ziele.find(([ziel]) => getroffen.has(ziel))?.[1] ?? null;
 }
 
 // Messgerät unter dem Finger? Gezogen wird es auf der Ebene durch das Gerät parallel zur Bildebene
