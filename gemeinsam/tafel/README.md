@@ -2,9 +2,11 @@
 
 Gemeinsamer Baustein für alle Simulationen der Website. Eine Simulation gibt nur ein Bild vor; daraus wird:
 
-- eine **Zeichentafel** (großes Fenster) mit Apple Pencil, Finger oder Maus: Stifte, Radierer, Freihand oder
-  gerader Pfeil, Rückgängig, Alles löschen. Stiftdruck bestimmt die Strichbreite; sobald der Pencil benutzt wurde,
-  werden Finger und Handballen ignoriert. Die eigene Zeichnung bleibt im Browser gespeichert.
+- eine **Zeichentafel** (großes Fenster) mit Apple Pencil oder Maus: Stifte, Radierer, Freihand oder gerader Pfeil,
+  Rückgängig, Alles löschen. Stiftdruck bestimmt die Strichbreite. **Finger zeichnen nicht** (auch kein Handballen):
+  Mit **zwei Fingern** wird das Tafelbild gezoomt und verschoben (bis 4-fach; am Laptop Pinch auf dem Trackpad bzw.
+  Strg + Mausrad, Mausrad allein verschiebt), „Zoom zurücksetzen“ in der Werkzeugleiste. Der Zoom gilt nur auf dem
+  eigenen Gerät (auch bei der Live-Steuerung). Die eigene Zeichnung bleibt im Browser gespeichert.
 - **„Teilen“** für Schüler und eine **Lehrerseite**, die alle Abgaben live zeigt – aber nur, wenn die Seite über
   den Abgabe-Server (`website/server/`) läuft. Auf GitHub Pages ist es eine reine Zeichentafel.
 

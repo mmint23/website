@@ -1,12 +1,13 @@
 // ------------------------------------------------------------------
-// Zeichentafel: großes Fenster mit einem festen Bild der Simulation, auf dem man mit Apple Pencil, Finger oder
-// Maus zeichnet (Stifte, Radierer, Freihand oder gerader Pfeil, Rückgängig, Alles löschen).
+// Zeichentafel: großes Fenster mit einem festen Bild der Simulation, auf dem man mit Apple Pencil oder Maus zeichnet
+// (Stifte, Radierer, Freihand oder gerader Pfeil, Rückgängig, Alles löschen).
 // Fenster und Aussehen legt initTafel() selbst an; die Simulation gibt nur Bild und Stifte vor (siehe README.md).
 //
 // Was auf der Tafel steht, ist ein „Dokument“ { striche, verlauf, bearbeitet }: normalerweise die eigene Zeichnung
 // (im Browser gespeichert); die Lehrerseite (abgabe.js) legt stattdessen eine Arbeitskopie einer Abgabe auf.
-// Zeichnen: Stiftdruck bestimmt die Strichbreite; sobald ein Stift benutzt wurde, werden Berührungen mit
-// Finger/Handballen ignoriert.
+// Zeichnen: Stiftdruck bestimmt die Strichbreite. Finger (und Handballen) zeichnen nie: Mit zwei Fingern wird das Blatt
+// gezoomt und verschoben (am Laptop: Pinch auf dem Trackpad bzw. Strg + Mausrad, Mausrad allein verschiebt). Der Zoom
+// gehört zum Gerät; Striche, Laserpointer und Live-Steuerung rechnen über die Lage des Blatts auf dem Bildschirm.
 // Mehrere Seiten (Option seiten): je ein eigenes Bild, umschaltbar in der Werkzeugleiste. Alle Striche bleiben in
 // einem Dokument und tragen ihre Seite (striche.js); gezeichnet, radiert und gelöscht wird auf der gezeigten Seite.
 // Live-Steuerung (gemeinsam/live/): tafelLiveDaten() liefert, was dieses Gerät gerade auf der Tafel zeigt;
@@ -133,14 +134,21 @@ let strich = null;       // Strich, der gerade gezeichnet wird
 let fremderStrich = null;   // beim Zuschauen: Strich, der auf dem steuernden Gerät gerade entsteht
 let radiert = null;      // beim laufenden Radieren entfernte Striche
 let aktiv = null;        // { id, typ } des zeichnenden Zeigers
-let stiftGesehen = false;
+
+// Zoom: zoom ist die Vergrößerung, für die Blatt und Zeichenfläche gerade gebaut sind; während einer Geste zeigt eine
+// CSS-Skalierung schon die neue (geste.z), danach wird in der neuen Größe scharf neu gezeichnet. versatz: Verschiebung
+// der Blattmitte gegenüber der Mitte des Bereichs (Bildschirmpunkte).
+const ZOOM_MAX = 4;
+const MAX_PIXEL = 8e6;   // Zeichenfläche höchstens so viele Pixel (iPad: Speichergrenze für Canvas)
+let zoom = 1, geste = null, grundmass = { w: 1, h: 1 };
+const versatz = { x: 0, y: 0 };
 
 export const tafelOffen = () => zustand.open;
 
 export function oeffneTafel() {
   zustand.open = true;
   fenster.hidden = false;
-  groesse();
+  zoomZuruecksetzen();
 }
 export function schliesseTafel() {
   abbrechen();
@@ -149,17 +157,109 @@ export function schliesseTafel() {
   anzeigeMelden();
 }
 
-// Blatt so groß wie möglich im Seitenverhältnis des Tafelbilds
+// Blatt so groß wie möglich im Seitenverhältnis des Tafelbilds, mal Zoom
 function groesse() {
   if (!zustand.open) return;
   const w = Math.max(1, Math.floor(Math.min(bereich.clientWidth, bereich.clientHeight * TAFEL_BREITE / hoehe)));
-  const h = Math.floor(w * hoehe / TAFEL_BREITE);
-  blatt.style.width = w + 'px';
-  blatt.style.height = h + 'px';
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  canvas.width = basis.width = Math.round(w * dpr);
-  canvas.height = basis.height = Math.round(h * dpr);
+  grundmass = { w, h: Math.floor(w * hoehe / TAFEL_BREITE) };
+  const breite = Math.round(grundmass.w * zoom), hoch = Math.round(grundmass.h * zoom);
+  blatt.style.width = breite + 'px';
+  blatt.style.height = hoch + 'px';
+  const dpr = Math.min(window.devicePixelRatio || 1, 3, Math.sqrt(MAX_PIXEL / (breite * hoch)));
+  canvas.width = basis.width = Math.round(breite * dpr);
+  canvas.height = basis.height = Math.round(hoch * dpr);
+  lageSetzen();
   neuZeichnen();
+}
+
+// ---------------- Zoomen und Verschieben (zwei Finger, Trackpad, Mausrad)
+
+const angezeigterZoom = () => geste?.z ?? zoom;
+function mitte() {
+  const r = bereich.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+// Blatt nicht weiter verschieben, als es über den Bereich hinausragt (kleiner als der Bereich: mittig)
+function versatzBegrenzen() {
+  const z = angezeigterZoom();
+  for (const [achse, mass, platz] of [['x', grundmass.w, bereich.clientWidth], ['y', grundmass.h, bereich.clientHeight]]) {
+    const frei = Math.max(0, (mass * z + 16 - platz) / 2);   // 16: Rahmen des Blatts
+    versatz[achse] = Math.min(frei, Math.max(-frei, versatz[achse]));
+  }
+}
+function lageSetzen() {
+  versatzBegrenzen();
+  const z = angezeigterZoom();
+  blatt.style.transform = `translate(${versatz.x}px, ${versatz.y}px)` + (z !== zoom ? ` scale(${z / zoom})` : '');
+  $('tafelZoom').hidden = z <= 1.001;
+}
+// Auf z zoomen, so dass der Punkt des Blatts, der bei vorher (Bildschirm) lag, nun bei nachher liegt
+function zoomen(z, vorher, nachher = vorher, start = { z: angezeigterZoom(), versatz: { ...versatz } }) {
+  const m = mitte();
+  const u = { x: (vorher.x - m.x - start.versatz.x) / start.z, y: (vorher.y - m.y - start.versatz.y) / start.z };
+  const neu = Math.min(ZOOM_MAX, Math.max(1, z));
+  geste ??= {};
+  geste.z = neu;
+  versatz.x = nachher.x - m.x - u.x * neu;
+  versatz.y = nachher.y - m.y - u.y * neu;
+  lageSetzen();
+}
+// Geste fertig: in der neuen Größe scharf neu zeichnen
+function zoomFestlegen() {
+  if (!geste) return;
+  zoom = geste.z;
+  geste = null;
+  groesse();
+}
+function zoomZuruecksetzen() {
+  zoom = 1;
+  geste = null;
+  versatz.x = versatz.y = 0;
+  groesse();
+}
+
+function zoomEinrichten() {
+  const finger = new Map();   // Zeiger-ID → { x, y } der Finger auf dem Bereich
+  let pinch = null;           // Ausgangslage der Zwei-Finger-Geste
+  const zwei = () => {
+    const [a, b] = [...finger.values()];
+    return { mitte: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, abstand: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)) };
+  };
+  bereich.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'touch') return;
+    finger.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (finger.size === 2) pinch = { ...zwei(), z: angezeigterZoom(), versatz: { ...versatz } };
+  });
+  bereich.addEventListener('pointermove', event => {
+    if (!finger.has(event.pointerId)) return;
+    finger.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (!pinch || finger.size < 2) return;
+    const jetzt = zwei();
+    zoomen(pinch.z * jetzt.abstand / pinch.abstand, pinch.mitte, jetzt.mitte, pinch);
+  });
+  const weg = event => {
+    if (!finger.delete(event.pointerId)) return;
+    if (finger.size < 2 && pinch) {
+      pinch = null;
+      zoomFestlegen();
+    }
+  };
+  bereich.addEventListener('pointerup', weg);
+  bereich.addEventListener('pointercancel', weg);
+  // Laptop: Pinch auf dem Trackpad (kommt als Mausrad mit Strg) bzw. Strg + Mausrad zoomt, Mausrad allein verschiebt
+  let warten = null;
+  bereich.addEventListener('wheel', event => {
+    event.preventDefault();
+    if (event.ctrlKey) zoomen(angezeigterZoom() * Math.exp(-event.deltaY * 0.01), { x: event.clientX, y: event.clientY });
+    else {
+      versatz.x -= event.deltaX;
+      versatz.y -= event.deltaY;
+      lageSetzen();
+    }
+    clearTimeout(warten);
+    warten = setTimeout(zoomFestlegen, 200);
+  }, { passive: false });
+  $('tafelZoom').addEventListener('click', zoomZuruecksetzen);
 }
 
 const massstab = () => canvas.width / TAFEL_BREITE;
@@ -209,8 +309,7 @@ function abbrechen() {
 
 function zeichnenEinrichten() {
   canvas.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'pen') stiftGesehen = true;
-    if (event.pointerType === 'touch' && stiftGesehen) return;   // Handballen ignorieren
+    if (event.pointerType === 'touch') return;   // Finger und Handballen zeichnen nie (zwei Finger: zoomen)
     if (aktiv) {
       if (!(event.pointerType === 'pen' && aktiv.typ !== 'pen')) return;
       abbrechen();
@@ -348,6 +447,7 @@ function fensterAnlegen() {
       <div class="gruppe">
         <button id="tafelUndo" type="button">Rückgängig</button>
         <button id="tafelLeeren" class="gefahr" type="button">${mehrereSeiten ? 'Seite löschen' : 'Alles löschen'}</button>
+        <button id="tafelZoom" type="button" hidden>Zoom zurücksetzen</button>
       </div>
       <div class="gruppe" id="tafelSchueler" hidden>
         <input id="tafelName" type="text" placeholder="Name/Kürzel (freiwillig)" autocomplete="off" aria-label="Name oder Kürzel" />
@@ -489,6 +589,7 @@ export function initTafel(neu) {
 
   fensterAnlegen();
   zeichnenEinrichten();
+  zoomEinrichten();
 
   const farbKnoepfe = [...fenster.querySelectorAll('[data-farbe]')];
   const radiererKnopf = $('tafelRadierer');

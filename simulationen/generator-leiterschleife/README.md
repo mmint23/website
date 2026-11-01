@@ -148,7 +148,7 @@ der Längsseite A; 90° von der anderen Seite aufgenommen; für 360° steht dass
 zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite. Bis Ende Oktober 2026 zeigte Seite 1 ein
 gezeichnetes Schema mit U-t-Diagramm; ältere Zeichnungen auf Seite 1 passen nicht mehr zum neuen Bild.
 
-Zeichnen mit Apple Pencil, Finger oder Maus; über den
+Zeichnen mit Apple Pencil oder Maus (Finger zeichnen nicht, mit zwei Fingern wird das Tafelbild gezoomt); über den
 Abgabe-Server können Schüler ihre Zeichnung an die Lehrkraft schicken (gemeinsamer Baustein der Website,
 siehe [`gemeinsam/tafel/README.md`](../../gemeinsam/tafel/README.md); Lehrerseite:
 <http://localhost:8080/lehrer/generator-leiterschleife>).
