@@ -5,11 +5,11 @@
 // Schülermodus“ zeigt die Adresse dafür (über den Abgabe-Server mit Raumcode, damit Geteiltes bei der Lehrkraft
 // ankommt). Ist er an, öffnet auch „Steuerung abgeben“ (Live-Steuerung, live.js) das Schülergerät im Schülermodus.
 // ------------------------------------------------------------------
-import { METER, SPEED_MAX, WIND_MAX, COIL } from './config.js';
+import { METER, SPEED_MAX, WIND_MAX, COIL, inVolt } from './config.js';
 import { state, ausWindpark, modus } from './state.js';
 import { endCrank, setHold, holdTo, rotor, electrons, park } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
-import { updateMeterFace, setMeterVisible, setDisplay } from './messgeraet.js';
+import { updateMeterFace, setMeterVisible, setDisplay, setMeterToo } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
 import { explainView, sideView } from './erklaerung.js';
 import { resetView as resetModelView, controls, setTable, setBildVersatz } from './szene.js';
@@ -19,7 +19,8 @@ import { adresseFuer, raum } from '../../../gemeinsam/verbindung.js';
 
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
-// Angeschlossen statt der Bürstenkabel ans Messgerät: LED oder Glühlampe (Gedankenexperiment, siehe README)
+// Angeschlossen statt der Bürstenkabel ans Messgerät: LED (Gedankenexperiment) oder Glühlampe, zu der sich das
+// Messgerät parallel anschließen lässt (siehe README)
 const DISPLAYS = [['displayMeterBtn', 'meter'], ['displayLedBtn', 'led'], ['displayLampBtn', 'lamp']];
 // Schalter (aria-pressed) und ihr Zustand; Festhalten gibt es rechts und im Erklär-Bedienfeld
 const TOGGLES = [['showBBtn', 'showB'], ['showVBtn', 'showV'], ['showFBtn', 'showF'], ['showElectronBtn', 'showElectron'], ['showTwoBtn', 'showTwoElectrons'],
@@ -103,11 +104,21 @@ export function updateUi() {
   $('crankInfo').hidden = state.drive !== 'crank' || state.hold;
   $('speedOut').textContent = (state.speed < 0 ? '−' : '') + formatNumber(Math.abs(state.speed), 1) + ' U/s';
   $('magnetStatus').textContent = state.northUp ? 'Nordpol (rot) oben, Südpol (grün) unten' : 'Südpol (grün) oben, Nordpol (rot) unten';
-  for (const button of $('rangeButtons').children) {
-    const active = Number(button.dataset.range) === state.range;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-pressed', String(active));
+  $('meterTooBtn').hidden = state.display !== 'lamp';
+  $('meterTooBtn').setAttribute('aria-pressed', String(state.meterToo));
+  // Messbereich: Einheit mV oder V, darunter die Bereiche dieser Einheit
+  const volt = inVolt(state.range);
+  for (const [id, an] of [['unitMvBtn', !volt], ['unitVBtn', volt]]) {
+    $(id).classList.toggle('active', an);
+    $(id).setAttribute('aria-pressed', String(an));
   }
+  for (const button of $('rangeButtons').children) {
+    const range = Number(button.dataset.range);
+    button.hidden = inVolt(range) !== volt;
+    button.classList.toggle('active', range === state.range);
+    button.setAttribute('aria-pressed', String(range === state.range));
+  }
+  $('plotUnit').textContent = volt ? 'U in V' : 'U in mV';
   updateMeterFace();
 }
 
@@ -148,10 +159,22 @@ export function initUi() {
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.range = range;
-    button.textContent = `±${range}`;
-    button.addEventListener('click', () => { state.range = range; updateUi(); });
+    button.textContent = '±' + (inVolt(range) ? formatNumber(range / 1000, range < 1000 ? 1 : 0) : range);
+    button.addEventListener('click', () => {
+      state.range = range;
+      zuletzt[inVolt(range) ? 'volt' : 'milli'] = range;
+      updateUi();
+    });
     $('rangeButtons').append(button);
   }
+  // Einheit umschalten: zurück zum zuletzt gewählten Bereich dieser Einheit
+  const zuletzt = { milli: inVolt(state.range) ? 15 : state.range, volt: inVolt(state.range) ? state.range : 300 };
+  $('unitMvBtn').addEventListener('click', () => { state.range = zuletzt.milli; updateUi(); });
+  $('unitVBtn').addEventListener('click', () => { state.range = zuletzt.volt; updateUi(); });
+  $('meterTooBtn').addEventListener('click', () => {
+    setMeterToo(!state.meterToo);
+    updateUi();
+  });
   const speed = $('speedSlider');
   Object.assign(speed, { min: -SPEED_MAX, max: SPEED_MAX, step: 0.1, value: state.speed });
   speed.addEventListener('input', () => { state.speed = Number(speed.value); updateUi(); });

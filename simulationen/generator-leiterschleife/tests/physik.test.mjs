@@ -219,20 +219,18 @@ test('Spule mit COIL.TURNS Windungen: Spannung COIL.TURNS-mal so groß; bei 0,5 
   assert.ok(anteil(schleife.max) > 0.15 && anteil(spule.max) < 0.9, `${anteil(schleife.max)} / ${anteil(spule.max)}`);
 });
 
-test('LED und Glühlampe (Gedankenexperiment): LED nur in einer Halbschwingung, Lampe in beiden; mit Spule heller', async () => {
-  const { ledBrightness, lampGlow, ringVoltage } = await import('../js/physik.js');
+test('LED (Gedankenexperiment): nur in einer Halbschwingung, mit Spule heller', async () => {
+  const { ledBrightness, ringVoltage } = await import('../js/physik.js');
   function messen(coil) {
-    Object.assign(state, { drive: 'speed', speed: 0.5, northUp: true, coil, display: 'lamp' });
+    Object.assign(state, { drive: 'speed', speed: 0.5, northUp: true, coil, display: 'led' });
     resetPhysics();
-    const r = { led: 0, ledFalsch: 0, lampe: 0, lampeMinus: 0 };
+    const r = { led: 0, ledFalsch: 0 };
     for (let i = 0; i < 6 * 600; i++) {
       stepPhysics(1 / 600);
       if (i < 600) continue;   // nach dem Anlaufen
-      const u = ringVoltage(), b = ledBrightness(), g = lampGlow();
+      const b = ledBrightness();
       r.led = Math.max(r.led, b);
-      if (u <= 0) r.ledFalsch = Math.max(r.ledFalsch, b);          // Sperrrichtung: Ring 1 nicht Pluspol
-      r.lampe = Math.max(r.lampe, g);
-      if (u < -0.8 * 2.4e-3 * (coil ? 5 : 1)) r.lampeMinus = Math.max(r.lampeMinus, g);   // auch bei Minus
+      if (ringVoltage() <= 0) r.ledFalsch = Math.max(r.ledFalsch, b);   // Sperrrichtung: Ring 1 nicht Pluspol
     }
     return r;
   }
@@ -242,6 +240,28 @@ test('LED und Glühlampe (Gedankenexperiment): LED nur in einer Halbschwingung, 
   assert.equal(spule.ledFalsch, 0);
   assert.ok(schleife.led > 0.3 && schleife.led < 1, `Leiterschleife: LED leuchtet teilweise (${schleife.led})`);
   assert.equal(spule.led, 1, 'Spule: LED voll');
-  assert.ok(schleife.lampe > 0 && schleife.lampe < 0.4, `Leiterschleife: Lampe glimmt nur (${schleife.lampe})`);
-  assert.ok(spule.lampe > 0.95 && spule.lampeMinus > 0.9, `Spule: Lampe hell, auch bei Minus (${spule.lampe}, ${spule.lampeMinus})`);
+});
+
+test('Glühlampe (realistisch, 3,5 V): bleibt bei Millivolt dunkel, auch mit Spule und schnellster Kurbel', async () => {
+  const { lampGlow, lamp } = await import('../js/physik.js');
+  const { LAMP, SPEED_MAX, CRANK_MAX_OMEGA } = await import('../js/config.js');
+  let hellste = 0;
+  for (const coil of [false, true]) {
+    Object.assign(state, { drive: 'speed', speed: SPEED_MAX, northUp: true, coil, display: 'lamp' });
+    resetPhysics();
+    for (let i = 0; i < 4 * 600; i++) {
+      stepPhysics(1 / 600);
+      hellste = Math.max(hellste, lampGlow());
+    }
+  }
+  state.coil = false;
+  assert.equal(hellste, 0, 'Lampe dunkel');
+  // Scheitelspannung der Spule beim schnellsten Kurbeln: weit unter der Schwelle
+  assert.ok(5 * B_FIELD * LOOP_AREA * CRANK_MAX_OMEGA < LAMP.THRESHOLD / 4);
+  // Glühen erst ab der Schwelle (Glühdraht im Gleichgewicht bei U = konstant), voll bei Nennspannung
+  const gluehen = u => { lamp.heat = (u / LAMP.FULL) ** 2; return lampGlow(); };
+  assert.equal(gluehen(0.5), 0);
+  assert.ok(gluehen(1.2) > 0 && gluehen(1.2) < 0.2, `1,2 V: glimmt (${gluehen(1.2)})`);
+  assert.equal(gluehen(LAMP.FULL), 1);
+  lamp.heat = 0;
 });

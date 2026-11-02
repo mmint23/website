@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
-// Glühlampe statt Messgerät (Gedankenexperiment, wie in leiterschaukel-induktion): Lämpchen in einer Fassung auf einer Steckplatte mit zwei
-// Buchsen. Der Glühdraht glüht erst dunkelrot, dann orange, bei voller Leistung warmweiß – in beiden
-// Stromrichtungen.
+// Glühlampe (realistisch, Schwellen in config.js): Lämpchen in einer Fassung auf einer Steckplatte mit zwei Buchsen.
+// Der Glühdraht glüht erst dunkelrot, dann orange, bei voller Leistung warmweiß – in beiden Stromrichtungen.
+// Steht allein an der Stelle des Messgeräts oder, mit dem Messgerät parallel dazu, davor (setLampPlacement).
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAMP } from './config.js';
@@ -11,9 +11,14 @@ import { mat } from './materialien.js';
 import { scene } from './szene.js';
 
 const board = new THREE.Group();
-board.position.set(...LAMP.POS);
-board.rotation.y = LAMP.ROT;
 board.visible = false;
+// Platz der Steckplatte: allein (an der Stelle des Messgeräts) oder vor dem Messgerät, wenn es parallel angeschlossen ist
+export function setLampPlacement(mitMessgeraet) {
+  board.position.set(...(mitMessgeraet ? LAMP.POS_MIT_MESSGERAET : LAMP.POS));
+  board.rotation.y = mitMessgeraet ? LAMP.ROT_MIT_MESSGERAET : LAMP.ROT;
+  board.updateMatrixWorld();
+}
+setLampPlacement(false);
 scene.add(board);
 
 const BASE_H = 1.2;

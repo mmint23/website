@@ -81,8 +81,12 @@ export const METER = {
   DAMPING: 0.55,              // leicht unterkritisch
   FULL_ANGLE: 50,             // Vollausschlag nach jeder Seite in Grad
   STOP: 1.08,                 // Anschlag knapp hinter dem Skalenende
-  RANGES: [3, 10, 15, 30],    // Messbereiche ±3, ±10, ±15, ±30 mV (±15: Leiterschleife und Spule im selben Maßstab)
+  // Messbereiche in mV: ±3, ±10, ±15, ±30 mV (±15: Leiterschleife und Spule im selben Maßstab) und im Volt-Bereich
+  // ±0,3, ±1, ±3 V (state.range bleibt in mV). Dort zuckt der Zeiger kaum: Die Schleife liefert nur Millivolt.
+  RANGES: [3, 10, 15, 30, 300, 1000, 3000],
 };
+// Messbereich im Volt-Bereich? (Skala, Schalter und U-t-Diagramm dann in V)
+export const inVolt = range => range >= 300;
 
 // LED statt Messgerät (Gedankenexperiment wie bei der Leiterschaukel, siehe README): Schwellspannung 1 mV statt real
 // etwa 1,8 V. Darüber wird sie heller und leuchtet bei THRESHOLD + FULL voll – nur in Durchlassrichtung (Anode an
@@ -90,10 +94,14 @@ export const METER = {
 // um ROT gedreht: rote Buchse vorne, schwarze hinten – so kreuzen sich die Kabel von den Bürsten nicht.
 export const LED = { THRESHOLD: 1e-3, FULL: 2e-3, POS: [25, TABLE_TOP, 4], ROT: -Math.PI / 2 };
 
-// Glühlampe statt Messgerät (Gedankenexperiment, noch unrealistischer als die LED, siehe README): Der Glühdraht
-// heizt sich mit der Leistung ∝ U² auf (Zeitkonstante HEAT_TIME) und glüht ab THRESHOLD sichtbar, bei FULL voll –
-// in beiden Stromrichtungen.
-export const LAMP = { THRESHOLD: 1.5e-3, FULL: 5e-3, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT };
+// Glühlampe (realistisch: kleines Lämpchen 3,5 V): Der Glühdraht heizt sich mit der Leistung ∝ U² auf (Zeitkonstante
+// HEAT_TIME), glüht ab THRESHOLD sichtbar dunkelrot und bei FULL (Nennspannung) voll – in beiden Stromrichtungen.
+// Die Leiterschleife liefert nur Millivolt (Spule mit 5 Windungen beim schnellsten Kurbeln gut 0,1 V): Die Lampe bleibt
+// dunkel. Allein an der Stelle des Messgeräts (POS) oder mit dem Messgerät parallel davor (POS_MIT_MESSGERAET).
+export const LAMP = {
+  THRESHOLD: 0.8, FULL: 3.5, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT,
+  POS_MIT_MESSGERAET: [11, TABLE_TOP, 19], ROT_MIT_MESSGERAET: 0,
+};
 
 // Antrieb „Wind“, didaktisch vereinfacht: Der Rotor läuft ab CUT_IN an und dreht dann proportional zur
 // Windgeschwindigkeit – über den ganzen Regler, ohne Nenndrehzahl (echte Anlagen: siehe README, „Antrieb Wind:

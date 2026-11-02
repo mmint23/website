@@ -1,10 +1,12 @@
 // ------------------------------------------------------------------
-// Großes Demonstrations-Zeigermessgerät (Nullpunkt in der Mitte, wie bei der Leiterschaukel) und Kabel
-// von den Bürsten des Generators – statt des Messgeräts wahlweise LED oder Glühlampe (state.display, led.js,
-// gluehlampe.js): Sie stehen an derselben Stelle, die Kabel führen dann in ihre Buchsen.
+// Großes Demonstrations-Zeigermessgerät (Nullpunkt in der Mitte, wie bei der Leiterschaukel; Messbereiche in mV und
+// in V) und Kabel von den Bürsten des Generators – statt des Messgeräts wahlweise LED oder Glühlampe (state.display,
+// led.js, gluehlampe.js): Sie stehen an derselben Stelle, die Kabel führen dann in ihre Buchsen. Zur Glühlampe lässt
+// sich das Messgerät parallel anschließen (state.meterToo): Die Lampe steht dann davor, von ihren Buchsen führen zwei
+// weitere Kabel zum Messgerät.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { METER, TABLE_TOP } from './config.js';
+import { METER, TABLE_TOP, inVolt } from './config.js';
 import { state } from './state.js';
 import { needle } from './physik.js';
 import { addMesh, makeLabel, formatNumber } from './hilfen.js';
@@ -12,7 +14,7 @@ import { mat } from './materialien.js';
 import { scene } from './szene.js';
 import { brushTerminals } from './modell.js';
 import { ledSocket, setLedVisible } from './led.js';
-import { lampSocket, setLampVisible } from './gluehlampe.js';
+import { lampSocket, setLampVisible, setLampPlacement } from './gluehlampe.js';
 
 // Das Messgerät schwebt rechts neben dem Modell (verkleinert), leicht zum Betrachter gedreht
 const meter = new THREE.Group();
@@ -37,8 +39,8 @@ const dialTexture = new THREE.CanvasTexture(dialCanvas);
 dialTexture.colorSpace = THREE.SRGBColorSpace;
 dialTexture.anisotropy = 8;
 
-// Teilung je Messbereich: Abstand der beschrifteten und der kleinen Striche
-const DIVISIONS = { 3: [1, 0.2], 10: [2, 0.5], 15: [5, 1], 30: [10, 2] };
+// Teilung je Messbereich (in mV): Abstand der beschrifteten und der kleinen Striche
+const DIVISIONS = { 3: [1, 0.2], 10: [2, 0.5], 15: [5, 1], 30: [10, 2], 300: [100, 20], 1000: [500, 100], 3000: [1000, 200] };
 
 function drawDial() {
   const ctx = dialCanvas.getContext('2d');
@@ -46,7 +48,7 @@ function drawDial() {
   const full = THREE.MathUtils.degToRad(METER.FULL_ANGLE);
   const range = state.range;
   const [major, minor] = DIVISIONS[range];
-  const unit = 'mV';
+  const unit = inVolt(range) ? 'V' : 'mV', faktor = inVolt(range) ? 1000 : 1;   // Beschriftung in dieser Einheit
   ctx.fillStyle = '#fbfaf5';
   ctx.fillRect(0, 0, dialCanvas.width, dialCanvas.height);
   ctx.strokeStyle = ctx.fillStyle = '#1d2733';
@@ -72,7 +74,7 @@ function drawDial() {
     ctx.stroke();
     if (isMajor) {
       const rt = r0 - 2 * PX;
-      const text = formatNumber(Math.abs(value), major < 1 ? 1 : 0).replace(',0', '');
+      const text = formatNumber(Math.abs(value) / faktor, major / faktor < 1 ? 1 : 0).replace(',0', '');
       ctx.fillText(value < 0 ? '−' + text : text, cx + rt * Math.sin(a), cy - rt * Math.cos(a));
     }
   }
@@ -131,18 +133,22 @@ rangeCanvas.width = 512;
 rangeCanvas.height = 256;
 const rangeTexture = new THREE.CanvasTexture(rangeCanvas);
 rangeTexture.colorSpace = THREE.SRGBColorSpace;
-const KNOB_ANGLES = { 3: -60, 10: -20, 15: 20, 30: 60 };   // Stellung des Drehschalters in Grad (positiv = nach rechts)
+// Stellung des Drehschalters in Grad (positiv = nach rechts); beschriftet sind die Stellungen der gewählten Einheit
+const KNOB_ANGLES = { 3: -60, 10: -20, 15: 20, 30: 60, 300: -45, 1000: 0, 3000: 45 };
 function drawRangeLabels() {
   const ctx = rangeCanvas.getContext('2d');
   ctx.clearRect(0, 0, 512, 256);
   ctx.font = 'bold 40px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  for (const range of METER.RANGES) {
+  const volt = inVolt(state.range);
+  for (const range of METER.RANGES.filter(r => inVolt(r) === volt)) {
     const a = THREE.MathUtils.degToRad(KNOB_ANGLES[range]);
     ctx.fillStyle = range === state.range ? '#ffd54f' : '#e8edf2';
-    ctx.fillText('±' + range, 256 + 150 * Math.sin(a), 200 - 150 * Math.cos(a));
+    ctx.fillText('±' + formatNumber(volt ? range / 1000 : range, volt && range < 1000 ? 1 : 0), 256 + 150 * Math.sin(a), 200 - 150 * Math.cos(a));
   }
+  ctx.fillStyle = '#ffd54f';
+  ctx.fillText(volt ? 'V' : 'mV', 256, 232);
   rangeTexture.needsUpdate = true;
 }
 const rangeLabels = new THREE.Mesh(new THREE.PlaneGeometry(12, 6), new THREE.MeshBasicMaterial({ map: rangeTexture, transparent: true }));
@@ -183,30 +189,58 @@ function boardCablePoints(terminal, socket) {
   return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 6, (t.z + s.z) / 2], [s.x - 3, s.y + 3, s.z], [s.x, s.y + 2, s.z], s.toArray()];
 }
 
-// Kabelpaare je Anzeige: Ring 1 (rot) an Plus bzw. Anode, Ring 2 (schwarz) an Minus bzw. Kathode
+// Messgerät parallel zur Glühlampe: von der Buchse der Steckplatte nach oben, durchhängend und von vorne ins Messgerät
+function parallelCablePoints(start, socketLocal) {
+  meter.updateMatrixWorld();
+  const front = new THREE.Vector3(0, 0, 1).applyQuaternion(meter.quaternion);
+  const socket = meter.localToWorld(socketLocal.clone()).addScaledVector(front, 1.2);
+  const at = d => socket.clone().addScaledVector(front, d);
+  const s = start, vor = at(5);
+  return [s.toArray(), [s.x, s.y + 2.5, s.z], [(s.x + vor.x) / 2, Math.min(s.y, vor.y) - 1, (s.z + vor.z) / 2],
+    [vor.x, vor.y - 1.5, vor.z], at(2).toArray(), socket.toArray()];
+}
+
+// Kabel für Glühlampe und Messgerät zusammen: Lampe dafür kurz an ihren Platz vor dem Messgerät stellen
+setLampPlacement(true);
+const lampMeterCables = [
+  makeCable(boardCablePoints(brushTerminals[0], lampSocket(1)), mat.cableRed),
+  makeCable(boardCablePoints(brushTerminals[1], lampSocket(-1)), mat.cableBlue),
+  makeCable(parallelCablePoints(lampSocket(1), SOCKET_PLUS), mat.cableRed),
+  makeCable(parallelCablePoints(lampSocket(-1), SOCKET_COM), mat.cableBlue),
+];
+setLampPlacement(false);
+
+// Kabel je Anzeige: Ring 1 (rot) an Plus bzw. Anode, Ring 2 (blau) an Minus bzw. Kathode (schwarze Buchse)
 const cables = {
+  lampMeter: lampMeterCables,
   meter: [
     makeCable(cablePoints(brushTerminals[0], SOCKET_PLUS), mat.cableRed),
-    makeCable(cablePoints(brushTerminals[1], SOCKET_COM), mat.cableBlack),
+    makeCable(cablePoints(brushTerminals[1], SOCKET_COM), mat.cableBlue),
   ],
   led: [
     makeCable(boardCablePoints(brushTerminals[0], ledSocket(1)), mat.cableRed),
-    makeCable(boardCablePoints(brushTerminals[1], ledSocket(-1)), mat.cableBlack),
+    makeCable(boardCablePoints(brushTerminals[1], ledSocket(-1)), mat.cableBlue),
   ],
   lamp: [
     makeCable(boardCablePoints(brushTerminals[0], lampSocket(1)), mat.cableRed),
-    makeCable(boardCablePoints(brushTerminals[1], lampSocket(-1)), mat.cableBlack),
+    makeCable(boardCablePoints(brushTerminals[1], lampSocket(-1)), mat.cableBlue),
   ],
 };
+
+// Was angeschlossen ist: 'meter', 'led', 'lamp' oder 'lampMeter' (Glühlampe mit Messgerät parallel)
+export const anschluss = () => (state.display === 'lamp' && state.meterToo ? 'lampMeter' : state.display);
+export const messgeraetAngeschlossen = () => ['meter', 'lampMeter'].includes(anschluss());
 
 // Anzeige (Messgerät, LED oder Glühlampe) mit ihren Kabeln zeigen; im Erklärmodus alles ausgeblendet
 let anzeigeSichtbar = true;
 function anzeigeAbgleichen() {
-  meter.visible = anzeigeSichtbar && state.display === 'meter';
-  setLedVisible(anzeigeSichtbar && state.display === 'led');
-  setLampVisible(anzeigeSichtbar && state.display === 'lamp');
-  for (const [display, paar] of Object.entries(cables)) {
-    for (const cable of paar) cable.visible = anzeigeSichtbar && state.display === display;
+  const jetzt = anschluss();
+  meter.visible = anzeigeSichtbar && messgeraetAngeschlossen();
+  setLedVisible(anzeigeSichtbar && jetzt === 'led');
+  setLampPlacement(jetzt === 'lampMeter');
+  setLampVisible(anzeigeSichtbar && (jetzt === 'lamp' || jetzt === 'lampMeter'));
+  for (const [display, kabel] of Object.entries(cables)) {
+    for (const cable of kabel) cable.visible = anzeigeSichtbar && jetzt === display;
   }
 }
 export function setMeterVisible(visible) {
@@ -217,4 +251,10 @@ export const setDisplay = display => {
   state.display = display;
   anzeigeAbgleichen();
 };
+export const setMeterToo = an => {
+  state.meterToo = an;
+  anzeigeAbgleichen();
+};
+// Nach einer Übernahme (Live-Steuerung) nachziehen
+export const anzeigeNachziehen = anzeigeAbgleichen;
 anzeigeAbgleichen();

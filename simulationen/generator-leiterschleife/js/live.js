@@ -51,7 +51,7 @@ function schreiben(daten) {
   fremdeLaser(daten.laserSpuren);
   // Teile, die sonst setExplain bzw. die Knöpfe nachziehen (ohne den Zustand dabei zurückzusetzen)
   if (vorher.explain !== state.explain) setRingsInstant();   // Schleifringe an/ab animiert syncModel selbst
-  if (vorher.explain !== state.explain || vorher.display !== state.display) {
+  if (vorher.explain !== state.explain || vorher.display !== state.display || vorher.meterToo !== state.meterToo) {
     setMeterVisible(!state.explain);
     setTable(!state.explain);
   }

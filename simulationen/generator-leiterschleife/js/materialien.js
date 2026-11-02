@@ -19,5 +19,6 @@ export const mat = {
   knob: new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.4 }),
   needle: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 }),
   cableRed: new THREE.MeshStandardMaterial({ color: 0xc62828, roughness: 0.5 }),
-  cableBlack: new THREE.MeshStandardMaterial({ color: 0x26292d, roughness: 0.5 }),
+  cableBlack: new THREE.MeshStandardMaterial({ color: 0x26292d, roughness: 0.5 }),   // Minus-Buchsen
+  cableBlue: new THREE.MeshStandardMaterial({ color: 0x1565c0, roughness: 0.5 }),    // Kabel von Ring 2 (Minus)
 };

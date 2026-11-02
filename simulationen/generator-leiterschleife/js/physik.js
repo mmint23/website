@@ -204,7 +204,7 @@ function stepElectrons(dt) {
   electrons.shift += (target - electrons.shift) * Math.min(1, dt / EXPLAIN.ELECTRON_TIME);
 }
 
-// ---------------- LED und Glühlampe statt Messgerät (Gedankenexperiment, Schwellen in config.js)
+// ---------------- LED (Gedankenexperiment) und Glühlampe (realistisch), Schwellen in config.js
 
 // Helligkeit der LED (0 … 1): erst oberhalb der Schwellspannung, nur in Durchlassrichtung (Ring 1 = Anode positiv)
 export const ledBrightness = () => clamp((ringVoltage() - LED.THRESHOLD) / LED.FULL, 0, 1);
