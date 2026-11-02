@@ -25,7 +25,7 @@ herausfinden. Es bleiben Überschrift, Bedienhinweise und rein beschreibende Ang
   und Lagerböcke ausgeblendet (dann lässt sich die Ansicht auch von unten drehen). Hufeisenmagnet mit Polblöcken oben (N) und unten (S), Welle mit rechteckiger
   Leiterschleife, zwei Schleifringe mit Kohlebürsten (die Zuleitungen liegen sichtbar auf der Isolierhülse:
   von der vorderen Längsseite zu Ring 1, von der hinteren unter Ring 1 hindurch zu Ring 2, je mit Lötpunkt), Kabel zu einem Zeigermessgerät (Nullpunkt in der
-  Mitte, Messbereiche ±3 / ±10 / ±15 / ±30 mV).
+  Mitte, Messbereiche ±3 / ±10 / ±15 / ±30 mV und ±0,3 / ±1 / ±3 V).
 - **Antrieb:**
   - **Wind:** Statt der Kurbel sitzt ein kleiner Rotor am Wellenende. Rotor und Schleife drehen auf derselben
     Welle (Generator ohne Getriebe), Wind-Regler auch hier. **Didaktisch vereinfacht:** Ab 3 m/s dreht der Rotor
@@ -74,21 +74,31 @@ Diagramm eine kurze Nulllinie). Der Umbau läuft auch in der Pause.
   der ersten Windung (der Leiterschleife). „Viele e⁻“ gibt es nur bei der Leiterschleife
   (die Kette läuft von Ende zu Ende).
 
-## LED und Glühlampe statt Messgerät (Gedankenexperiment)
+## Messbereich in mV oder V
 
-Unter **„Anzeige“** (Bedienfeld rechts) lässt sich statt des Zeigermessgeräts eine **LED** oder eine **Glühlampe**
-auf einer Steckplatte an die Bürsten anschließen (wie in `leiterschaukel-induktion`, dieselben Schwellen). Ring 1
-(rotes Kabel) führt zur roten Buchse vorne (Anode der LED), Ring 2 (schwarz) zur schwarzen hinten. Messbereich und
-U-t-Diagramm bleiben. In der Simulation steht bewusst kein Erklärtext – die Einordnung gehört in den Unterricht:
+Unter **„Anzeige“** wählt man zuerst die Einheit (**mV** oder **V**), darunter den Bereich: ±3 / ±10 / ±15 / ±30 mV
+bzw. ±0,3 / ±1 / ±3 V. Skala, Drehschalter am Messgerät und U-t-Diagramm folgen der Einheit; beim Umschalten kommt
+der zuletzt gewählte Bereich dieser Einheit zurück (zu Beginn ±15 mV bzw. ±0,3 V). Im Volt-Bereich zuckt der Zeiger
+kaum: Die Schleife liefert nur Millivolt (bei 1 U/s etwa 5 mV Scheitelwert) – genau das lässt sich damit zeigen.
 
-- **In Wirklichkeit leuchtet hier nichts.** Die Leiterschleife liefert bei 0,5 U/s etwa 2,5 mV, die Spule mit
-  5 Windungen etwa 12,5 mV. Eine LED braucht etwa 1,8 V (rot), ein Glühlämpchen rund 1 V und einige 10 mW.
-- **Im Gedankenexperiment** leuchtet die LED ab 1 mV und voll ab 3 mV, **nur in Durchlassrichtung** (Ring 1
-  Pluspol): Sie blitzt bei jeder zweiten Halbschwingung auf, nach „Magnet umdrehen“ in der jeweils anderen.
-  Die Glühlampe glüht ab 1,5 mV sichtbar und ist bei 5 mV voll hell; die Helligkeit folgt der Leistung (∝ U²),
-  der Draht glüht kurz nach (0,08 s) – **in beiden Stromrichtungen**, also bei jeder Halbschwingung.
-- **Leiterschleife ↔ Spule:** Mit der Leiterschleife glimmt die Lampe nur schwach und die LED blitzt kurz auf; mit
-  der Spule leuchten beide hell – die Windungszahl macht den Unterschied (so arbeiten Fahrraddynamo und Generator).
+## LED (Gedankenexperiment) und Glühlampe (realistisch)
+
+Unter **„Anzeige“** lässt sich statt des Zeigermessgeräts eine **LED** oder eine **Glühlampe** auf einer Steckplatte an
+die Bürsten anschließen. Ring 1 (rotes Kabel) führt zur roten Buchse (Anode der LED), Ring 2 (blaues Kabel) zur schwarzen.
+In der Simulation steht bewusst kein Erklärtext – die Einordnung gehört in den Unterricht.
+
+- **Glühlampe – realistisch:** ein Lämpchen 3,5 V. Der Glühdraht glüht ab etwa 0,8 V sichtbar dunkelrot und ist bei
+  3,5 V voll hell; die Helligkeit folgt der Leistung (∝ U²), der Draht glüht kurz nach (0,08 s) – in beiden
+  Stromrichtungen. **Hier bleibt sie dunkel:** Die Leiterschleife liefert bei 0,5 U/s etwa 2,5 mV, die Spule mit
+  5 Windungen etwa 12,5 mV, selbst beim schnellsten Kurbeln (gut 6 U/s) höchstens gut 0,1 V.
+- **Messgerät parallel zur Glühlampe:** Bei der Glühlampe erscheint der Knopf **„Messgerät parallel anschließen“**.
+  Die Lampe steht dann vor den Bürsten, von ihren Buchsen führen zwei weitere Kabel zum Messgerät. Es misst die
+  Spannung an der Lampe – ideal, also dieselbe wie ohne Lampe (kein Innenwiderstand berücksichtigt). So sieht man
+  gleichzeitig: Es wird Spannung induziert, aber viel zu wenig für die Lampe.
+- **LED – Gedankenexperiment** (wie in `leiterschaukel-induktion`): In Wirklichkeit bräuchte sie etwa 1,8 V (rot). Hier
+  leuchtet sie ab 1 mV und voll ab 3 mV, **nur in Durchlassrichtung** (Ring 1 Pluspol): Sie blitzt bei jeder zweiten
+  Halbschwingung auf, nach „Magnet umdrehen“ in der jeweils anderen. Mit der Leiterschleife blitzt sie kurz auf, mit
+  der Spule leuchtet sie hell.
 - Im Erklärmodus sind Messgerät, LED, Lampe und Kabel ausgeblendet.
 
 ## Erklärmodus
@@ -268,9 +278,9 @@ generator-leiterschleife/
 │   ├── physik.js       # Drehung, Induktionsspannung, Zeiger, Rotor beim Antrieb „Wind“ (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Licht
 │   ├── modell.js       # Magnet, Welle, Leiterschleife, Schleifringe, Bürsten, Kurbel
-│   ├── messgeraet.js   # Zeigermessgerät und Kabel; Umschalten auf LED bzw. Glühlampe
+│   ├── messgeraet.js   # Zeigermessgerät (mV/V) und Kabel; Umschalten auf LED bzw. Glühlampe, auch beides
 │   ├── led.js          # LED statt Messgerät (Gedankenexperiment, wie in leiterschaukel-induktion)
-│   ├── gluehlampe.js   # Glühlampe statt Messgerät (Gedankenexperiment)
+│   ├── gluehlampe.js   # Glühlampe 3,5 V (realistisch), allein oder mit Messgerät parallel
 │   ├── diagramm.js     # U-t-Diagramm
 │   ├── erklaerung.js   # Erklärmodus: Elektronen, Pfeile v und F_L
 │   ├── ziehen.js       # Kurbel mit Maus/Finger drehen

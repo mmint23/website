@@ -3,7 +3,7 @@
 // Sichtbar sind die letzten PLOT_SECONDS Sekunden (Simulationszeit). Die U-Achse folgt zunächst dem Messbereich;
 // an der U-Achse ziehen (oder dort das Mausrad drehen) streckt bzw. staucht sie, Doppeltippen stellt sie zurück.
 // ------------------------------------------------------------------
-import { PLOT_SECONDS, PLOT_SECONDS_WIND } from './config.js';
+import { PLOT_SECONDS, PLOT_SECONDS_WIND, inVolt } from './config.js';
 import { state } from './state.js';
 import { clock, meterReading } from './physik.js';
 import { formatNumber } from './hilfen.js';
@@ -68,7 +68,7 @@ ziehen(box, (dx, dy, { rect }) => {
 let achse = null;          // eigener Bereich der U-Achse in mV (null: wie der Messbereich)
 let achseZu = null;        // Messbereich, zu dem achse gehört – ändert man ihn, folgt die Achse wieder ihm
 let achsenBreite = PAD.left;
-const ACHSE_MIN = 0.2, ACHSE_MAX = 200;
+const ACHSE_MIN = 0.2, ACHSE_MAX = 5000;
 const bereich = () => (achse !== null && achseZu === state.range ? achse : state.range);
 function aufAchse(e) {
   if (e.target !== canvas) return false;
@@ -193,14 +193,16 @@ export function updatePlot() {
   ctx.fillStyle = '#4a5866';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
-  const s = schritt(range), n = Math.floor(range / s + 1e-6);
+  // Beschriftung in V, wenn der Messbereich im Volt-Bereich liegt (Messwerte bleiben in mV)
+  const faktor = inVolt(state.range) ? 1000 : 1;
+  const s = schritt(range / faktor) * faktor, n = Math.floor(range / s + 1e-6);
   for (let i = -n; i <= n; i++) {
     const u = i * s, y = Y(u);
     ctx.beginPath();
     ctx.moveTo(x0, y);
     ctx.lineTo(x1, y);
     ctx.stroke();
-    ctx.fillText((u < 0 ? '−' : '') + formatNumber(Math.abs(u), stellen(s)), x0 - 6 * k, y);
+    ctx.fillText((u < 0 ? '−' : '') + formatNumber(Math.abs(u) / faktor, stellen(s / faktor)), x0 - 6 * k, y);
   }
   // Hinweis, dass die Achse gezogen wurde (Doppeltippen: zurück zum Messbereich)
   if (range !== state.range) {

@@ -7,8 +7,9 @@ export const state = {
   speed: 0.5,         // Drehzahl-Regler in Umdrehungen pro Sekunde (vorwärts positiv)
   northUp: true,      // Nordpol oben, Südpol unten
   coil: false,        // Spule mit COIL.TURNS Windungen statt einer einzelnen Leiterschleife
-  range: 3,           // Messbereich ±3 mV
-  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe) – Gedankenexperiment
+  range: 3,           // Messbereich in mV (±3 mV; ab 300 im Volt-Bereich, config.js)
+  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' (Gedankenexperiment) oder 'lamp' (Glühlampe)
+  meterToo: false,    // bei der Glühlampe: Messgerät parallel dazu angeschlossen
   slowMotion: false,
   showPlot: false,    // U-t-Diagramm einblenden (per Knopf, rechts und im Erklärmodus)
   hold: false,        // Schleife festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen

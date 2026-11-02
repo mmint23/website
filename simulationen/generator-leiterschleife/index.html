@@ -18,7 +18,7 @@
   <!-- U-t-Diagramm (per Knopf): überall anfassen und verschieben, unten rechts vergrößern -->
   <div class="plot-box" id="plotBox" title="Ziehen: verschieben" hidden>
     <div class="plot-title" id="plotHandle">
-      <span>U in mV</span>
+      <span id="plotUnit">U in mV</span>
       <span class="plot-tools">
         <button id="plotBigBtn" class="plot-close" type="button" aria-pressed="false" aria-label="Diagramm groß" title="Groß / zurück">⤢</button>
         <button id="plotCloseBtn" class="plot-close" type="button" aria-label="Diagramm schließen">×</button>
@@ -128,8 +128,13 @@
         <button id="displayLedBtn" type="button">LED</button>
         <button id="displayLampBtn" type="button">Glüh&shy;lampe</button>
       </div>
-      <p class="status">Messbereich in mV (Messgerät und U-t-Diagramm)</p>
-      <div class="segmented" role="group" aria-label="Messbereich in mV" id="rangeButtons"></div>
+      <button id="meterTooBtn" class="state" type="button" aria-pressed="false" hidden>Messgerät parallel anschließen</button>
+      <p class="status">Messbereich (Messgerät und U-t-Diagramm)</p>
+      <div class="segmented" role="group" aria-label="Einheit" id="unitButtons">
+        <button id="unitMvBtn" type="button">mV</button>
+        <button id="unitVBtn" type="button">V</button>
+      </div>
+      <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
       <button id="plotBtn" class="state" type="button">U-t-Diagramm</button>
     </section>
     <section>
