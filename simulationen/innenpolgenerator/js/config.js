@@ -22,7 +22,7 @@ export const COIL = {
   WIND_IN: 8.9,               // Wicklung von ... bis
   WIND_OUT: 14,
   WIND_R: 3.0,                // Radius der Wicklung (Mitte des Drahts)
-  TURNS_SHOWN: { 250: 6, 500: 11, 1000: 16, 2000: 22 },   // sichtbare Windungen je Spule (die echte hat state.turns)
+  TURNS_SHOWN: { 250: 6, 500: 11, 1000: 16, 2000: 22, 12000: 32 },   // sichtbare Windungen je Spule (die echte hat state.turns)
   TERMINAL_Y: 14.9,           // Anschlüsse: Abstand von der Achse
   TERMINAL_X: 1.3,            // Anschluss A oben, E unten (nach der Drehung GEN_ROT) – bei beiden Spulen
   TERMINAL_Z: 3.2,
@@ -54,7 +54,9 @@ export const WIND_MAX = 20;   // Wind-Regler bis 20 m/s
 
 // Physikalische Modellgrößen (SI)
 export const B_MAX = 0.1;                                    // größte Flussdichte im Spulenkern in T
-export const TURNS = [250, 500, 1000, 2000];                // wählbare Spulen: Windungen je Spule (wie Schulspulen)
+// Wählbare Spulen: Windungen je Spule (wie Schulspulen). 12 000: damit leuchtet die Glühlampe auch ohne Eisenkern – eine
+// Luftspule fängt nur etwa ein Drittel des Felds ein, mit 2000 Windungen kommt sie selbst bei 3 U/s nur auf gut 2 V.
+export const TURNS = [250, 500, 1000, 2000, 12000];
 export const CORE_AREA = Math.PI * 0.017 ** 2;              // Querschnitt des Kerns in m² (≈ 9 cm²; gezeichnet etwas dicker)
 export const SPEED_MAX = 3;                                  // Drehzahl-Regler: bis 3 Umdrehungen pro Sekunde
 export const SPEED_TIME = 0.4;                               // Drehzahl stellt sich mit dieser Zeitkonstante (s) ein
@@ -81,7 +83,7 @@ export const METER = {
   DAMPING: 0.55,              // leicht unterkritisch
   FULL_ANGLE: 50,             // Vollausschlag nach jeder Seite in Grad
   STOP: 1.08,                 // Anschlag knapp hinter dem Skalenende
-  RANGES: [0.3, 1, 3, 10],    // Messbereiche ±0,3 / ±1 / ±3 / ±10 V (±10 V für Spulen mit vielen Windungen)
+  RANGES: [0.3, 1, 3, 10, 30], // Messbereiche ±0,3 / ±1 / ±3 / ±10 / ±30 V (±10 und ±30 V für Spulen mit vielen Windungen)
 };
 
 // Feldlinien (feldlinienModell.js): so viele verlassen den Nordpol; Stärke der vom Magneten magnetisierten

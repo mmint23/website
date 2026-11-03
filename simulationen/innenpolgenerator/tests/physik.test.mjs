@@ -247,5 +247,10 @@ test('Windungszahl: Spannung ∝ N; Glühlampe (3,8 V) glüht erst bei realistis
   const hell = messen({ speed: 3, turns: 2000 });
   assert.ok(hell.u > 5 && hell.lampe > 0.8, `2000 Windungen, 3 U/s: hell ${JSON.stringify(hell)}`);
   assert.ok(messen({ speed: 3, turns: 2000, iron: false }).lampe < hell.lampe, 'ohne Eisenkern schwächer');
+  // ohne Eisenkern: mit 2000 Windungen kaum ein Glimmen, mit 12 000 glüht sie schon bei 0,5 U/s und ist bei 1 U/s hell
+  assert.ok(messen({ speed: 1, turns: 2000, iron: false }).lampe === 0, '2000 Windungen ohne Eisen, 1 U/s: dunkel');
+  near(messen({ speed: 1, turns: 12000, iron: false }).u / messen({ speed: 1, turns: 2000, iron: false }).u, 6, 0.05, '12 000 statt 2000: sechsfach');
+  assert.ok(messen({ speed: 0.5, turns: 12000, iron: false }).lampe > 0.2, '12 000 Windungen ohne Eisen, 0,5 U/s: glüht');
+  assert.ok(messen({ speed: 1, turns: 12000, iron: false }).lampe > 0.9, '12 000 Windungen ohne Eisen, 1 U/s: hell');
   Object.assign(state, { turns: 500, iron: true, lineModel: false, coils: 1 });
 });

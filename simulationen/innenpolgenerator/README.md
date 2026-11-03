@@ -75,13 +75,17 @@ sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Unter
   mit der Leistung ∝ U² auf und glüht erst ab etwa 1 V (Effektivwert) sichtbar dunkelrot, hell erst bei 3,8 V, in
   beiden Richtungen, mit kurzem Nachglühen (bei langsamer Drehung flackert er). Mit der Standardspule
   (500 Windungen) und Eisenkern glüht sie bei 3 U/s nur schwach; hell wird sie erst mit 1000 oder 2000 Windungen.
+  **Ohne Eisenkern** fängt die Luftspule nur etwa ein Drittel des Felds ein: Mit 2000 Windungen glimmt die Lampe selbst
+  bei 3 U/s kaum. Mit **12 000 Windungen** (gibt es auch als Schulspule) glüht sie schon bei 0,5 U/s und ist ab etwa
+  1 U/s hell.
   So wird sichtbar, dass eine Lampe eine Mindestspannung braucht und wovon die Spannung abhängt. Die Belastung der
   Spulen durch den Lampenstrom ist nicht berücksichtigt.
   Zu Beginn: Standardansicht, Feldlinienmodell, ohne Eisenkern, Diagramme aus (auch im Erklärmodus erst auf
   Wunsch).
 - **Aufbau:** immer zwei Spulen (rechts Spule 1, links Spule 2), in Reihe geschaltet.
-  - **Windungen je Spule:** 250, 500 (Standard), 1000 oder 2000 – wie Schulspulen. Die Spannung wächst proportional
-    zur Windungszahl. Gezeichnet sind 6, 11, 16 bzw. 22 Windungen, je mehr, desto dünner der Draht.
+  - **Windungen je Spule:** 250, 500 (Standard), 1000, 2000 oder 12 000 – wie Schulspulen. Die Spannung wächst
+    proportional zur Windungszahl. Gezeichnet sind 6, 11, 16, 22 bzw. 32 Windungen, je mehr, desto dünner der Draht.
+    Für 12 000 Windungen gibt es zusätzlich den Messbereich ±30 V.
   - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh und Eisenjoch – ein Ring, der
     die Kerne außen verbindet, wie der Stator eines echten Generators).
   - Verbinden: **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
@@ -109,7 +113,7 @@ sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Unter
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
 - **Frequenz der Spannung** (bei einem Polpaar gleich der Drehzahl).
 - **Diagramm U–t** (Haken bei der Anzeige, zu Beginn aus).
-- **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 / ±10 V (±10 V für Spulen mit vielen Windungen). Ab etwa 2 Umdrehungen pro
+- **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 / ±10 / ±30 V (±10 und ±30 V für Spulen mit vielen Windungen). Ab etwa 2 Umdrehungen pro
   Sekunde kann der träge Zeiger nicht mehr folgen und zittert nur um die Null – wie ein echtes
   Demonstrations-Messgerät. Das Diagramm zeigt die Wechselspannung trotzdem.
 - **Link / QR-Code zeigen** (gemeinsamer Baustein `gemeinsam/link.js`).
@@ -147,7 +151,7 @@ das zuschauende Gerät aus der übernommenen Stellung selbst. Technik: `js/live.
   **B = B_max · cos(φ − θ)** mit B_max = 100 mT. Das ist eine Vereinfachung – eine echte Feldberechnung wäre
   aufwendig und für das Verständnis nicht nötig. Echte Generatoren formen ihre Polschuhe aber genau so, dass B
   annähernd sinusförmig von der Stellung abhängt.
-- Induktionsgesetz: **U = −N · A · dB/dt** mit N = 500 Windungen (wählbar 250 … 2000) und dem Kernquerschnitt A ≈ 9 cm²; daraus
+- Induktionsgesetz: **U = −N · A · dB/dt** mit N = 500 Windungen (wählbar 250 … 12 000) und dem Kernquerschnitt A ≈ 9 cm²; daraus
   U = N · A · B_max · ω · sin(φ − θ). Bei 1 Umdrehung pro Sekunde ist der Scheitelwert einer Spule etwa 0,29 V.
 - Zwei Spulen: Wendet der Magnet Spule 1 den Nordpol zu, wendet er Spule 2 den Südpol zu – also B₂ = −B₁ und
   U₂ = −U₁. Ende – Ende ergibt U = U₁ − U₂ = 2 · U₁, Ende – Anfang U = U₁ + U₂ = 0.
