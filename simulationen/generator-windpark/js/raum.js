@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------
 // Raum im Dorf (eigene Szene, Maße in m): ein Wohnzimmer, in das man aus dem Windpark kommt, wenn man das Haus mit
-// dem Schild „Hineinschauen“ antippt (uebergang.js). Durchs Fenster sieht man die Windräder drehen – so schnell wie
+// dem Schild „A“ antippt (uebergang.js). Durchs Fenster sieht man die Windräder drehen – so schnell wie
 // im Windpark und mit dem Himmel zur eingestellten Uhrzeit. Abends brennt die Stehlampe, die an der Steckdose
 // hängt. Am Fenster steht jemand und fragt sich, wie aus der Energie der Windräder elektrische Energie wird –
 // der Einstieg in die Energiekette Wind → Rotor → Generator → Leitung → Steckdose → Lampe.

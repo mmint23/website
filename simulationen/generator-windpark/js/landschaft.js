@@ -4,7 +4,7 @@
 // Eigene Szene (parkScene); Kamera und Steuerung teilt sie sich mit dem Generator-Modell.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { TURBINE, WIND_MAX } from './config.js';
+import { TURBINE, WIND_MAX, KRAFTWERK } from './config.js';
 import { state } from './state.js';
 import { park } from './physik.js';
 import { syncTageszeit } from './tageszeit.js';
@@ -47,7 +47,7 @@ sun.shadow.bias = -0.0008;
 parkScene.add(sun);
 parkScene.add(sun.target);   // Sonne zielt auf den Ursprung (Mitte der Landschaft)
 
-// ---------------- Gelände: sanfte Hügel, flach beim Dorf; Wiesen und Felder als Vertex-Farben
+// ---------------- Gelände: sanfte Hügel, flach beim Dorf und beim Kohlekraftwerk; Wiesen und Felder als Vertex-Farben
 
 const VILLAGE = new THREE.Vector2(170, 90);
 export function terrainHeight(x, z) {
@@ -58,7 +58,11 @@ export function terrainHeight(x, z) {
   // beim Dorf eben auslaufen lassen
   const d = Math.hypot(x - VILLAGE.x, z - VILLAGE.y);
   const flat = Math.min(1, Math.max(0, (d - 90) / 160));
-  return h * flat + 8 * (1 - flat);
+  h = h * flat + 8 * (1 - flat);
+  // Platz für das Kohlekraftwerk (kraftwerk.js) eben, auch wenn es ausgeblendet ist
+  const dk = Math.hypot(x - KRAFTWERK.X, z - KRAFTWERK.Z);
+  const flatK = Math.min(1, Math.max(0, (dk - 140) / 150));
+  return h * flatK + KRAFTWERK.BODEN * (1 - flatK);
 }
 
 {
@@ -111,7 +115,7 @@ function bladeGeometry() {
 const BLADE = bladeGeometry();
 
 // Schild (zeigt immer zur Kamera), z. B. „Innenpolgenerator“ beim Blick in die Gondel
-function makeTag(text) {
+export function makeTag(text) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const font = 'bold 64px system-ui, sans-serif';
@@ -214,7 +218,7 @@ function scheinTextur(farbe) {
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
-const glow = (farbe, opacity) => new THREE.SpriteMaterial({
+export const glow = (farbe, opacity) => new THREE.SpriteMaterial({
   map: scheinTextur(farbe), transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
 });
 const warnMaterial = glow('rgba(255,40,30,1)', 1);
@@ -327,10 +331,10 @@ for (let i = 0; i < 16; i++) {
     9 + random() * 5, 8 + random() * 4, 5 + random() * 2.5);
 }
 // Betretbare Häuser (uebergang.js): mit Tür, eigenem Material zum Hervorheben und einem Schild, das auch aus der
-// Ferne lesbar bleibt. Das Haus, das der Startansicht am nächsten liegt, führt ins Wohnzimmer (raum.js); das
-// nächstgelegene Haus, das von dort aus gesehen mindestens 45 m weiter rechts steht, ins Generator-Modell (sein
-// Schild steht höher, damit sich die Schilder nicht überdecken).
-const START_BLICK = { position: new THREE.Vector3(-860, 200, 760), ziel: new THREE.Vector3(150, 45, -40) };   // parkView
+// Ferne lesbar bleibt. Das Haus, das der Startansicht am nächsten liegt, führt ins Wohnzimmer (raum.js, Schild „A“);
+// das nächstgelegene Haus, das von dort aus gesehen mindestens 45 m weiter rechts steht, ins Generator-Modell
+// (Schild „B“; steht höher, damit sich die Schilder nicht überdecken).
+export const START_BLICK = { position: new THREE.Vector3(-860, 200, 760), ziel: new THREE.Vector3(150, 45, -40) };   // parkView
 const BLICK = START_BLICK.position;
 const RECHTS = START_BLICK.ziel.clone().sub(BLICK).cross(new THREE.Vector3(0, 1, 0)).normalize();   // im Bild nach rechts
 const rechts = haus => haus.position.clone().sub(BLICK).dot(RECHTS);
@@ -363,7 +367,7 @@ function syncSchilder(camera) {
 const naechstes = liste => liste.reduce((a, b) => (a.position.distanceTo(BLICK) < b.position.distanceTo(BLICK) ? a : b));
 const wohnhaus = naechstes(houses);
 const werkstatt = naechstes(houses.filter(h => rechts(h) > rechts(wohnhaus) + 45));
-export const eingaenge = [betretbar(wohnhaus, 'Hineinschauen', 'room'), betretbar(werkstatt, 'Generator-Modell', 'model', 24)];
+export const eingaenge = [betretbar(wohnhaus, 'A', 'room'), betretbar(werkstatt, 'B', 'model', 24)];
 
 // Hervorheben (Maus darüber); null: keins
 export function highlightHouse(eingang) {
@@ -397,11 +401,11 @@ const cableMat = new THREE.MeshBasicMaterial({ color: 0x3a3f44 });
 const PYLON_H = 34;
 // Querträger: oben ein kurzer, darunter ein langer; Aufhängepunkte der Seile relativ zum Mastfuß
 const ARMS = [[-5, PYLON_H - 2], [5, PYLON_H - 2], [-9, PYLON_H - 9], [9, PYLON_H - 9]];
-function buildPylon(x, z, angle) {
+function buildPylon(x, z, angle, parent) {
   const pylon = new THREE.Group();
   pylon.position.set(x, terrainHeight(x, z) - 0.5, z);
   pylon.rotation.y = angle;
-  parkScene.add(pylon);
+  parent.add(pylon);
   // Gittermast vereinfacht: vier schräge Eckstiele und Querstreben
   for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
     const leg = add(new THREE.CylinderGeometry(0.18, 0.25, PYLON_H, 6), steel, pylon);
@@ -425,15 +429,13 @@ function buildPylon(x, z, angle) {
   pylon.updateMatrixWorld();
   return ARMS.map(([ax, ay]) => pylon.localToWorld(new THREE.Vector3(ax, ay - 1.2, 0)));
 }
-{
-  // Trasse vom Windpark (bei Windrad 3) zum Dorfrand
-  const start = new THREE.Vector2(120, -200), end = new THREE.Vector2(VILLAGE.x - 30, VILLAGE.y - 75);
-  const count = 4;
+// Trasse von start nach end (Vector2: x, z) mit count Masten; auch für das Kohlekraftwerk (kraftwerk.js)
+export function stromleitung(start, end, count, parent = parkScene) {
   const angle = Math.atan2(-(end.y - start.y), end.x - start.x) + Math.PI / 2;
   const hangs = [];
   for (let i = 0; i < count; i++) {
     const t = i / (count - 1);
-    hangs.push(buildPylon(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t, angle));
+    hangs.push(buildPylon(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t, angle, parent));
   }
   // Seile zwischen benachbarten Masten mit Durchhang
   for (let i = 1; i < hangs.length; i++) {
@@ -444,10 +446,13 @@ function buildPylon(x, z, angle) {
         const t = s / 16;
         points.push(new THREE.Vector3().lerpVectors(a, b, t).add(new THREE.Vector3(0, -6 * 4 * t * (1 - t), 0)));
       }
-      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 32, 0.12, 4, false), cableMat, parkScene, false);
+      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 32, 0.12, 4, false), cableMat, parent, false);
     }
   }
 }
+// Trasse vom Windpark (bei Windrad 3) zum Dorfrand
+stromleitung(new THREE.Vector2(120, -200), new THREE.Vector2(VILLAGE.x - 30, VILLAGE.y - 75), 4);
+export const DORF = VILLAGE;
 
 // ---------------- Windstreifen: helle, dünne Streifen, die mit dem Wind ziehen (mehr und schneller bei mehr Wind)
 
