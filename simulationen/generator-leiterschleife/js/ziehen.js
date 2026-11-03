@@ -7,12 +7,13 @@ import { CRANK, LIEGEND } from './config.js';
 import { state } from './state.js';
 import { startCrank, crankTo, endCrank } from './physik.js';
 import { crankTargets } from './modell.js';
-import { renderer, camera, controls } from './szene.js';
+import { renderer, camera, controls, aufbau } from './szene.js';
 
 const canvas = renderer.domElement;
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-const plane = new THREE.Plane(new THREE.Vector3(1, 0, 0), -CRANK.X);   // Drehebene der Kurbel
+// Drehebene der Kurbel (im Aufbau senkrecht zur Welle bei x = CRANK.X), in Weltkoordinaten
+const plane = new THREE.Plane(new THREE.Vector3(1, 0, 0), -CRANK.X).applyMatrix4(aufbau.matrixWorld);
 const hit = new THREE.Vector3();
 let activeId = null;
 let onDriveChange = () => {};
@@ -27,6 +28,7 @@ function setRay(event) {
 // Arm bei φ = 0 oben)
 function angleAtPointer() {
   if (!raycaster.ray.intersectPlane(plane, hit)) return null;
+  aufbau.worldToLocal(hit);   // in die Koordinaten des Aufbaus (Welle entlang x)
   return Math.atan2(-hit.y, hit.z) - LIEGEND;
 }
 

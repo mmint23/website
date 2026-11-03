@@ -12,7 +12,7 @@ import {
   manyShiftLimit,
 } from './physik.js';
 import { rotorGroup, ringsAttached } from './modell.js';
-import { scene, camera } from './szene.js';
+import { aufbau, camera } from './szene.js';
 
 const COLOR_V = '#2e7d32', COLOR_F = '#c62828';
 
@@ -108,13 +108,13 @@ const endPoles = [0, 1].map(() => sprite(plusMaterial, POLE_R, 11));
 endPoles[0].position.set(LOOP.LENGTH / 2 + 1.6, 0, EXPLAIN.OPEN_END + 0.6);    // Ende A
 endPoles[1].position.set(LOOP.LENGTH / 2 + 1.6, 0, -EXPLAIN.OPEN_END - 0.6);   // Ende B
 const ringPoles = RINGS.X.map(x => {
-  const pole = sprite(plusMaterial, POLE_R, 11, scene);
+  const pole = sprite(plusMaterial, POLE_R, 11, aufbau);
   pole.position.set(x, RINGS.R + 1.6, 0);
   return pole;
 });
 const POLE_SHIFT = 1;          // ab dieser Verschiebung der Elektronen (cm) erscheinen die Pole
 
-// ---------------- Pfeile (Weltkoordinaten), je Längsseite einer für v und einer für F_L
+// ---------------- Pfeile (Koordinaten des Aufbaus, wie die Physik), je Längsseite einer für v und einer für F_L
 
 function makeArrow(color, label) {
   // transparent (bei voller Deckkraft): kommt so in denselben Durchgang wie die durchsichtige Schleife und wird
@@ -130,7 +130,7 @@ function makeArrow(color, label) {
   const tag = makeTag(label, color);
   group.add(tag);
   group.visible = false;
-  scene.add(group);
+  aufbau.add(group);   // Pfeile in den Koordinaten des Aufbaus (wie die Physik)
   return { group, shaft, head, tag };
 }
 const arrows = [0, 1].map(() => ({ v: makeArrow(COLOR_V, 'v'), F: makeArrow(COLOR_F, 'F_L') }));
@@ -199,17 +199,17 @@ export function syncExplain() {
   }
 }
 
-// Kamera für den Erklärmodus: näher an der Schleife, schräg von links vorne und von oben (über den vorderen Pol des
-// liegenden Magneten hinweg; so sind auch v-Pfeile nach vorne gut zu sehen)
+// Kamera für den Erklärmodus: näher an der Schleife, schräg von links vorne und etwas von oben – in den offenen Spalt
+// des Magneten (die Welle läuft von vorne nach hinten)
 export function explainView(controls) {
-  camera.position.set(-38, 40, 36);
-  controls.target.set(2, -2, 0);
+  camera.position.set(-20, 24, 40);
+  controls.target.set(0, -1, 0);
 }
 
-// Ansicht von rechts: genau entlang der Welle (von der Seite der Schleifringe). Die Schleife erscheint als Strich,
-// der sich dreht; die Längsseiten laufen auf einem Kreis, B zeigt waagrecht (vom Nordpol rechts zum Südpol links), v
-// tangential an diesen Kreis.
+// Ansicht von vorne: genau entlang der Welle (von der Seite der Kurbel). Die Schleife erscheint als Strich, der sich
+// dreht; die Längsseiten laufen auf einem Kreis, B zeigt waagrecht (vom Nordpol links zum Südpol rechts), v tangential
+// an diesen Kreis.
 export function sideView(controls) {
-  camera.position.set(52, -1, 0);
+  camera.position.set(0, -1, 56);
   controls.target.set(0, -1, 0);
 }

@@ -5,8 +5,9 @@ export const state = {
   wind: 8,            // Windgeschwindigkeit in m/s (Antrieb „Wind“: Rotor einer Windkraftanlage auf derselben Welle)
   drive: 'speed',     // Antrieb: 'speed' (Drehzahl-Regler), 'crank' (Handkurbel) oder 'wind' (Rotor wie im Windpark)
   speed: 0.5,         // Drehzahl-Regler in Umdrehungen pro Sekunde (vorwärts positiv)
-  northBack: true,    // Nordpol hinten, Südpol vorne (liegender Magnet)
+  northLeft: true,    // von vorne gesehen Nordpol links, Südpol rechts (im Aufbau: Nordpol bei −z, config.js)
   coil: false,        // Spule mit COIL.TURNS Windungen statt einer einzelnen Leiterschleife
+  bauteileZeigen: false, // Ablage mit den Spulen auf dem Tisch zeigen (Knopf; dann auch die Auswahl „Auf der Welle“)
   bauteil: 'schleife', // auf der Welle: 'schleife' (Leiterschleife), 'spule' (ANKER.TURNS Windungen) oder 'eisen' (mit Eisenkern)
   range: 3,           // Messbereich in mV (±3 mV; ab 300 im Volt-Bereich, config.js)
   display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' (Gedankenexperiment) oder 'lamp' (Glühlampe)

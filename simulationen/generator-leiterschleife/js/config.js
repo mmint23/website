@@ -24,10 +24,17 @@ export const LOOP = {
 export const COIL = { TURNS: 5, DY: 1.0, EXPLAIN_DY: 1.2, EXPLAIN_WIRE_R: 0.4, ANIM: 3 };
 
 // Bauteile zum Tauschen (bauteile.js): Spule mit TURNS Windungen statt der Leiterschleife, wahlweise mit Eisenkern.
-// Dieselbe Fläche wie die Leiterschleife, also TURNS-fache Spannung: 1,5 V Scheitelwert je Umdrehung pro Sekunde –
-// beim Kurbeln leuchtet die Glühlampe (3,5 V), bei 0,5 U/s bleibt sie gerade noch dunkel. Der Eisenkern verstärkt den
-// magnetischen Fluss durch die Spule (vereinfacht: um den Faktor EISEN), dann leuchtet sie schon bei 0,5 U/s.
-export const ANKER = { TURNS: 300, EISEN: 4 };
+// Dieselbe Fläche wie die Leiterschleife, also TURNS-fache Spannung: 5 V Scheitelwert je Umdrehung pro Sekunde (wie
+// eine Schulspule mit 1000 Windungen, realistisch) – die Glühlampe (3,5 V) glüht schon bei 0,5 U/s (2,5 V), beim
+// Kurbeln leuchtet sie hell. Der Eisenkern verstärkt den magnetischen Fluss durch die Spule (vereinfacht: um den
+// Faktor EISEN), dann ist sie schon bei 0,5 U/s voll hell.
+export const ANKER = { TURNS: 1000, EISEN: 4 };
+
+// Der ganze Aufbau (Magnet, Welle, Lagerböcke, Schleife, Bürsten, Bauteile) liegt in der Gruppe aufbau (szene.js), die
+// um DREHUNG um die Senkrechte gedreht ist: Die Welle läuft von vorne (Kurbel) nach hinten (Schleifringe), von vorne
+// gesehen liegt der Nordpol links, das Feld geht von links nach rechts. Alle Maße und die Physik (physik.js) sind in den
+// Koordinaten des Aufbaus angegeben (x entlang der Welle, Nordpol bei −z).
+export const DREHUNG = Math.PI / 2;
 
 // Liegender Hufeisenmagnet: Polblöcke hinter (Nordpol) und vor (Südpol) der Schleife, das Joch liegt unten auf dem
 // Tisch; dazwischen ein gleichmäßiges Feld waagrecht quer zur Welle. Gebaut wird der Magnet „stehend“ (Polblöcke oben
@@ -110,10 +117,11 @@ export const LED = { THRESHOLD: 1e-3, FULL: 2e-3, POS: [25, TABLE_TOP, 4], ROT: 
 // Glühlampe (realistisch: kleines Lämpchen 3,5 V): Der Glühdraht heizt sich mit der Leistung ∝ U² auf (Zeitkonstante
 // HEAT_TIME), glüht ab THRESHOLD sichtbar dunkelrot und bei FULL (Nennspannung) voll – in beiden Stromrichtungen.
 // Die Leiterschleife liefert nur Millivolt (Spule mit 5 Windungen beim schnellsten Kurbeln gut 0,1 V): Die Lampe bleibt
-// dunkel. Allein an der Stelle des Messgeräts (POS) oder mit dem Messgerät parallel davor (POS_MIT_MESSGERAET).
+// dunkel. Allein an der Stelle des Messgeräts (POS) oder mit dem Messgerät parallel: dann direkt vor dessen Buchsen,
+// gedreht wie das Messgerät (schwarze Buchse unter der Minus-, rote unter der Plus-Buchse; messgeraet.js).
 export const LAMP = {
   THRESHOLD: 0.8, FULL: 3.5, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT,
-  POS_MIT_MESSGERAET: [11, TABLE_TOP, 19], ROT_MIT_MESSGERAET: 0,
+  POS_MIT_MESSGERAET: [18.5, TABLE_TOP, 16], ROT_MIT_MESSGERAET: -0.3,
 };
 
 // Antrieb „Wind“, didaktisch vereinfacht: Der Rotor läuft ab CUT_IN an und dreht dann proportional zur

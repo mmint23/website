@@ -10,7 +10,7 @@ import { rotor, spule, umbau } from './physik.js';
 import { addMesh, makeLabel, textTexture } from './hilfen.js';
 import { PATH } from './physik.js';
 import { mat } from './materialien.js';
-import { scene } from './szene.js';
+import { aufbau } from './szene.js';
 
 const cylinderX = (radius, length, material, parent) => {
   const mesh = addMesh(new THREE.CylinderGeometry(radius, radius, length, 32), material, parent);
@@ -32,7 +32,7 @@ function wire(points, radius, material, parent) {
 
 const magnet = new THREE.Group();
 magnet.rotation.x = LIEGEND;
-scene.add(magnet);
+aufbau.add(magnet);
 const poleY = MAGNET.GAP / 2 + MAGNET.THICK / 2;
 const poleGeometry = new THREE.BoxGeometry(MAGNET.WIDTH, MAGNET.THICK, MAGNET.DEPTH);
 const upperPole = addMesh(poleGeometry, mat.north, magnet);
@@ -59,19 +59,19 @@ for (const [list, sign] of [[upperLabels, 1], [lowerLabels, -1]]) {
 }
 
 export function applyMagnetPoles() {
-  upperPole.material = state.northBack ? mat.north : mat.south;
-  lowerPole.material = state.northBack ? mat.south : mat.north;
-  for (const label of upperLabels) label.material.map = textTexture(state.northBack ? 'N' : 'S');
-  for (const label of lowerLabels) label.material.map = textTexture(state.northBack ? 'S' : 'N');
+  upperPole.material = state.northLeft ? mat.north : mat.south;
+  lowerPole.material = state.northLeft ? mat.south : mat.north;
+  for (const label of upperLabels) label.material.map = textTexture(state.northLeft ? 'N' : 'S');
+  for (const label of lowerLabels) label.material.map = textTexture(state.northLeft ? 'S' : 'N');
 }
 
 // ---------------- Welle (fest) und drehende Teile
 
-cylinderX(SHAFT.R, SHAFT.X_MAX - SHAFT.X_MIN, mat.steel, scene).position.x = (SHAFT.X_MIN + SHAFT.X_MAX) / 2;
+cylinderX(SHAFT.R, SHAFT.X_MAX - SHAFT.X_MIN, mat.steel, aufbau).position.x = (SHAFT.X_MIN + SHAFT.X_MAX) / 2;
 
 // Lagerböcke: Fußplatte auf dem Tisch, Pfosten bis zur Welle, Lagerauge um die Welle (im Erklärmodus ausgeblendet)
 export const standGroup = new THREE.Group();
-scene.add(standGroup);
+aufbau.add(standGroup);
 for (const x of SHAFT.BEARINGS) {
   const foot = addMesh(new THREE.BoxGeometry(3.2, 0.6, 5), mat.stand, standGroup);
   foot.position.set(x, TABLE_TOP + 0.3, 0);
@@ -83,7 +83,7 @@ for (const x of SHAFT.BEARINGS) {
 }
 
 export const rotorGroup = new THREE.Group();
-scene.add(rotorGroup);
+aufbau.add(rotorGroup);
 
 // Leiterschleife (in den Koordinaten der Drehgruppe, die zusätzlich um LIEGEND gedreht ist): Längsseite A bei z = +R,
 // B bei z = −R – im Raum steht die Schleife bei φ = 0 senkrecht, A oben.
@@ -247,9 +247,9 @@ export const crankTargets = [];
 // ---------------- Bürsten (fest): Kohleblöcke drücken von unten auf die Schleifringe
 
 const BRUSH_H = 1.2;
-export const brushTerminals = [];
+export const brushTerminals = [];   // Anschlüsse der Bürsten in Weltkoordinaten (Kabel, messgeraet.js)
 const brushGroup = new THREE.Group();
-scene.add(brushGroup);
+aufbau.add(brushGroup);
 for (const x of RINGS.X) {
   const brush = addMesh(new THREE.BoxGeometry(0.8, BRUSH_H, 0.9), mat.carbon, brushGroup);
   brush.position.set(x, -RINGS.R - BRUSH_H / 2, 0);
@@ -257,7 +257,7 @@ for (const x of RINGS.X) {
   holder.position.set(x, -RINGS.R - BRUSH_H - 1.2, 0);
   const terminal = addMesh(new THREE.SphereGeometry(0.45, 16, 12), mat.brass, brushGroup);
   terminal.position.set(x, -RINGS.R - BRUSH_H - 2.6, 0);
-  brushTerminals.push(terminal.position.clone());
+  brushTerminals.push(aufbau.localToWorld(terminal.position.clone()));   // für die Kabel: in Weltkoordinaten
 }
 
 // ---------------- Feldlinien zwischen den Polen (Erklärmodus, Knopf „B“): Pfeile vom Nord- zum Südpol, gebaut wie der
@@ -267,7 +267,7 @@ for (const x of RINGS.X) {
 const fieldLines = new THREE.Group();
 fieldLines.rotation.x = LIEGEND;   // wie der Magnet: von hinten nach vorne
 fieldLines.visible = false;
-scene.add(fieldLines);
+aufbau.add(fieldLines);
 {
   const lineMat = new THREE.MeshBasicMaterial({ color: 0x1565c0, transparent: true, opacity: 0.4, depthWrite: false });
   const half = MAGNET.GAP / 2, HEAD = 1;
@@ -320,8 +320,10 @@ export function syncModel(dt = 0) {
   rotorGroup.rotation.x = rotor.phi + LIEGEND;
   standGroup.visible = !state.explain;
   syncMagnetGlass();
-  crank.visible = state.drive !== 'wind';
-  windRotor.visible = state.drive === 'wind';
+  // In der Ansicht von vorne (entlang der Welle) läge die Kurbel bzw. der Windrotor genau vor der Schleife: ausblenden
+  const vonVorne = state.explain && state.sideView;
+  crank.visible = state.drive !== 'wind' && !vonVorne;
+  windRotor.visible = state.drive === 'wind' && !vonVorne;
   // Leiterschleife nur, solange sie eingebaut ist und nicht gerade getauscht wird (sonst: bauteile.js)
   const schleife = state.bauteil === 'schleife' && umbau.unterwegs !== 'schleife';
   loopNormal.visible = !state.explain && schleife;
@@ -358,5 +360,5 @@ export function syncModel(dt = 0) {
   brushGroup.visible = brushes > 0;
   brushGroup.position.y = -(1 - brushes) * BRUSH_DROP - buersten.unten * BUERSTEN_TAUSCH;
   fieldLines.visible = state.explain && state.showB;
-  fieldLines.scale.y = state.northBack ? 1 : -1;
+  fieldLines.scale.y = state.northLeft ? 1 : -1;
 }

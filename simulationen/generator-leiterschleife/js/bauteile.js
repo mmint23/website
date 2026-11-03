@@ -1,7 +1,8 @@
 // ------------------------------------------------------------------
 // Austauschbare Bauteile auf der Welle (wie die Rotoren in der Simulation Gleichstrommotor): Leiterschleife, Spule mit
 // vielen Windungen (ANKER.TURNS) und dieselbe Spule mit Eisenkern. Die Bauteile, die nicht eingebaut sind, liegen links
-// hinter dem Aufbau in einer Ablage (je auf zwei Böcken, Schild auf dem Tisch). Gewählt wird im Bedienfeld; der Tausch ist
+// neben dem Nordpol in einer Ablage (je auf zwei Böcken, Schild auf dem Tisch) – erst mit dem Knopf „Spulen auf dem
+// Tisch zeigen“ (state.bauteileZeigen), der auch die Auswahl einblendet. Gewählt wird im Bedienfeld; der Tausch ist
 // animiert: Bürsten nach unten, die Welle steht still, das alte Bauteil wird nach oben aus dem Spalt des liegenden
 // Magneten gezogen und abgelegt, das neue eingesetzt, Bürsten wieder hoch. Solange ist der Stromkreis offen
 // (physik.js, umbau).
@@ -13,13 +14,13 @@
 // (Spulenebene x-z) und werden eingebaut wie sie um φ + LIEGEND gedreht.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { LOOP, RINGS, TABLE_TOP, ANKER, LIEGEND } from './config.js';
+import { LOOP, RINGS, TABLE_TOP, ANKER, LIEGEND, DREHUNG } from './config.js';
 import { state } from './state.js';
 import { rotor, spule, umbau } from './physik.js';
 import { buersten } from './modell.js';
 import { addMesh } from './hilfen.js';
 import { mat } from './materialien.js';
-import { scene } from './szene.js';
+import { aufbau } from './szene.js';
 
 export const BAUTEILE = ['schleife', 'spule', 'eisen'];
 export const NAMEN = { schleife: 'Leiterschleife', spule: `Spule (${ANKER.TURNS} Windungen)`, eisen: 'Spule mit Eisenkern' };
@@ -30,10 +31,13 @@ const WIRE = 0.13, PITCH = 2 * WIRE + 0.02, LAGEN = 2, LUECKE = 0.55, PAKET = 2.
 const KERN = { X: L2 - 1, Y: 2.6, Z: R - 1 };   // halbe Maße des Eisenkerns (die Windungen liegen um ihn herum)
 const HOEHE = { schleife: LOOP.WIRE_R, spule: PAKET + WIRE, eisen: KERN.Y };   // halbe Höhe (quer zur Spulenebene)
 
-// Ablage links hinter dem Aufbau (vorne steht der Südpol): Platz (x, z) je Bauteil, verkleinert, auf Böcken der Höhe BOCK
-const PLATZ = { schleife: [-27, -8], spule: [-22, -19], eisen: [-10, -25] };   // links hinter dem Aufbau (Startansicht)
+// Ablage links neben dem Nordpol: je Bauteil ein Platz, verkleinert, auf Böcken der Höhe BOCK
+// Plätze in Weltkoordinaten (x, z): links neben dem Nordpol; umgerechnet in die Koordinaten des Aufbaus (dort liegen
+// die Bauteile, damit Ein- und Ausbau in denselben Koordinaten laufen wie die Welle)
+const PLATZ = { schleife: [-23, -18], spule: [-25, -2], eisen: [-23, 14] };
+const imAufbau = (x, y, z) => aufbau.worldToLocal(new THREE.Vector3(x, y, z));
 const ABLAGE_MASS = 0.6, BOCK = 1.2;
-const ablageLage = art => new THREE.Vector3(PLATZ[art][0], TABLE_TOP + BOCK + HOEHE[art] * ABLAGE_MASS, PLATZ[art][1]);
+const ablageLage = art => imAufbau(PLATZ[art][0], TABLE_TOP + BOCK + HOEHE[art] * ABLAGE_MASS, PLATZ[art][1]);
 const ZIEHEN_Y = 14;                         // so weit wird das Bauteil nach oben aus dem Spalt des Magneten gezogen
 const umEins = a => a - 2 * Math.PI * Math.round(a / (2 * Math.PI));   // Winkel auf −π … π
 
@@ -94,7 +98,7 @@ function zuleitungen(parent) {
 const teile = {};
 for (const art of BAUTEILE) {
   const gruppe = new THREE.Group();
-  scene.add(gruppe);
+  aufbau.add(gruppe);
   if (art === 'schleife') {
     rohr([[L2, 0, R], [-L2, 0, R], [-L2, 0, -R], [L2, 0, -R]], LOOP.WIRE_R, mat.copper, gruppe);
   } else {
@@ -127,15 +131,18 @@ function schild(text) {
   return mesh;
 }
 const ablage = new THREE.Group();
-scene.add(ablage);
+aufbau.add(ablage);
 for (const art of BAUTEILE) {
   const [x, z] = PLATZ[art];
+  const mitte = imAufbau(x, TABLE_TOP + BOCK / 2, z);
   for (const dx of [-1, 1]) {
     const bock = addMesh(new THREE.BoxGeometry(0.8, BOCK, 2 * R * ABLAGE_MASS + 1), mat.stand, ablage);
-    bock.position.set(x + dx * (L2 - 1.2) * ABLAGE_MASS, TABLE_TOP + BOCK / 2, z);
+    bock.position.copy(mitte).add(new THREE.Vector3(dx * (L2 - 1.2) * ABLAGE_MASS, 0, 0));
   }
+  // Schild vor dem Bauteil, von vorne lesbar (gegen die Drehung des Aufbaus zurückgedreht)
   const name = schild(NAMEN[art]);
-  name.position.set(x, TABLE_TOP + 0.02, z + R * ABLAGE_MASS + 2);
+  name.position.copy(imAufbau(x, TABLE_TOP + 0.02, z + L2 * ABLAGE_MASS + 1.6));
+  name.rotation.set(-Math.PI / 2, 0, -DREHUNG);
   ablage.add(name);
 }
 
@@ -238,13 +245,14 @@ export function syncBauteile(dt) {
     }
   }
   const modellSichtbar = !state.explain;
-  ablage.visible = modellSichtbar;
+  ablage.visible = modellSichtbar && state.bauteileZeigen;   // Ablage erst per Knopf (bedienfeld.js)
   for (const art of BAUTEILE) {
     const { gruppe, leitungen } = teile[art];
     const drin = art === state.bauteil && umbau.unterwegs !== art;
     if (art !== umbau.unterwegs) (drin ? eingebaut : abgelegt)(art);
     // eingebaute Leiterschleife: die aus modell.js (mit Zuleitungen und 5 Windungen), nicht die Kopie
-    gruppe.visible = modellSichtbar && !(drin && art === 'schleife');
+    // in der Ablage nur, wenn sie gezeigt wird (oder gerade unterwegs)
+    gruppe.visible = modellSichtbar && (drin ? art !== 'schleife' : state.bauteileZeigen || umbau.unterwegs === art);
     if (leitungen) leitungen.visible = drin;
   }
 }

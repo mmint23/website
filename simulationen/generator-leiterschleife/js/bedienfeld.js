@@ -87,6 +87,11 @@ export function updateUi() {
     button.setAttribute('aria-pressed', String(an));
     button.disabled = tausch;
   }
+  // Ablage und Auswahl erst per Knopf; ist eine Spule eingebaut, steht das auch bei ausgeblendeter Ablage darunter
+  $('bauteileBtn').setAttribute('aria-pressed', String(state.bauteileZeigen));
+  $('bauteileBtn').disabled = tausch;
+  $('bauteilAuswahl').hidden = !state.bauteileZeigen;
+  $('bauteilStatus').hidden = !state.bauteileZeigen && state.bauteil === 'schleife' && !tausch;
   $('bauteilStatus').textContent = tausch ? 'Bauteil wird getauscht …' : `Eingebaut: ${NAMEN[state.bauteil]}`;
   $('coilBtn').disabled = tausch || state.bauteil !== 'schleife';
   $('coilStatus').hidden = state.bauteil !== 'schleife';
@@ -117,7 +122,7 @@ export function updateUi() {
   $('modelWindSlider').value = state.wind;
   $('crankInfo').hidden = state.drive !== 'crank' || state.hold;
   $('speedOut').textContent = (state.speed < 0 ? '−' : '') + formatNumber(Math.abs(state.speed), 1) + ' U/s';
-  $('magnetStatus').textContent = state.northBack ? 'Nordpol (rot) hinten, Südpol (grün) vorne' : 'Südpol (grün) hinten, Nordpol (rot) vorne';
+  $('magnetStatus').textContent = state.northLeft ? 'Nordpol (rot) links, Südpol (grün) rechts' : 'Südpol (grün) links, Nordpol (rot) rechts';
   $('meterTooBtn').hidden = state.display !== 'lamp';
   $('meterTooBtn').setAttribute('aria-pressed', String(state.meterToo));
   // Messbereich: Einheit mV oder V, darunter die Bereiche dieser Einheit
@@ -212,7 +217,7 @@ export function initUi() {
     updateUi();
   });
   $('flipBtn').addEventListener('click', () => {
-    state.northBack = !state.northBack;
+    state.northLeft = !state.northLeft;
     applyMagnetPoles();
     updateUi();
   });
@@ -267,7 +272,7 @@ export function initUi() {
   holdSlider.addEventListener('blur', () => { holdSliderActive = false; });
   window.addEventListener('pointerup', () => { if (document.activeElement !== holdSlider) holdSliderActive = false; });
   $('resetView').addEventListener('click', resetView);
-  // Ansicht von rechts ein/aus; dreht man die Ansicht selbst, ist sie nicht mehr „von rechts“
+  // Ansicht von vorne (entlang der Welle) ein/aus; dreht man die Ansicht selbst, ist sie nicht mehr „von vorne“
   $('sideViewBtn').addEventListener('click', () => {
     state.sideView = !state.sideView;
     resetView();
@@ -293,6 +298,10 @@ export function initUi() {
       if (bauteilEinbauen(button.dataset.bauteil)) updateUi();
     });
   }
+  $('bauteileBtn').addEventListener('click', () => {
+    state.bauteileZeigen = !state.bauteileZeigen;
+    updateUi();
+  });
   aufTausch(updateUi);
   window.addEventListener('resize', () => requestAnimationFrame(bildVersetzen));   // Schülermodus: Modell neben dem Feld
   onCrankGrab(updateUi);

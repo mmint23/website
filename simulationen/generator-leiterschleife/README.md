@@ -21,9 +21,10 @@ eine Wechselspannung entsteht oder dass die Spule die Spannung vervielfacht) –
 herausfinden. Es bleiben Überschrift, Bedienhinweise und rein beschreibende Angaben.
 
 - Modell auf einem Tisch (wie bei der Leiterschaukel, mit Schatten): Der Hufeisenmagnet **liegt** mit dem Joch auf
-  dem Tisch, die Polblöcke stehen hinter (N) und vor (S) der Schleife – das Feld geht waagrecht quer zur Welle, von
-  hinten nach vorne (in der Ansicht von rechts: von rechts nach links). Die Welle liegt in zwei Lagerböcken, das
-  Messgerät steht daneben. Die Startansicht schaut schräg von links oben in den offenen Spalt des Magneten. Im
+  dem Tisch. Die Welle läuft von vorne (Kurbel) nach hinten (Schleifringe, Bürsten); von vorne gesehen steht der
+  Nordpol links, der Südpol rechts – **das Feld geht von links nach rechts**, quer zur Welle. Die Welle liegt in zwei
+  Lagerböcken, das Messgerät steht rechts daneben; die Kabel laufen von den Bürsten hinten um den Magneten herum.
+  Die Startansicht schaut von vorne (etwas von oben) entlang der Welle in den offenen Spalt des Magneten. Im
   Erklärmodus sind Tisch und Lagerböcke ausgeblendet (dann lässt sich die Ansicht auch von unten drehen). Welle mit rechteckiger
   Leiterschleife, zwei Schleifringe mit Kohlebürsten (die Zuleitungen liegen sichtbar auf der Isolierhülse:
   von der vorderen Längsseite zu Ring 1, von der hinteren unter Ring 1 hindurch zu Ring 2, je mit Lötpunkt), Kabel zu einem Zeigermessgerät (Nullpunkt in der
@@ -78,9 +79,12 @@ Diagramm eine kurze Nulllinie). Der Umbau läuft auch in der Pause.
 
 ## Bauteile tauschen: Leiterschleife, Spule, Spule mit Eisenkern
 
-Wie die Rotoren in der Simulation **Gleichstrommotor** lassen sich die Bauteile auf der Welle austauschen. Unter
-„Aufbau“ (unter „Spule mit 5 Windungen“) steht die Auswahl **„Auf der Welle“: Leiterschleife | Spule | Spule mit
-Eisenkern**. Die Bauteile, die nicht eingebaut sind, liegen links hinter dem Aufbau in einer **Ablage** – jedes auf
+Wie die Rotoren in der Simulation **Gleichstrommotor** lassen sich die Bauteile auf der Welle austauschen. Zu Beginn
+ist davon nichts zu sehen: Erst der Knopf **„Spulen auf dem Tisch zeigen“** (unter „Aufbau“, unter „Spule mit
+5 Windungen“) blendet die Ablage und darunter die Auswahl **„Auf der Welle“: Leiterschleife | Spule | Spule mit
+Eisenkern** ein; nochmal gedrückt ist beides wieder weg (während eines Tauschs gesperrt). Eine eingebaute Spule bleibt
+dabei eingebaut, darunter steht dann „Eingebaut: …“. Die Bauteile, die nicht eingebaut sind, liegen links neben dem
+Nordpol in einer **Ablage** – jedes auf
 seinem Platz auf zwei Böcken, mit Schild auf dem Tisch. Die Spulen sehen aus wie im Gleichstrommotor: einzelne
 Windungen in zwei Lagen (hell und dunkel), in zwei Paketen mit einer Lücke für die Welle; der Eisenkern ist ein
 hellgrauer Block, um den sie gewickelt sind.
@@ -89,11 +93,11 @@ hellgrauer Block, um den sie gewickelt sind.
   nach oben aus dem Spalt des liegenden Magneten gezogen und in seine Ablage gelegt, das neue in derselben Stellung eingesetzt, dann
   kommen die Bürsten wieder hoch und die Welle läuft weiter. Solange ist der Stromkreis offen (keine Spannung),
   Auswahl, „Spule mit 5 Windungen“ und „Erklärung“ sind gesperrt, darunter steht „Bauteil wird getauscht …“.
-- **Spule (300 Windungen):** dieselbe Fläche wie die Leiterschleife, also 300-fache Spannung – 1,5 V Scheitelwert je
-  Umdrehung pro Sekunde. Bei 0,5 U/s (0,75 V) bleibt die Glühlampe gerade noch dunkel, **beim Kurbeln leuchtet sie**
-  (ab etwa 1 U/s sichtbar, bei 2 U/s hell).
+- **Spule (1000 Windungen):** dieselbe Fläche wie die Leiterschleife, also 1000-fache Spannung – 5 V Scheitelwert je
+  Umdrehung pro Sekunde (realistisch, wie eine Schulspule mit 1000 Windungen). **Die Glühlampe leuchtet** schon bei der
+  Startdrehzahl 0,5 U/s (2,5 V, sie glüht im Takt der Wechselspannung auf), beim Kurbeln hell.
 - **Mit Eisenkern:** Der Kern verstärkt den magnetischen Fluss durch die Spule – vereinfacht um den Faktor 4 (in
-  Wirklichkeit hängt das stark von Kern und Luftspalt ab). Die Lampe leuchtet schon bei 0,5 U/s.
+  Wirklichkeit hängt das stark von Kern und Luftspalt ab). Die Lampe ist schon bei 0,5 U/s voll hell.
 - Messgerät dazu am besten im Volt-Bereich (siehe unten); im mV-Bereich schlägt es an.
 - „Spule mit 5 Windungen“ gibt es nur, solange die Leiterschleife eingebaut ist (beim Tausch wird sie zurückgebaut).
   Im Erklärmodus ist immer die Leiterschleife zu sehen und wirksam, die Ablage ist ausgeblendet; nach „Zurück zum
@@ -121,7 +125,9 @@ In der Simulation steht bewusst kein Erklärtext – die Einordnung gehört in d
   Stromrichtungen. **Hier bleibt sie dunkel:** Die Leiterschleife liefert bei 0,5 U/s etwa 2,5 mV, die Spule mit
   5 Windungen etwa 12,5 mV, selbst beim schnellsten Kurbeln (gut 6 U/s) höchstens gut 0,1 V.
 - **Messgerät parallel zur Glühlampe:** Bei der Glühlampe erscheint der Knopf **„Messgerät parallel anschließen“**.
-  Die Lampe steht dann vor den Bürsten, von ihren Buchsen führen zwei weitere Kabel zum Messgerät. Es misst die
+  Die Bürstenkabel gehen dann wie sonst ins Messgerät (am Fuß des Geräts entlang, von unten in die Buchsen); die
+  Lampe steht direkt davor, gedreht wie das Messgerät, und hängt mit zwei kurzen Kabeln an dessen Buchsen (Stecker auf
+  Stecker: blau von Minus zur schwarzen Buchse links, rot von Plus zur roten rechts, ohne Kreuzung). Es misst die
   Spannung an der Lampe – ideal, also dieselbe wie ohne Lampe (kein Innenwiderstand berücksichtigt). So sieht man
   gleichzeitig: Es wird Spannung induziert, aber viel zu wenig für die Lampe.
 - **LED – Gedankenexperiment** (wie in `leiterschaukel-induktion`): In Wirklichkeit bräuchte sie etwa 1,8 V (rot). Hier
@@ -137,7 +143,7 @@ und durchsichtig – zunächst mit zwei **offenen Enden** (A vorne, B hinten), o
 geht mit der Kamera näher heran. Dann gibt es **nur ein Bedienfeld (links)** – bewusst ohne Erklärtexte, nur mit
 Schaltern (zu Beginn ist keine Größe eingeblendet). Von oben nach unten: **Tafel** (grün), Link/QR-Code und „Zurück
 zum Modell“, **Antrieb** (Wind, Drehzahl oder Kurbel; Pause und Zeitlupe nebeneinander, Festhalten mit
-Drehwinkel-Regler), **Erklärung** (B, v, F_L, Elektronen, Ansicht von rechts, Magnet durchsichtig, U-t-Diagramm) und
+Drehwinkel-Regler), **Erklärung** (B, v, F_L, Elektronen, Ansicht von vorne, Magnet durchsichtig, U-t-Diagramm) und
 **Aufbau** (Magnet umdrehen, Schleifringe, Spule mit 5 Windungen). „Anhalten“ gibt es nur im Modell. Das Modell
 rückt in die freie Fläche neben dem Feld, das U-t-Diagramm steht unten rechts. Die einzelnen Schalter:
 
@@ -161,9 +167,9 @@ rückt in die freie Fläche neben dem Feld, das U-t-Diagramm steht unten rechts.
   Drehwinkel-Regler im Erklärmodus direkt darunter im linken Feld (sonst rechts unter „Festhalten“)
 - **Magnet durchsichtig:** Polblöcke und Joch werden durchsichtig (Deckkraft 0,3), so sieht man die Schleife auch
   von vorne durch den vorderen Pol. Beim Verlassen des Erklärmodus wieder aus.
-- **Ansicht von rechts:** Blick genau entlang der Welle, von der Seite der Schleifringe. Die Schleife erscheint als
-  Strich, der sich dreht, die Längsseiten laufen auf einem Kreis, das Feld geht waagrecht vom Nordpol (rechts) zum
-  Südpol (links) – so sieht man gut, wann v senkrecht zu B steht
+- **Ansicht von vorne:** Blick genau entlang der Welle, von der Seite der Kurbel (Kurbel bzw. Windrotor sind in dieser
+  Ansicht ausgeblendet, sie lägen genau vor der Schleife). Die Schleife erscheint als Strich, der sich dreht, die
+  Längsseiten laufen auf einem Kreis, das Feld geht waagrecht vom Nordpol (links) zum Südpol (rechts) – so sieht man gut, wann v senkrecht zu B steht
   (größte Spannung) und wann parallel (keine Spannung). Nochmal gedrückt geht es zurück zur schrägen Ansicht;
   „Ansicht zurücksetzen“ bleibt in der gewählten Ansicht. Dreht man die Ansicht selbst, ist der Knopf wieder aus.
 
@@ -183,8 +189,8 @@ Das U-t-Diagramm lässt sich auch hier per Knopf einblenden, so lässt sich verg
   Aus den Stellungen – Schleife quer zum Feld (senkrecht): U = 0, Schleife parallel zum Feld (waagrecht): |U| am größten – lässt sich die Sinuskurve
   punktweise einzeichnen.
 
-Die Bilder stecken als JPEG in den SVG-Dateien: Aufnahmen des Erklärmodus mit durchsichtigem Magneten, schräg von links
-oben (Nordpol hinten, Elektron in der Mitte der Längsseite A; für 360° steht dasselbe Bild wie für 0°). Beide Seiten werden
+Die Bilder stecken als JPEG in den SVG-Dateien: Aufnahmen des Erklärmodus mit durchsichtigem Magneten, schräg von oben
+(Südpol hinten, Nordpol vorne, Elektron in der Mitte der Längsseite A; für 360° steht dasselbe Bild wie für 0°). Beide Seiten werden
 zusammen geteilt; „Seite löschen“ löscht nur die gezeigte Seite. Bis Ende Oktober 2026 zeigte Seite 1 ein
 gezeichnetes Schema mit U-t-Diagramm; ältere Zeichnungen auf Seite 1 passen nicht mehr zum neuen Bild.
 
@@ -253,7 +259,12 @@ Technik: `js/live.js`.
 - Liegender Magnet, technisch: Magnet und Feldlinien werden „stehend“ gebaut (Pole oben und unten) und als Ganzes um
   −90° um die Welle gedreht (`LIEGEND` in `config.js`), die Schleife um denselben Winkel (Lage φ + LIEGEND in
   `modell.js` und `physik.js`, Kurbel in `ziehen.js`). So bleiben Drehsinn, φ und alle Spannungen wie beim früheren
-  stehenden Magneten. Die Polblöcke sind 10,5 cm hoch, damit man über den vorderen Pol auf die Schleife sieht.
+  stehenden Magneten. Die Polblöcke sind 10,5 cm hoch.
+- Gedrehter Aufbau, technisch: Magnet, Welle, Lagerböcke, Schleife, Bürsten, Pfeile und Bauteile liegen in der Gruppe
+  `aufbau` (`szene.js`), die um `DREHUNG` = 90° um die Senkrechte gedreht ist. Geometrie und Physik bleiben in den
+  Koordinaten des Aufbaus (x entlang der Welle); Messgerät, Lampe, LED und Tisch stehen außerhalb, die Kabel holen
+  sich die Anschlüsse der Bürsten in Weltkoordinaten (`brushTerminals`), die Kurbel rechnet den Finger in die
+  Koordinaten des Aufbaus um (`ziehen.js`). `northLeft` im Zustand: Nordpol (von vorne gesehen) links.
 - Verdrahtung: Ring 1 (näher an der Schleife, rotes Kabel) → vordere Längsseite A (von rechts nach links) →
   Querseite → hintere Längsseite B (von links nach rechts) → Ring 2. Die Umlaufspannung in dieser Richtung
   schiebt positive Ladungen zu Ring 2; zwischen den Ringen gilt U = φ₁ − φ₂ = −U_Umlauf. Positive Anzeige:
@@ -314,7 +325,7 @@ generator-leiterschleife/
 │   ├── modell.js       # Magnet, Welle, Leiterschleife, Schleifringe, Bürsten, Kurbel
 │   ├── messgeraet.js   # Zeigermessgerät (mV/V) und Kabel; Umschalten auf LED bzw. Glühlampe, auch beides
 │   ├── led.js          # LED statt Messgerät (Gedankenexperiment, wie in leiterschaukel-induktion)
-│   ├── bauteile.js     # Bauteile tauschen: Leiterschleife, Spule 300 Windungen, mit Eisenkern (Ablage, Animation)
+│   ├── bauteile.js     # Bauteile tauschen: Leiterschleife, Spule 1000 Windungen, mit Eisenkern (Ablage, Animation)
 │   ├── gluehlampe.js   # Glühlampe 3,5 V (realistisch), allein oder mit Messgerät parallel
 │   ├── diagramm.js     # U-t-Diagramm
 │   ├── erklaerung.js   # Erklärmodus: Elektronen, Pfeile v und F_L

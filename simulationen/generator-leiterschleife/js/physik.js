@@ -45,8 +45,9 @@ export function sideVelocity(side) {
   return { x: 0, y: -rotor.omega * p.z / 100, z: rotor.omega * p.y / 100 };
 }
 
-// Flussdichte zwischen den Polen in T (vom Nord- zum Südpol: bei Nordpol hinten nach vorne, zum Betrachter)
-export const fieldVector = () => ({ x: 0, y: 0, z: (state.northBack ? 1 : -1) * B_FIELD });
+// Flussdichte zwischen den Polen in T, in den Koordinaten des Aufbaus (vom Nord- zum Südpol: bei Nordpol links, im
+// Aufbau bei −z, in +z – von vorne gesehen von links nach rechts)
+export const fieldVector = () => ({ x: 0, y: 0, z: (state.northLeft ? 1 : -1) * B_FIELD });
 
 // Laufrichtung entlang der Schleife, wie sie verdrahtet ist: Ring 1 bzw. Ende A → Seite A (in −x, vom
 // rechten zum linken Ende) → Querseite → Seite B (in +x) → Ende B bzw. Ring 2
