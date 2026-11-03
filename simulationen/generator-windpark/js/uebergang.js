@@ -11,12 +11,15 @@
 //    bleibt stehen, bis noch einmal getippt wird → Ausblenden und Wechsel zur Simulation Innenpolgenerator (eigene
 //    Seite; Wind und Uhrzeit gehen in der Adresse mit, dort führt „Zurück zum Windpark“ wieder her). Antippen
 //    während der Fahrt springt zum Blick in die Gondel.
+//  · Kohlekraftwerk antippen (wenn eingeblendet) → Kamerafahrt davor → Ansicht „kraftwerk“ (eigenes Bedienfeld,
+//    umschauen möglich), dabei werden die Wände durchsichtig. „Zurück zum Windpark“ im Bedienfeld führt zurück.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { TRANSITION } from './config.js';
 import { state } from './state.js';
 import { turbines, highlightTurbine, revealNacelle, eingaenge, highlightHouse } from './landschaft.js';
 import { renderer, camera, controls } from './szene.js';
+import { anlage, highlightKraftwerk, revealKraftwerk, kraftwerkBlick } from './kraftwerk.js';
 
 const canvas = renderer.domElement;
 const fade = document.getElementById('fade');
@@ -26,9 +29,11 @@ const pointer = new THREE.Vector2();
 
 // Ablauf Haus: idle → fly → fadeOut → Wohnzimmer: fadeIn → idle bzw. (Seite Generator-Leiterschleife)
 // Ablauf Windrad: idle → fly → reveal → fadeOut → (Seite Innenpolgenerator)
-const run = { phase: 'idle', t: 0, turbine: null, house: null, fromPos: new THREE.Vector3(), fromTarget: new THREE.Vector3(),
+// Ablauf Kohlekraftwerk: idle → fly → (Ansicht kraftwerk) kraftwerkReveal → idle
+const run = { phase: 'idle', t: 0, turbine: null, house: null, kraftwerk: false, fromPos: new THREE.Vector3(), fromTarget: new THREE.Vector3(),
   toPos: new THREE.Vector3(), toTarget: new THREE.Vector3() };
 let enterRoom = () => {};
+let enterKraftwerk = () => {};
 
 export const transitionActive = () => run.phase !== 'idle';
 
@@ -58,9 +63,40 @@ function houseAt(event) {
   return best;
 }
 
+// Liegt das (eingeblendete) Kohlekraftwerk unter dem Finger?
+function kraftwerkAt(event) {
+  if (!state.kraftwerk) return false;
+  const rect = canvas.getBoundingClientRect();
+  pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+  return raycaster.intersectObject(anlage, true).length > 0;
+}
+
+// Kamerafahrt vor das Kohlekraftwerk
+function startKraftwerkFlight() {
+  Object.assign(run, { phase: 'fly', t: 0, turbine: null, house: null, kraftwerk: true });
+  controls.enabled = false;
+  controls.minDistance = 5;
+  highlightKraftwerk(false);
+  const { position, ziel } = kraftwerkBlick();
+  run.fromPos.copy(camera.position);
+  run.fromTarget.copy(controls.target);
+  run.toPos.copy(position);
+  run.toTarget.copy(ziel);
+}
+
+// Vor dem Kraftwerk angekommen: Ansicht „kraftwerk“, die Wände werden durchsichtig; umschauen geht gleich
+function zumKraftwerk() {
+  camera.position.copy(run.toPos);
+  controls.target.copy(run.toTarget);
+  enterKraftwerk();
+  controls.enabled = true;
+  Object.assign(run, { phase: 'kraftwerkReveal', t: 0, kraftwerk: false });
+}
+
 // Kamerafahrt vor die Haustür: etwas erhöht, Blick auf die Tür
 function startHouseFlight(eingang) {
-  Object.assign(run, { phase: 'fly', t: 0, turbine: null, house: eingang });
+  Object.assign(run, { phase: 'fly', t: 0, turbine: null, house: eingang, kraftwerk: false });
   controls.enabled = false;
   controls.minDistance = 2;
   highlightHouse(null);
@@ -77,6 +113,7 @@ function startHouseFlight(eingang) {
 function startFlight(turbine) {
   run.turbine = turbine;
   run.house = null;
+  run.kraftwerk = false;
   run.phase = 'fly';
   run.t = 0;
   controls.enabled = false;
@@ -126,12 +163,16 @@ export function updateTransition(dt) {
     camera.lookAt(controls.target);
     if (run.t >= TRANSITION.FLY) {
       if (run.house) Object.assign(run, { phase: 'fadeOut', t: 0 });   // vor der Tür: gleich hinein
+      else if (run.kraftwerk) zumKraftwerk();
       else zurGondel();
     }
   } else if (run.phase === 'reveal') {
     // Gondel wird durchsichtig; danach bleibt die Ansicht stehen, bis noch einmal getippt wird
     revealNacelle(run.turbine, Math.min(1, run.t / TRANSITION.REVEAL));
     camera.lookAt(controls.target);
+  } else if (run.phase === 'kraftwerkReveal') {
+    revealKraftwerk(Math.min(1, run.t / TRANSITION.REVEAL));
+    if (run.t >= TRANSITION.REVEAL) run.phase = 'idle';
   } else if (run.phase === 'fadeOut') {
     fade.style.opacity = Math.min(1, run.t / TRANSITION.FADE_OUT);
     if (run.t >= TRANSITION.FADE_OUT && run.house?.ziel !== 'room') {
@@ -160,6 +201,7 @@ canvas.addEventListener('pointerdown', event => {
   down = { x: event.clientX, y: event.clientY, time: performance.now() };
   // Haus: während der Fahrt gleich hinein; Windrad: Fahrt überspringen bzw. beim Blick in die Gondel zurückfliegen
   if (run.phase === 'fly' && run.house) Object.assign(run, { phase: 'fadeOut', t: 0 });
+  else if (run.phase === 'fly' && run.kraftwerk) zumKraftwerk();
   else if (run.phase === 'fly') zurGondel();
   else if (run.phase === 'reveal') Object.assign(run, { phase: 'fadeOut', t: 0 });
 });
@@ -173,6 +215,7 @@ canvas.addEventListener('pointerup', event => {
   const house = !turbine && houseAt(event);
   if (turbine) startFlight(turbine);
   else if (house) startHouseFlight(house);
+  else if (kraftwerkAt(event)) startKraftwerkFlight();
 });
 // Maus über einem Windrad: hervorheben, Zeiger als Hand
 canvas.addEventListener('pointermove', event => {
@@ -181,7 +224,9 @@ canvas.addEventListener('pointermove', event => {
   highlightTurbine(turbine);
   const house = turbine ? null : houseAt(event);
   highlightHouse(house);
-  canvas.style.cursor = turbine || house ? 'pointer' : '';
+  const werk = !turbine && !house && kraftwerkAt(event);
+  highlightKraftwerk(werk);
+  canvas.style.cursor = turbine || house || werk ? 'pointer' : '';
 });
 
 // Mit der Zurück-Taste des Browsers von einer anderen Simulation zurück: Die Seite kommt dann ggf. aus dem Zwischenspeicher,
@@ -200,7 +245,10 @@ export function onBackToPark(callback) {
   zurueckInDenPark = callback;
 }
 
-// Was beim Wechsel in den Raum passiert (setzt das Bedienfeld)
+// Was beim Wechsel in den Raum bzw. vor das Kraftwerk passiert (setzt das Bedienfeld)
 export function onEnterRoom(callback) {
   enterRoom = callback;
+}
+export function onEnterKraftwerk(callback) {
+  enterKraftwerk = callback;
 }

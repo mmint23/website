@@ -18,3 +18,8 @@ export const WIND_MAX = 20;   // Wind-Regler bis 20 m/s
 // Übergänge (Dauern in s): Kamerafahrt zur Gondel bzw. vor die Haustür, Gondel wird durchsichtig (danach bleibt die
 // Ansicht stehen, bis noch einmal getippt wird), Ausblenden vor dem Wechsel, Einblenden im Wohnzimmer
 export const TRANSITION = { FLY: 2.8, REVEAL: 1.1, FADE_OUT: 0.7, FADE_IN: 0.7 };
+
+// Kohlekraftwerk (per Knopf einblendbar; kraftwerk.js): Lage in der Landschaft (hinter dem Windpark, zwischen den
+// Windrädern hindurch zu sehen), Höhe des eingeebneten Geländes dort und Trägheit der Energiekette (s): Feuer → Hitze,
+// Hitze → Dampf, Dampf → Drehzahl von Turbine und Generator
+export const KRAFTWERK = { X: 300, Z: -560, BODEN: 18, HITZE_ZEIT: 1.5, DAMPF_ZEIT: 2, DREH_ZEIT: 3, NENNDREHZAHL: 3000 };

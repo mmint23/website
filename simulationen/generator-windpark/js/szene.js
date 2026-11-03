@@ -20,11 +20,12 @@ controls.minDistance = 20;
 controls.maxDistance = 200;
 
 // Kamera und Steuerung für die jeweilige Ansicht: Windpark (m, weite Sicht, Kamera über dem Boden), Wohnzimmer
-// (m, man schaut sich nur um – die offene Vorderseite bleibt hinter der Kamera)
+// (m, man schaut sich nur um – die offene Vorderseite bleibt hinter der Kamera), Blick ins Kohlekraftwerk (nah heran)
 export function applyViewSettings(view) {
   const [near, far, minD, maxD, maxPolar, azimut] = {
     park: [2, 5000, 60, 1600, Math.PI * 0.47, Infinity],
     room: [0.05, 60, 0.6, 4.2, Math.PI * 0.62, 0.75],
+    kraftwerk: [0.5, 5000, 8, 450, Math.PI * 0.48, Infinity],
   }[view];
   camera.near = near;
   camera.far = far;

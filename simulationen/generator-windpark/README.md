@@ -6,7 +6,7 @@ Dorf. Er ist der Einstieg zu zwei eigenständigen Simulationen, die er nur einbe
 gehen in der Adresse mit und beim Zurückkommen wieder zurück):
 
 - **Generator-Leiterschleife** (`../generator-leiterschleife/`): rotierende Leiterschleife im Magnetfeld mit
-  Erklärmodus und Tafel – über das Haus „Generator-Modell“ im Dorf.
+  Erklärmodus und Tafel – über Haus B im Dorf.
 - **Innenpolgenerator** (`../innenpolgenerator/`): so sind getriebelose Windkraftgeneratoren gebaut – über ein
   Windrad (Blick in die Gondel, dann noch einmal tippen).
 
@@ -25,7 +25,7 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   In der Dämmerung gehen im Dorf nach und nach die Lichter an (Fenster mit Lichtschein, auch in der Kirche),
   und auf den Gondeln blinkt die rote Flugsicherungsbefeuerung. So lässt sich die Energiekette beschreiben:
   Wind → Rotor → Generator → Stromleitung → Licht in den Häusern.
-- **Haus antippen** (das Haus am Dorfrand mit dem Schild „Hineinschauen“; mit der Maus wird es hervorgehoben):
+- **Haus antippen** (das Haus am Dorfrand mit dem Schild „A“; mit der Maus wird es hervorgehoben):
   Kamerafahrt vor die Haustür, Überblendung in ein Wohnzimmer. Durchs Fenster sieht man die Windräder – sie
   drehen so schnell wie im Windpark, der Himmel passt zur Uhrzeit, nachts blinkt die Befeuerung. Eine Stehlampe
   hängt an der Steckdose und brennt abends. Am Fenster steht jemand und fragt sich: „Wie wird aus der Energie der
@@ -41,10 +41,25 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   dreht sich innen, die Spulen stehen außen fest). Wind und Uhrzeit gehen in der Adresse mit; „Zurück zum
   Windpark“ im Innenpolgenerator bringt in denselben Windpark zurück. Antippen während der Fahrt überspringt sie.
   Der Windpark übernimmt `?wind=…&zeit=…` aus der Adresse auch sonst (z. B. für einen Link mit Abendstimmung).
-- **Haus „Generator-Modell“ antippen** (im Dorf, Schild darüber): Kamerafahrt vor die Haustür, Ausblenden und
+- **Haus B antippen** (im Dorf, Schild „B“ darüber): Kamerafahrt vor die Haustür, Ausblenden und
   Wechsel zur Simulation **Generator-Leiterschleife** (eigene Seite, Antrieb „Wind“ mit dem Wind von hier, kurz
   „Vereinfachtes Modell des Generators“). „Direkt zum Generator-Modell“ im Bedienfeld und der Knopf im
   Wohnzimmer wechseln ohne Kamerafahrt dorthin. „← Zurück zum Windpark“ dort bringt in denselben Windpark zurück.
+- **Kohlekraftwerk** (Knopf „Kohlekraftwerk zeigen“ im Bedienfeld, auch `?kraftwerk=1` in der Adresse; bleibt im
+  Tab eingeblendet, auch nach dem Wechsel zu einer anderen Simulation): hinter dem Windpark ein Kraftwerk mit
+  Kohlehalde und Förderband, Kesselhaus, Schornstein (Rauch), Maschinenhaus, Kühlturm (Dampfwolke) und eigener
+  Stromleitung ins Dorf. **Kraftwerk antippen**: Kamerafahrt davor, die Wände werden durchsichtig, und man sieht die
+  Energiekette: Kohle verbrennt im Feuerraum → die Kesselrohre glühen (Hitze), das Wasser darin wird zu Dampf → der
+  Dampf strömt sichtbar durch eine durchsichtige Leitung in die Dampfturbine und dreht ihre Laufräder → auf derselben
+  Welle dreht sich der Generator, gebaut wie im Windrad (Stabmagnet als Polrad, zwei feste Spulen, Kabel zum
+  Transformator) → im Kondensator wird der Dampf wieder zu Wasser und zurückgepumpt. Beschriftungen an Feuer,
+  Kessel, Turbine, Generator und Kondensator. Eigenes Bedienfeld mit der Energiekette, **Feuer ausmachen/anzünden**
+  (ohne Feuer kühlt der Kessel ab, der Dampf versiegt, Turbine und Generator laufen aus – mit Anzeige von Hitze, Dampf
+  und Drehzahl, in Wirklichkeit 3000 U/min, dargestellt stark verlangsamt), dem Vergleich mit dem Windrad („Was ist
+  gleich, was ist anders?“) und Knöpfen zum Innenpolgenerator, zum Generator-Modell und zurück zum Windpark. Man kann
+  sich um das Kraftwerk herumdrehen und heranzoomen; abends brennt im Kraftwerk Hallenlicht.
+- Das Bedienfeld zeigt zunächst nur die Uhrzeit; Wind, Kohlekraftwerk und Generator lassen sich per Klick
+  ausklappen.
 - Die Startansicht zeigt alle fünf Windräder und das Dorf links vom Bedienfeld; die Schilder der betretbaren Häuser
   bleiben auch aus der Ferne gleich groß.
 - Alles ist aus einfachen Formen gebaut (keine geladenen 3D-Modelle), damit es schnell lädt und auf Tablets
@@ -83,10 +98,11 @@ generator-windpark/
 │   ├── main.js         # Start, Render-Schleife (Windpark oder Wohnzimmer)
 │   ├── config.js       # Windräder, Dauern der Übergänge
 │   ├── state.js        # Zustand (Ansicht, Wind, Uhrzeit); Wind und Uhrzeit aus der Adresse
-│   ├── physik.js       # Drehzahl der Windräder (ohne 3D, testbar)
+│   ├── physik.js       # Drehzahl der Windräder, Feuer → Hitze → Dampf → Turbine im Kraftwerk (ohne 3D, testbar)
 │   ├── szene.js        # Renderer, Kamera, Einstellungen je Ansicht
 │   ├── landschaft.js   # Gelände, Windräder (mit Innenleben der Gondel), Dorf, betretbare Häuser, Stromleitung, Windstreifen
 │   ├── tageszeit.js    # Uhrzeit: Sonnenstand, Himmel, Licht, Lichter im Dorf, Befeuerung der Windräder
+│   ├── kraftwerk.js    # Kohlekraftwerk (einblendbar): außen, Innenleben mit Feuer, Dampf, Turbine, Generator
 │   ├── raum.js         # Wohnzimmer im Dorf: Blick auf die Windräder, Lampe an der Steckdose, Person mit Frage
 │   ├── uebergang.js    # Windrad bzw. Haus antippen, Kamerafahrt, Wechsel ins Wohnzimmer bzw. zu den anderen Simulationen
 │   ├── bedienfeld.js   # Regler, Knöpfe, Anzeigen

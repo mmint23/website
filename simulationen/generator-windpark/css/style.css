@@ -107,3 +107,23 @@ html, body {
 
 /* Ausblenden vor dem Wechsel zu einer anderen Simulation bzw. ins Wohnzimmer */
 .fade { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 15; }
+
+/* Energiekette im Kohlekraftwerk */
+.kette { margin: 0; padding-left: 20px; font-size: 0.88rem; line-height: 1.35; }
+.kette li + li { margin-top: 4px; }
+
+/* Ausklappbare Abschnitte im Bedienfeld des Windparks (Überschrift wie h2, mit Pfeil) */
+.klapp > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.klapp > summary::-webkit-details-marker { display: none; }
+.klapp > summary::after { content: "▸"; color: #4a5866; transition: transform 0.15s; }
+.klapp[open] > summary::after { transform: rotate(90deg); }
+.klapp[open] > summary { margin-bottom: 4px; }

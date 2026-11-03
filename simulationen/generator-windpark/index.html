@@ -17,17 +17,8 @@
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
   </div>
 
-  <!-- Bedienfeld im Windpark -->
+  <!-- Bedienfeld im Windpark: nur die Uhrzeit offen, alles andere zum Ausklappen -->
   <aside class="panel" id="parkPanel">
-    <section>
-      <h2>Wind</h2>
-      <label class="slider">
-        <span class="row">Windgeschwindigkeit <output id="windOut"></output></span>
-        <input id="windSlider" type="range" />
-      </label>
-      <p class="status" id="beaufortStatus"></p>
-      <p class="status" id="rotorStatus"></p>
-    </section>
     <section>
       <h2>Tageszeit</h2>
       <label class="slider">
@@ -37,10 +28,31 @@
       <p class="status">Abends gehen im Dorf die Lichter an.</p>
     </section>
     <section>
-      <h2>Generator</h2>
-      <p class="status">Tippe auf ein Windrad, um in die Gondel zu schauen – von dort geht es zum Innenpolgenerator.
-        Im Dorf: das Haus „Generator-Modell“ führt zum Modell, „Hineinschauen“ in ein Wohnzimmer.</p>
-      <button id="toModelBtn" type="button">Direkt zum Generator-Modell</button>
+      <details class="klapp">
+        <summary>Wind</summary>
+        <label class="slider">
+          <span class="row">Windgeschwindigkeit <output id="windOut"></output></span>
+          <input id="windSlider" type="range" />
+        </label>
+        <p class="status" id="beaufortStatus"></p>
+        <p class="status" id="rotorStatus"></p>
+      </details>
+    </section>
+    <section>
+      <details class="klapp">
+        <summary>Kohlekraftwerk</summary>
+        <button id="kraftwerkBtn" type="button">Kohlekraftwerk zeigen</button>
+        <p class="status" id="kraftwerkHinweis" hidden>Hinter dem Windpark steht jetzt ein Kohlekraftwerk. Tippe darauf,
+          um hineinzuschauen.</p>
+      </details>
+    </section>
+    <section>
+      <details class="klapp">
+        <summary>Generator</summary>
+        <p class="status">Tippe auf ein Windrad, um in die Gondel zu schauen – von dort geht es zum Innenpolgenerator.
+          Im Dorf: Haus A führt in ein Wohnzimmer, Haus B zum Generator-Modell.</p>
+        <button id="toModelBtn" type="button">Direkt zum Generator-Modell</button>
+      </details>
     </section>
   </aside>
 
@@ -52,6 +64,35 @@
         Wind bis zur Lampe?</p>
       <button id="roomToParkBtn" type="button">Zurück zum Windpark</button>
       <button id="roomToModelBtn" type="button">Zum Generator-Modell</button>
+    </section>
+  </aside>
+
+  <!-- Bedienfeld beim Blick ins Kohlekraftwerk -->
+  <aside class="panel" id="kraftwerkPanel" hidden>
+    <section>
+      <h2>Im Kohlekraftwerk</h2>
+      <ol class="kette">
+        <li>Kohle verbrennt im Kessel – es wird sehr heiß.</li>
+        <li>Die Hitze macht aus Wasser in den Kesselrohren Dampf.</li>
+        <li>Der Dampf strömt mit hohem Druck durch die Turbine und dreht sie.</li>
+        <li>Die Turbine dreht auf derselben Welle den Generator.</li>
+        <li>Der Generator liefert elektrische Energie – über die Leitung ins Dorf.</li>
+      </ol>
+      <p class="status">Im Kondensator wird der Dampf wieder zu Wasser und zurück in den Kessel gepumpt.</p>
+    </section>
+    <section>
+      <h2>Feuer</h2>
+      <button id="feuerBtn" class="power on" type="button">Feuer ausmachen</button>
+      <p class="status" id="kraftwerkStatus"></p>
+      <p class="status">In Wirklichkeit drehen Turbine und Generator 3000-mal pro Minute – hier stark verlangsamt.</p>
+    </section>
+    <section>
+      <h2>Generator</h2>
+      <p class="status">Der Generator ist gebaut wie im Windrad: Ein Magnet dreht sich zwischen festen Spulen. Was ist
+        gleich, was ist anders?</p>
+      <button id="kraftwerkToGenBtn" type="button">Zum Innenpolgenerator</button>
+      <button id="kraftwerkToModelBtn" type="button">Zum Generator-Modell</button>
+      <button id="kraftwerkToParkBtn" type="button">Zurück zum Windpark</button>
     </section>
   </aside>
 
