@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------
-// LED statt Messgerät (Gedankenexperiment, wie in generator-leiterschleife): LED auf einer Steckplatte mit zwei
+// LED statt Messgerät (realistisch: rote LED, ab etwa 1,6 V; Schwellen in config.js): LED auf einer Steckplatte mit zwei
 // Buchsen (rot: Anode, an A₁ wie die Plus-Buchse des Messgeräts; schwarz: Kathode). Sie leuchtet nur in Durchlassrichtung und erst oberhalb der
 // Schwellspannung.
 // ------------------------------------------------------------------

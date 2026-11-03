@@ -39,7 +39,7 @@ dialTexture.colorSpace = THREE.SRGBColorSpace;
 dialTexture.anisotropy = 8;
 
 // Teilung je Messbereich: Abstand der beschrifteten und der kleinen Striche
-const DIVISIONS = { 0.3: [0.1, 0.02], 1: [0.2, 0.05], 3: [1, 0.2] };
+const DIVISIONS = { 0.3: [0.1, 0.02], 1: [0.2, 0.05], 3: [1, 0.2], 10: [2, 0.5] };
 
 function drawDial() {
   const ctx = dialCanvas.getContext('2d');
@@ -132,7 +132,7 @@ rangeCanvas.width = 512;
 rangeCanvas.height = 256;
 const rangeTexture = new THREE.CanvasTexture(rangeCanvas);
 rangeTexture.colorSpace = THREE.SRGBColorSpace;
-const KNOB_ANGLES = { 0.3: -45, 1: 0, 3: 45 };     // Stellung des Drehschalters in Grad (positiv = nach rechts)
+const KNOB_ANGLES = { 0.3: -60, 1: -20, 3: 20, 10: 60 };   // Stellung des Drehschalters in Grad (positiv = nach rechts)
 function drawRangeLabels() {
   const ctx = rangeCanvas.getContext('2d');
   ctx.clearRect(0, 0, 512, 256);

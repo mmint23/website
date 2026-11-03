@@ -16,7 +16,7 @@
 // dazukommen kann.
 // ------------------------------------------------------------------
 import {
-  COIL, B_MAX, TURNS, CORE_AREA, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER, TURBINE,
+  COIL, B_MAX, CORE_AREA, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER, TURBINE,
   LED, LAMP,
 } from './config.js';
 import { state } from './state.js';
@@ -67,10 +67,10 @@ export function coilFieldRate(k, phi = rotor.phi, omega = rotor.omega) {
   return (coilField(k, phi + h) - coilField(k, phi - h)) / (2 * h) * omega;
 }
 
-// Induktionsspannung an Spule k in V, U = φ(Anschluss A) − φ(Anschluss E) = −N · A · dB/dt.
+// Induktionsspannung an Spule k in V, U = φ(Anschluss A) − φ(Anschluss E) = −N · A · dB/dt (N = state.turns).
 // (A: Anfang, E: Ende der Wicklung. Welcher Anschluss Plus ist, hängt vom Wickelsinn ab; beide Spulen sind
 // gleich gewickelt.)
-export const coilVoltage = (k, phi = rotor.phi, omega = rotor.omega) => -TURNS * CORE_AREA * coilFieldRate(k, phi, omega);
+export const coilVoltage = (k, phi = rotor.phi, omega = rotor.omega) => -state.turns * CORE_AREA * coilFieldRate(k, phi, omega);
 
 // Spannung am Messgerät in V (Plus-Buchse an A von Spule 1).
 // Eine Spule: U = U₁. Zwei Spulen in Reihe: Weil der Magnet Spule 2 seinen Südpol zuwendet, wenn er Spule 1 den
@@ -119,12 +119,12 @@ function stepNeedle(dt) {
   }
 }
 
-// ---------------- LED und Glühlampe statt Messgerät (Gedankenexperiment, Schwellen in config.js)
+// ---------------- LED und Glühlampe statt Messgerät (realistische Schwellen in config.js)
 
 // Helligkeit der LED (0 … 1): erst oberhalb der Schwellspannung, nur in Durchlassrichtung (A₁ positiv)
 export const ledBrightness = () => clamp((meterVoltage() - LED.THRESHOLD) / LED.FULL, 0, 1);
 
-// Helligkeit der Glühlampe (0 … 1): sichtbares Glühen ab der Schwelle, unabhängig von der Stromrichtung
+// Helligkeit der Glühlampe (0 … 1): sichtbares Glühen erst ab der Schwelle (etwa 1 V), unabhängig von der Stromrichtung
 export function lampGlow() {
   const start = (LAMP.THRESHOLD / LAMP.FULL) ** 2;
   return clamp((lamp.heat - start) / (1 - start), 0, 1);

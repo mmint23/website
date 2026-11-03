@@ -22,7 +22,7 @@ export const COIL = {
   WIND_IN: 8.9,               // Wicklung von ... bis
   WIND_OUT: 14,
   WIND_R: 3.0,                // Radius der Wicklung (Mitte des Drahts)
-  TURNS_SHOWN: 11,            // sichtbare Windungen (die echte Spule hat TURNS)
+  TURNS_SHOWN: { 250: 6, 500: 11, 1000: 16, 2000: 22 },   // sichtbare Windungen je Spule (die echte hat state.turns)
   TERMINAL_Y: 14.9,           // Anschlüsse: Abstand von der Achse
   TERMINAL_X: 1.3,            // Anschluss A oben, E unten (nach der Drehung GEN_ROT) – bei beiden Spulen
   TERMINAL_Z: 3.2,
@@ -54,7 +54,7 @@ export const WIND_MAX = 20;   // Wind-Regler bis 20 m/s
 
 // Physikalische Modellgrößen (SI)
 export const B_MAX = 0.1;                                    // größte Flussdichte im Spulenkern in T
-export const TURNS = 500;                                    // Windungen je Spule
+export const TURNS = [250, 500, 1000, 2000];                // wählbare Spulen: Windungen je Spule (wie Schulspulen)
 export const CORE_AREA = Math.PI * 0.017 ** 2;              // Querschnitt des Kerns in m² (≈ 9 cm²; gezeichnet etwas dicker)
 export const SPEED_MAX = 3;                                  // Drehzahl-Regler: bis 3 Umdrehungen pro Sekunde
 export const SPEED_TIME = 0.4;                               // Drehzahl stellt sich mit dieser Zeitkonstante (s) ein
@@ -63,14 +63,17 @@ export const CRANK_MAX_OMEGA = 40;                           // ... höchstens s
 export const FRICTION = 0.25;                                // freies Auslaufen nach dem Loslassen: Abbremsung in 1/s
 export const FRICTION_STOP = 0.15;                           // darunter (rad/s) bleibt der Magnet stehen
 
-// LED statt Messgerät (Gedankenexperiment, siehe README): leuchtet ab THRESHOLD (statt real etwa 1,8 V), voll bei
-// THRESHOLD + FULL – nur in Durchlassrichtung (Anode an der roten Buchse, wie die Plus-Buchse des Messgeräts an A₁).
+// LED statt Messgerät, mit realistischen Werten (rote LED): Unterhalb der Durchlassspannung fließt praktisch kein
+// Strom; sie leuchtet erst ab THRESHOLD schwach und ist bei THRESHOLD + FULL hell – nur in Durchlassrichtung (Anode an
+// der roten Buchse, wie die Plus-Buchse des Messgeräts an A₁). Vorwiderstand und Belastung der Spulen nicht berücksichtigt.
 // Steckplatte auf dem Tisch an der Stelle des Messgeräts, um ROT gedreht: rote Buchse hinten (Kabel von A₁ kommt von
 // oben), schwarze vorne (Kabel von Spule 2 kommt vorne über den Tisch).
-export const LED = { THRESHOLD: 0.05, FULL: 0.1, POS: [27, TABLE_TOP, 6], ROT: Math.PI / 2 };
-// Glühlampe statt Messgerät (Gedankenexperiment): Glühdraht heizt sich mit der Leistung ∝ U² auf (Zeitkonstante
-// HEAT_TIME), glüht ab THRESHOLD sichtbar, bei FULL voll – in beiden Stromrichtungen
-export const LAMP = { THRESHOLD: 0.08, FULL: 0.2, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT };
+export const LED = { THRESHOLD: 1.6, FULL: 0.6, POS: [27, TABLE_TOP, 6], ROT: Math.PI / 2 };
+// Glühlampe statt Messgerät, mit realistischen Werten: Glühlämpchen 3,8 V / 0,07 A. Der Glühdraht heizt sich mit
+// der Leistung ∝ U² auf (Zeitkonstante HEAT_TIME); er glüht erst ab etwa THRESHOLD (Effektivwert) sichtbar dunkelrot
+// und bei der Nennspannung FULL (Effektivwert) voll – in beiden Stromrichtungen. (Belastung der Spulen durch den
+// Lampenstrom ist nicht berücksichtigt.)
+export const LAMP = { THRESHOLD: 1.0, FULL: 3.8, HEAT_TIME: 0.08, POS: LED.POS, ROT: LED.ROT };
 
 // Zeigermessgerät (wie bei Leiterschaukel und Generator): gedämpfter Schwinger
 export const METER = {
@@ -78,7 +81,7 @@ export const METER = {
   DAMPING: 0.55,              // leicht unterkritisch
   FULL_ANGLE: 50,             // Vollausschlag nach jeder Seite in Grad
   STOP: 1.08,                 // Anschlag knapp hinter dem Skalenende
-  RANGES: [0.3, 1, 3],        // Messbereiche ±0,3 / ±1 / ±3 V
+  RANGES: [0.3, 1, 3, 10],    // Messbereiche ±0,3 / ±1 / ±3 / ±10 V (±10 V für Spulen mit vielen Windungen)
 };
 
 // Feldlinien (feldlinienModell.js): so viele verlassen den Nordpol; Stärke der vom Magneten magnetisierten

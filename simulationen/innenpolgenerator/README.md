@@ -65,16 +65,23 @@ sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Unter
   (rechts); „Anhalten“ gibt es nicht mehr. (`bedienfeld.js` hängt die Abschnitte aus dem rechten Feld um und wieder zurück.) **Aufbau** (Eisenkern, Verbindung der Spulen) gibt es
   nur im Modell, ganz unten im rechten Bedienfeld; darüber, ebenfalls nur im Modell, **Rechnung**:
   „Reale Physik“ und „Feldlinienmodell“ als zwei Knöpfe nebeneinander (Standard: Feldlinienmodell).
-- **Anzeige** (nur im Modell): statt des Messgeräts eine **LED** oder eine **Glühlampe** auf einer Steckplatte
-  (Gedankenexperiment wie in `generator-leiterschleife`; in der Simulation steht dazu kein Erklärtext). Die LED
-  leuchtet ab 0,05 V, voll ab 0,15 V, nur in Durchlassrichtung (rote Buchse an A₁, wie die Plus-Buchse); die
-  Glühlampe glüht ab 0,08 V sichtbar, voll bei 0,2 V, in beiden Richtungen, mit kurzem Nachglühen. Bei 0,5 U/s und
-  „Ende – Ende“: mit Eisenkern (Scheitelwert etwa 0,23 V im Feldlinienmodell) leuchten beide hell, ohne Eisenkern
-  (etwa 0,1 V) blitzt die LED schwach und die Lampe bleibt fast dunkel – so wird sichtbar, wozu der Eisenkern da
-  ist; bei „Ende – Anfang“ bleibt alles dunkel. Real bräuchte eine LED etwa 1,8 V.
+- **Anzeige** (nur im Modell): statt des Messgeräts eine **LED** oder eine **Glühlampe** auf einer Steckplatte.
+  Beide haben realistische Schwellen (Hinweis im Bedienfeld). Die **LED** (rot) leuchtet erst ab etwa 1,6 V
+  schwach, hell ab 2,2 V, nur in Durchlassrichtung (rote Buchse an A₁, wie die Plus-Buchse) – bei Wechselspannung
+  blinkt sie also im Takt der Drehung. Mit 500 Windungen bleibt sie fast immer dunkel; sie braucht Eisenkern, viele
+  Windungen und schnelles Drehen. Bei „Ende – Anfang“ bleibt sie dunkel. Vorwiderstand und Belastung der Spulen sind
+  nicht berücksichtigt.
+  Die **Glühlampe** ist realistisch: ein Glühlämpchen 3,8 V / 0,07 A (steht im Bedienfeld). Der Glühdraht heizt sich
+  mit der Leistung ∝ U² auf und glüht erst ab etwa 1 V (Effektivwert) sichtbar dunkelrot, hell erst bei 3,8 V, in
+  beiden Richtungen, mit kurzem Nachglühen (bei langsamer Drehung flackert er). Mit der Standardspule
+  (500 Windungen) und Eisenkern glüht sie bei 3 U/s nur schwach; hell wird sie erst mit 1000 oder 2000 Windungen.
+  So wird sichtbar, dass eine Lampe eine Mindestspannung braucht und wovon die Spannung abhängt. Die Belastung der
+  Spulen durch den Lampenstrom ist nicht berücksichtigt.
   Zu Beginn: Standardansicht, Feldlinienmodell, ohne Eisenkern, Diagramme aus (auch im Erklärmodus erst auf
   Wunsch).
 - **Aufbau:** immer zwei Spulen (rechts Spule 1, links Spule 2), in Reihe geschaltet.
+  - **Windungen je Spule:** 250, 500 (Standard), 1000 oder 2000 – wie Schulspulen. Die Spannung wächst proportional
+    zur Windungszahl. Gezeichnet sind 6, 11, 16 bzw. 22 Windungen, je mehr, desto dünner der Draht.
   - **Ohne Eisenkern** (Luftspulen, Standard) / **Mit Eisenkern** (Kern mit Polschuh und Eisenjoch – ein Ring, der
     die Kerne außen verbindet, wie der Stator eines echten Generators).
   - Verbinden: **Ende – Ende** (E₁ mit E₂): Spannungen addieren sich, doppelte Spannung.
@@ -102,7 +109,7 @@ sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Unter
   erscheint darunter der Drehwinkel-Regler (0°–360°), mit dem man den Magneten von Hand Stellung für Stellung dreht.
 - **Frequenz der Spannung** (bei einem Polpaar gleich der Drehzahl).
 - **Diagramm U–t** (Haken bei der Anzeige, zu Beginn aus).
-- **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 V. Ab etwa 2 Umdrehungen pro
+- **Zeigermessgerät** mit Nullpunkt in der Mitte, Messbereiche ±0,3 / ±1 / ±3 / ±10 V (±10 V für Spulen mit vielen Windungen). Ab etwa 2 Umdrehungen pro
   Sekunde kann der träge Zeiger nicht mehr folgen und zittert nur um die Null – wie ein echtes
   Demonstrations-Messgerät. Das Diagramm zeigt die Wechselspannung trotzdem.
 - **Link / QR-Code zeigen** (gemeinsamer Baustein `gemeinsam/link.js`).
@@ -140,7 +147,7 @@ das zuschauende Gerät aus der übernommenen Stellung selbst. Technik: `js/live.
   **B = B_max · cos(φ − θ)** mit B_max = 100 mT. Das ist eine Vereinfachung – eine echte Feldberechnung wäre
   aufwendig und für das Verständnis nicht nötig. Echte Generatoren formen ihre Polschuhe aber genau so, dass B
   annähernd sinusförmig von der Stellung abhängt.
-- Induktionsgesetz: **U = −N · A · dB/dt** mit N = 500 Windungen und dem Kernquerschnitt A ≈ 9 cm²; daraus
+- Induktionsgesetz: **U = −N · A · dB/dt** mit N = 500 Windungen (wählbar 250 … 2000) und dem Kernquerschnitt A ≈ 9 cm²; daraus
   U = N · A · B_max · ω · sin(φ − θ). Bei 1 Umdrehung pro Sekunde ist der Scheitelwert einer Spule etwa 0,29 V.
 - Zwei Spulen: Wendet der Magnet Spule 1 den Nordpol zu, wendet er Spule 2 den Südpol zu – also B₂ = −B₁ und
   U₂ = −U₁. Ende – Ende ergibt U = U₁ − U₂ = 2 · U₁, Ende – Anfang U = U₁ + U₂ = 0.
@@ -200,8 +207,8 @@ innenpolgenerator/
 │   ├── szene.js        # Renderer, Kamera, Licht, Startansicht einpassen
 │   ├── modell.js       # Polrad mit Kurbel, Spulen mit Eisenkern, Joch, B-Pfeile
 │   ├── messgeraet.js   # Zeigermessgerät und Kabel (je nach Schaltung verlegt)
-│   ├── led.js          # LED statt Messgerät (Gedankenexperiment, wie in generator-leiterschleife)
-│   ├── gluehlampe.js   # Glühlampe statt Messgerät (Gedankenexperiment)
+│   ├── led.js          # LED statt Messgerät (realistisch, ab etwa 1,6 V)
+│   ├── gluehlampe.js   # Glühlampe statt Messgerät (realistisch, 3,8 V)
 │   ├── diagramm.js     # U–t-Diagramm
 │   ├── ziehen.js       # Kurbel mit Maus/Finger drehen
 │   ├── bedienfeld.js   # Knöpfe, Regler, Anzeigen, freie Fläche für die Startansicht

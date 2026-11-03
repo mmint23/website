@@ -4,7 +4,7 @@
 // nur im Modell: Rechnung (Feldlinienmodell / reale Physik) und Aufbau (Eisenkern, Verbindung der beiden Spulen);
 // Antrieb mit Festhalten und Zeitlupe; Anzeige (Messgerät, LED oder Glühlampe)
 // ------------------------------------------------------------------
-import { METER, SPEED_MAX, WIND_MAX, TURBINE } from './config.js';
+import { METER, SPEED_MAX, WIND_MAX, TURBINE, TURNS, LAMP, LED } from './config.js';
 import { state, ausWindpark, imErklaermodusStarten } from './state.js';
 import { endCrank, setHold, holdTo, rotor, frequency, park } from './physik.js';
 import { updateMeterFace } from './messgeraet.js';
@@ -17,8 +17,14 @@ import { adresseFuer, netz, raum } from '../../../gemeinsam/verbindung.js';
 const $ = id => document.getElementById(id);
 const DRIVES = [['driveWindBtn', 'wind'], ['driveSpeedBtn', 'speed'], ['driveCrankBtn', 'crank']];
 const IRON = [['airBtn', false], ['ironBtn', true]];
-// Angeschlossen: Messgerät, LED oder Glühlampe (Gedankenexperiment, siehe README)
+// Angeschlossen: Messgerät, LED oder Glühlampe (realistische Schwellen, siehe README)
 const DISPLAYS = [['displayMeterBtn', 'meter'], ['displayLedBtn', 'led'], ['displayLampBtn', 'lamp']];
+// Hinweis unter den Knöpfen: realistische Schwellen von LED und Glühlampe
+const DISPLAY_INFO = {
+  led: `Rote LED: Sie leuchtet erst ab etwa ${formatNumber(LED.THRESHOLD, 1)} V und nur in einer Stromrichtung.`,
+  lamp: `Glühlämpchen ${formatNumber(LAMP.FULL, 1)} V / 0,07 A: Es glüht erst ab etwa `
+    + `${formatNumber(LAMP.THRESHOLD, 0)} V sichtbar, hell erst bei ${formatNumber(LAMP.FULL, 1)} V.`,
+};
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
 const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
 
@@ -39,6 +45,9 @@ export function updateUi() {
   $('pauseBtn').setAttribute('aria-pressed', String(state.paused));
   $('pauseBtn').textContent = state.paused ? 'Weiter' : 'Pause';
   for (const [id, iron] of IRON) segment(id, state.iron === iron);
+  for (const button of $('turnsButtons').children) segment(button.id, Number(button.dataset.turns) === state.turns);
+  $('displayInfo').hidden = state.display === 'meter' || state.explain;
+  $('displayInfo').textContent = DISPLAY_INFO[state.display] ?? '';
   for (const [id, display] of DISPLAYS) segment(id, state.display === display);
   $('displayButtons').hidden = state.explain;   // Auswahl nur im Modell
   for (const [id, reversed] of WIRING) segment(id, state.reversed === reversed);
@@ -173,6 +182,16 @@ export function initUi() {
     $('rangeButtons').append(button);
   }
   for (const [id, iron] of IRON) $(id).addEventListener('click', () => { state.iron = iron; updateUi(); });
+  // Spulen mit verschiedenen Windungszahlen
+  for (const turns of TURNS) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = 'turns' + turns;
+    button.dataset.turns = turns;
+    button.textContent = String(turns);
+    button.addEventListener('click', () => { state.turns = turns; updateUi(); });
+    $('turnsButtons').append(button);
+  }
   for (const [id, display] of DISPLAYS) $(id).addEventListener('click', () => { state.display = display; updateUi(); });
   for (const [id, reversed] of WIRING) $(id).addEventListener('click', () => { state.reversed = reversed; updateUi(); });
   for (const [id, drive] of DRIVES) {

@@ -9,6 +9,7 @@ export const state = {
                       // trotzdem mit den Feldlinien
   colorInside: false, // Abschnitte der Feldlinien im Inneren der Spulen violett färben (nur bei eingeblendeten Feldlinien)
   iron: false,        // Spulen mit Eisenkern (und bei zwei Spulen mit Joch); false: Luftspulen
+  turns: 500,         // Windungen je Spule (wählbar: TURNS in config.js)
   coils: 2,           // immer zwei Spulen (rechts und links, in Reihe); 1 (nur rechts) gibt es nur noch in den Tests
   reversed: false,    // zwei Spulen: false „Ende – Ende“ (Spannungen addieren sich), true „Ende – Anfang“ (heben sich auf)
   drive: 'speed',     // Antrieb: 'wind' (Rotor einer Windkraftanlage), 'speed' (Drehzahl-Regler) oder 'crank' (Handkurbel)
@@ -17,7 +18,7 @@ export const state = {
   hold: false,        // Magnet festgehalten: dreht sich nur per Kurbel oder Drehwinkel-Regler, bleibt dann stehen
   slowMotion: false,
   range: 0.3,         // Messbereich ±0,3 V
-  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe) – Gedankenexperiment
+  display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe)
   explain: false,     // Erklärmodus: nur hier Magnetfeld (Feldlinien, B-Pfeil, B–t-Diagramm, Tangente, reale Physik)
   showB: false,       // Pfeil für B im Spuleninneren (Spule und Kern dann durchsichtig)
   showPlot: false,    // Diagramm U–t (im Erklärmodus dazu B–t); zu Beginn aus
