@@ -90,12 +90,13 @@
     </section>
     <section id="anzeigeSection">
       <h2>Anzeige</h2>
-      <!-- statt des Messgeräts LED oder Glühlampe (Gedankenexperiment), nur im Modell -->
+      <!-- statt des Messgeräts LED oder Glühlampe (realistische Schwellen), nur im Modell -->
       <div class="segmented" role="group" aria-label="Angeschlossen" id="displayButtons">
         <button id="displayMeterBtn" type="button">Mess&shy;gerät</button>
         <button id="displayLedBtn" type="button">LED</button>
         <button id="displayLampBtn" type="button">Glüh&shy;lampe</button>
       </div>
+      <p class="status" id="displayInfo" hidden></p>
       <label class="check"><input id="plotCheck" type="checkbox" /> Diagramm U–t</label>
       <p class="status">Messbereich</p>
       <div class="segmented" role="group" aria-label="Messbereich" id="rangeButtons"></div>
@@ -115,6 +116,8 @@
         <button id="airBtn" type="button">Ohne Eisenkern</button>
         <button id="ironBtn" type="button">Mit Eisenkern</button>
       </div>
+      <p class="status">Windungen je Spule:</p>
+      <div class="segmented" role="group" aria-label="Windungen je Spule" id="turnsButtons"></div>
       <p class="status">Die beiden Spulen in Reihe verbinden:</p>
       <div class="segmented" role="group" aria-label="Verbindung der Spulen">
         <button id="wiringOkBtn" type="button">Ende – Ende</button>

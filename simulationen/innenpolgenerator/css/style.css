@@ -199,3 +199,6 @@ html, body {
 /* Live-Steuerung (Lehrerseite ohne Tafel: kleiner Kasten unten links, gemeinsam/live/): im Erklärmodus rechts, wo
    dann kein Bedienfeld steht */
 body.erklaer-an .live-kasten { left: auto; right: 16px; }
+
+/* Windungen je Spule: fünf Knöpfe nebeneinander, „12000“ soll ganz hineinpassen */
+#turnsButtons button { font-size: 0.85rem; padding-left: 2px; padding-right: 2px; }

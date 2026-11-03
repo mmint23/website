@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------
-// Glühlampe statt Messgerät (Gedankenexperiment, wie in generator-leiterschleife): Lämpchen in einer Fassung auf einer Steckplatte mit zwei
+// Glühlampe statt Messgerät (realistisch: 3,8 V / 0,07 A, Schwellen in config.js): Lämpchen in einer Fassung auf einer Steckplatte mit zwei
 // Buchsen. Der Glühdraht glüht erst dunkelrot, dann orange, bei voller Leistung warmweiß – in beiden
 // Stromrichtungen.
 // ------------------------------------------------------------------

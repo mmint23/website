@@ -104,10 +104,15 @@ export const crankTargets = [];
 
 // ---------------- Spulen mit Eisenkern (stehen fest)
 
-// Wicklung als Schraubenlinie um den Kern; Anfang und Ende vorne (z > 0), damit die Zuleitungen sichtbar sind
+// Wicklung als Schraubenlinie um den Kern mit n sichtbaren Windungen; Anfang und Ende vorne (z > 0), damit die
+// Zuleitungen sichtbar sind
 class Wendel extends THREE.Curve {
+  constructor(n) {
+    super();
+    this.n = n;
+  }
   getPoint(t, ziel = new THREE.Vector3()) {
-    const a = Math.PI / 2 + t * COIL.TURNS_SHOWN * 2 * Math.PI;
+    const a = Math.PI / 2 + t * this.n * 2 * Math.PI;
     return ziel.set(COIL.WIND_R * Math.cos(a), COIL.WIND_IN + t * (COIL.WIND_OUT - COIL.WIND_IN), COIL.WIND_R * Math.sin(a));
   }
 }
@@ -169,7 +174,12 @@ COIL.THETA.forEach((theta, k) => {
   for (const y of [COIL.WIND_IN - 0.45, COIL.WIND_OUT + 0.45]) {
     addMesh(new THREE.CylinderGeometry(COIL.WIND_R + 0.8, COIL.WIND_R + 0.8, 0.3, 32), insulator, group).position.y = y;
   }
-  addMesh(new THREE.TubeGeometry(new Wendel(), COIL.TURNS_SHOWN * 40, 0.3, 8, false), copper, group);
+  // je wählbarer Windungszahl eine Wicklung (mehr Windungen: dünnerer Draht); sichtbar ist nur die gewählte
+  const wicklungen = {};
+  for (const [turns, n] of Object.entries(COIL.TURNS_SHOWN)) {
+    const radius = 0.3 * Math.sqrt(11 / n);
+    wicklungen[turns] = addMesh(new THREE.TubeGeometry(new Wendel(n), n * 40, radius, 8, false), copper, group);
+  }
   // Zuleitungen vom Anfang der Wicklung (innen) zu A und vom Ende (außen) zu E; Anschlüsse als Messingknöpfe
   // (ohne Beschriftung, ebenso die Spulen). up: Richtung (±x in der Spule), die nach dem Drehen des Generators nach oben zeigt – A liegt bei
   // beiden Spulen oben, E unten.
@@ -195,7 +205,7 @@ COIL.THETA.forEach((theta, k) => {
   const halterZ0 = -2.6, halterZ1 = STAND.Z + STAND.DEPTH / 2;
   const halter = addMesh(new THREE.BoxGeometry(1.6, 0.8, halterZ0 - halterZ1), mat.stand, group);
   halter.position.set(0, COIL.WIND_OUT + 0.45, (halterZ0 + halterZ1) / 2);
-  coils.push({ group, copper, iron, insulator, arrow, bLabel, ironParts: [shoe, core] });
+  coils.push({ group, copper, iron, insulator, arrow, bLabel, ironParts: [shoe, core], wicklungen });
   group.updateMatrixWorld(true);
   terminals.push({
     a: ends.a.getWorldPosition(new THREE.Vector3()),
@@ -254,6 +264,7 @@ export function syncModel() {
   coils[1].group.visible = bars[1].visible = two;
   yoke.visible = two && state.iron;   // Joch nur mit Eisenkernen
   for (const coil of coils) for (const part of coil.ironParts) part.visible = state.iron;
+  for (const coil of coils) for (const [turns, w] of Object.entries(coil.wicklungen)) w.visible = Number(turns) === state.turns;
   // Spulen im ganzen Erklärmodus stark durchsichtig (B-Pfeil, Feldlinien); Magnet und Joch nur für die Feldlinien
   const durchsichtig = state.explain;
   if (seeThrough !== durchsichtig) {
