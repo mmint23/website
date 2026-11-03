@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { addMesh } from './hilfen.js';
 import { mat } from './materialien.js';
-import { TABLE_TOP } from './config.js';
+import { TABLE_TOP, DREHUNG } from './config.js';
 
 const container = document.getElementById('scene');
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -22,6 +22,12 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 scene.environmentIntensity = 0.7;
 
+// Der Generator-Aufbau, um DREHUNG um die Senkrechte gedreht (config.js); Messgerät, Lampe und Tisch bleiben außerhalb
+export const aufbau = new THREE.Group();
+aufbau.rotation.y = DREHUNG;
+scene.add(aufbau);
+aufbau.updateMatrixWorld();
+
 export const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 1000);
 export const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -31,10 +37,11 @@ controls.maxDistance = 200;
 const POLAR_TISCH = Math.PI * 0.49;
 controls.maxPolarAngle = POLAR_TISCH;
 
-// Startansicht: schräg von vorne oben, Modell links, Messgerät rechts unten
+// Startansicht: von vorne, etwas von oben und links – Blick entlang der Welle in den offenen Spalt des Magneten,
+// Messgerät rechts
 export function resetView() {
-  camera.position.set(-10, 18, 70);
-  controls.target.set(11, -6, 0);
+  camera.position.set(-4, 32, 66);
+  controls.target.set(4, -5, 0);
 }
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f99, 0.9));

@@ -62,7 +62,7 @@
         <button id="showTwoBtn" type="button"><span class="dot" style="background:#1565c0"></span>2 e⁻</button>
         <button id="showManyBtn" type="button"><span class="dot" style="background:#1565c0"></span>viele e⁻</button>
       </div>
-      <button id="sideViewBtn" class="state" type="button">Ansicht von rechts</button>
+      <button id="sideViewBtn" class="state" type="button">Ansicht von vorne</button>
       <button id="magnetGlassBtn" class="state" type="button">Magnet durchsichtig</button>
       <button id="explainPlotBtn" class="state" type="button">U-t-Diagramm</button>
     </section>
@@ -143,6 +143,16 @@
       <p class="status" id="magnetStatus"></p>
       <button id="coilBtn" class="state" type="button">Spule mit 5 Windungen</button>
       <p class="status" id="coilStatus"></p>
+      <button id="bauteileBtn" class="state" type="button" aria-pressed="false">Spulen auf dem Tisch zeigen</button>
+      <div id="bauteilAuswahl" hidden>
+        <p class="status">Auf der Welle (Bauteil tauschen):</p>
+        <div class="segmented" role="group" aria-label="Bauteil auf der Welle">
+          <button type="button" data-bauteil="schleife">Leiter&shy;schleife</button>
+          <button type="button" data-bauteil="spule">Spule</button>
+          <button type="button" data-bauteil="eisen">Spule mit Eisen&shy;kern</button>
+        </div>
+      </div>
+      <p class="status" id="bauteilStatus"></p>
     </section>
   </aside>
 

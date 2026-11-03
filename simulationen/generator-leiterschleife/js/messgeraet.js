@@ -2,8 +2,8 @@
 // Großes Demonstrations-Zeigermessgerät (Nullpunkt in der Mitte, wie bei der Leiterschaukel; Messbereiche in mV und
 // in V) und Kabel von den Bürsten des Generators – statt des Messgeräts wahlweise LED oder Glühlampe (state.display,
 // led.js, gluehlampe.js): Sie stehen an derselben Stelle, die Kabel führen dann in ihre Buchsen. Zur Glühlampe lässt
-// sich das Messgerät parallel anschließen (state.meterToo): Die Lampe steht dann davor, von ihren Buchsen führen zwei
-// weitere Kabel zum Messgerät.
+// sich das Messgerät parallel anschließen (state.meterToo): Die Bürstenkabel gehen dann ins Messgerät, die Lampe steht
+// direkt davor und hängt mit zwei kurzen Kabeln an dessen Buchsen.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
 import { METER, TABLE_TOP, inVolt } from './config.js';
@@ -173,40 +173,58 @@ function makeCable(points, material) {
   return addMesh(new THREE.TubeGeometry(curve, 200, 0.3, 12, false), material, scene);
 }
 
-// Vom Bürstenanschluss nach unten durchhängend und von vorne in die Buchse
+// Die Bürsten sitzen hinter dem Magneten (der Aufbau ist gedreht, config.js DREHUNG): Die Kabel laufen vom
+// Bürstenanschluss nach unten auf den Tisch, hinter dem Magneten nach rechts und im Gang zwischen Südpol und Messgerät
+// (x = GANG_X) nach vorne
+const GANG_X = 16.5, AUF_DEM_TISCH = TABLE_TOP + 0.8;
+const hintenHerum = t => [t.toArray(), [t.x, t.y - 3, t.z - 0.5], [t.x + 3, AUF_DEM_TISCH, t.z - 2.5], [GANG_X, AUF_DEM_TISCH, t.z - 2]];
+
+// Zum Messgerät: hinten herum und von vorne in die Buchse
 function cablePoints(terminal, socketLocal) {
   meter.updateMatrixWorld();
   const front = new THREE.Vector3(0, 0, 1).applyQuaternion(meter.quaternion);
   const socket = meter.localToWorld(socketLocal.clone()).addScaledVector(front, 1.2);
   const at = d => socket.clone().addScaledVector(front, d).toArray();
-  const t = terminal;
-  return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 6, t.z + 3], at(5).map((v, i) => (i === 1 ? v - 1.5 : v)), at(2), socket.toArray()];
+  return [...hintenHerum(terminal), [GANG_X, AUF_DEM_TISCH, 6], at(5).map((v, i) => (i === 1 ? v - 1.5 : v)), at(2), socket.toArray()];
 }
 
-// Zu LED bzw. Glühlampe: vom Bürstenanschluss durchhängend und von oben in die Buchse der Steckplatte
+// Zu LED bzw. Glühlampe: hinten herum und von oben in die Buchse der Steckplatte
 function boardCablePoints(terminal, socket) {
-  const t = terminal, s = socket;
-  return [t.toArray(), [t.x, t.y - 3, t.z + 0.5], [t.x + 3, t.y - 6, (t.z + s.z) / 2], [s.x - 3, s.y + 3, s.z], [s.x, s.y + 2, s.z], s.toArray()];
+  const s = socket;
+  return [...hintenHerum(terminal), [GANG_X, AUF_DEM_TISCH, s.z], [(GANG_X + s.x) / 2, s.y + 3, s.z], [s.x, s.y + 2, s.z], s.toArray()];
 }
 
-// Messgerät parallel zur Glühlampe: von der Buchse der Steckplatte nach oben, durchhängend und von vorne ins Messgerät
-function parallelCablePoints(start, socketLocal) {
+// Zum Messgerät, wenn die Glühlampe davor steht: hinten herum und dicht an der Front des Messgeräts von unten in die
+// Buchse – so bleibt der Platz vor den Buchsen frei für die Kabel zur Lampe
+function nahCablePoints(terminal, socketLocal) {
   meter.updateMatrixWorld();
   const front = new THREE.Vector3(0, 0, 1).applyQuaternion(meter.quaternion);
   const socket = meter.localToWorld(socketLocal.clone()).addScaledVector(front, 1.2);
-  const at = d => socket.clone().addScaledVector(front, d);
-  const s = start, vor = at(5);
-  return [s.toArray(), [s.x, s.y + 2.5, s.z], [(s.x + vor.x) / 2, Math.min(s.y, vor.y) - 1, (s.z + vor.z) / 2],
-    [vor.x, vor.y - 1.5, vor.z], at(2).toArray(), socket.toArray()];
+  const unten = socket.clone().addScaledVector(front, 0.6).add(new THREE.Vector3(0, -2.6, 0));
+  return [...hintenHerum(terminal), [GANG_X, AUF_DEM_TISCH, 4], [unten.x, AUF_DEM_TISCH, unten.z], unten.toArray(),
+    socket.clone().add(new THREE.Vector3(0, -0.9, 0)).addScaledVector(front, 0.3).toArray(), socket.toArray()];
+}
+
+// Glühlampe parallel zum Messgerät: Die Bürstenkabel gehen wie sonst ins Messgerät; von dessen Buchsen (Stecker auf
+// Stecker) führt je ein kurzes Kabel nach vorne und von oben in die Buchse der Steckplatte, die direkt davor steht –
+// Minus (blau) links, Plus (rot) rechts, ohne Kreuzung
+function parallelCablePoints(socketLocal, ziel) {
+  meter.updateMatrixWorld();
+  const front = new THREE.Vector3(0, 0, 1).applyQuaternion(meter.quaternion);
+  const stecker = meter.localToWorld(socketLocal.clone()).addScaledVector(front, 1.2);
+  const vor = stecker.clone().addScaledVector(front, 2);
+  const s = ziel;
+  return [stecker.toArray(), vor.toArray(), [(vor.x + s.x) / 2, Math.max(vor.y, s.y) + 1.5, (vor.z + s.z) / 2],
+    [s.x, s.y + 2, s.z], s.toArray()];
 }
 
 // Kabel für Glühlampe und Messgerät zusammen: Lampe dafür kurz an ihren Platz vor dem Messgerät stellen
 setLampPlacement(true);
 const lampMeterCables = [
-  makeCable(boardCablePoints(brushTerminals[0], lampSocket(1)), mat.cableRed),
-  makeCable(boardCablePoints(brushTerminals[1], lampSocket(-1)), mat.cableBlue),
-  makeCable(parallelCablePoints(lampSocket(1), SOCKET_PLUS), mat.cableRed),
-  makeCable(parallelCablePoints(lampSocket(-1), SOCKET_COM), mat.cableBlue),
+  makeCable(nahCablePoints(brushTerminals[0], SOCKET_PLUS), mat.cableRed),
+  makeCable(nahCablePoints(brushTerminals[1], SOCKET_COM), mat.cableBlue),
+  makeCable(parallelCablePoints(SOCKET_PLUS, lampSocket(1)), mat.cableRed),
+  makeCable(parallelCablePoints(SOCKET_COM, lampSocket(-1)), mat.cableBlue),
 ];
 setLampPlacement(false);
 

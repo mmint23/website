@@ -13,6 +13,7 @@ import { updatePlot } from './diagramm.js';
 import { initUi, updateHoldSlider, updateParkStatus } from './bedienfeld.js';
 import { syncExplain } from './erklaerung.js';
 import './ziehen.js';
+import { syncBauteile } from './bauteile.js';
 import { initTafel, oeffneTafel, tafelOffen, zuTafel, vonTafel } from '../../../gemeinsam/tafel/index.js';
 import { initLaser, laserKnopf } from '../../../gemeinsam/laser/laser.js';
 import { initLiveSteuerung, zuschauen, ansichtUebernehmen } from './live.js';
@@ -57,6 +58,7 @@ renderer.setAnimationLoop(() => {
   } else ansichtUebernehmen();
   updateParkStatus();
   syncModel(state.paused ? 0 : dt);
+  syncBauteile(dt);   // Tausch des Bauteils in Echtzeit (auch in der Zeitlupe)
   syncMeter();
   syncLed();
   syncLamp();
