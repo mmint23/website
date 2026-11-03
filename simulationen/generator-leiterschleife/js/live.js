@@ -55,7 +55,7 @@ function schreiben(daten) {
     setMeterVisible(!state.explain);
     setTable(!state.explain);
   }
-  if (vorher.northUp !== state.northUp) applyMagnetPoles();
+  if (vorher.northBack !== state.northBack) applyMagnetPoles();
   if (Object.keys(state).some(k => vorher[k] !== state[k])) updateUi();
 }
 

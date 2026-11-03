@@ -3,7 +3,7 @@
 // Greift man daneben, dreht sich wie gewohnt die Ansicht.
 // ------------------------------------------------------------------
 import * as THREE from 'three';
-import { CRANK } from './config.js';
+import { CRANK, LIEGEND } from './config.js';
 import { state } from './state.js';
 import { startCrank, crankTo, endCrank } from './physik.js';
 import { crankTargets } from './modell.js';
@@ -23,10 +23,11 @@ function setRay(event) {
   raycaster.setFromCamera(pointer, camera);
 }
 
-// Winkel des Punkts unter dem Finger um die Welle (gleiche Zählung wie φ: Arm vorne bei φ = 0)
+// Winkel des Punkts unter dem Finger um die Welle, in der Zählung von φ (die Schleife ist um LIEGEND gedreht:
+// Arm bei φ = 0 oben)
 function angleAtPointer() {
   if (!raycaster.ray.intersectPlane(plane, hit)) return null;
-  return Math.atan2(-hit.y, hit.z);
+  return Math.atan2(-hit.y, hit.z) - LIEGEND;
 }
 
 // Beim Antrieb „Wind“ ist die Kurbel durch den kleinen Rotor ersetzt

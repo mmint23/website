@@ -199,14 +199,16 @@ export function syncExplain() {
   }
 }
 
-// Kamera für den Erklärmodus: näher an der Schleife, schräg von links vorne (so sind auch v-Pfeile nach vorne gut zu sehen)
+// Kamera für den Erklärmodus: näher an der Schleife, schräg von links vorne und von oben (über den vorderen Pol des
+// liegenden Magneten hinweg; so sind auch v-Pfeile nach vorne gut zu sehen)
 export function explainView(controls) {
-  camera.position.set(-42, 14, 46);
+  camera.position.set(-38, 40, 36);
   controls.target.set(2, -2, 0);
 }
 
 // Ansicht von rechts: genau entlang der Welle (von der Seite der Schleifringe). Die Schleife erscheint als Strich,
-// der sich dreht; die Längsseiten laufen auf einem Kreis, B zeigt senkrecht, v tangential an diesen Kreis.
+// der sich dreht; die Längsseiten laufen auf einem Kreis, B zeigt waagrecht (vom Nordpol rechts zum Südpol links), v
+// tangential an diesen Kreis.
 export function sideView(controls) {
   camera.position.set(52, -1, 0);
   controls.target.set(0, -1, 0);

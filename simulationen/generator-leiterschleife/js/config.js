@@ -23,15 +23,28 @@ export const LOOP = {
 // Windung (der Leiterschleife).
 export const COIL = { TURNS: 5, DY: 1.0, EXPLAIN_DY: 1.2, EXPLAIN_WIRE_R: 0.4, ANIM: 3 };
 
-// Magnet: zwei Polblöcke über (Nordpol) und unter (Südpol) der Schleife, dazwischen ein gleichmäßiges Feld
+// Bauteile zum Tauschen (bauteile.js): Spule mit TURNS Windungen statt der Leiterschleife, wahlweise mit Eisenkern.
+// Dieselbe Fläche wie die Leiterschleife, also TURNS-fache Spannung: 1,5 V Scheitelwert je Umdrehung pro Sekunde –
+// beim Kurbeln leuchtet die Glühlampe (3,5 V), bei 0,5 U/s bleibt sie gerade noch dunkel. Der Eisenkern verstärkt den
+// magnetischen Fluss durch die Spule (vereinfacht: um den Faktor EISEN), dann leuchtet sie schon bei 0,5 U/s.
+export const ANKER = { TURNS: 300, EISEN: 4 };
+
+// Liegender Hufeisenmagnet: Polblöcke hinter (Nordpol) und vor (Südpol) der Schleife, das Joch liegt unten auf dem
+// Tisch; dazwischen ein gleichmäßiges Feld waagrecht quer zur Welle. Gebaut wird der Magnet „stehend“ (Polblöcke oben
+// und unten, Joch hinten; Maße unten) und dann als Ganzes um LIEGEND um die Welle gedreht. Um denselben Winkel drehen
+// Feldlinien und Schleife (modell.js) sowie Lage und Feld in der Physik (physik.js): So bleiben Drehsinn und φ wie
+// zuvor – bei φ = 0 steht die Schleife quer zum Feld (jetzt senkrecht, Längsseite A oben).
+export const LIEGEND = -Math.PI / 2;
 export const MAGNET = {
   GAP: 14,                    // Abstand der Polflächen (die Schleife dreht sich frei dazwischen)
   THICK: 5,                   // Dicke der Polblöcke
   WIDTH: 13,                  // Ausdehnung entlang der Welle (deckt die Längsseiten ganz ab)
-  DEPTH: 13,                  // Ausdehnung nach vorne/hinten
+  DEPTH: 10.5,                // Höhe der Polblöcke (stehend gebaut: Ausdehnung nach vorne/hinten); niedrig genug,
+                              // dass man über den vorderen Pol auf die Schleife sieht
 };
 
-// Tisch: Oberkante unter dem Magneten (der Hufeisenmagnet steht mit dem unteren Polblock auf dem Tisch)
+// Tisch: Oberkante unter dem Magneten; das Joch reicht von den Polblöcken bis auf den Tisch (Höhe wie beim früheren
+// stehenden Magneten, damit Lagerböcke, Messgerät und Ansichten gleich bleiben)
 export const TABLE_TOP = -(MAGNET.GAP / 2 + MAGNET.THICK);
 
 // Welle (liegt in zwei Lagerböcken), Schleifringe, Bürsten, Kurbel

@@ -10,7 +10,7 @@ import {
 const TWO_PI = 2 * Math.PI;
 
 function spin(speed, seconds) {
-  Object.assign(state, { drive: 'speed', speed, northUp: true, range: 10 });
+  Object.assign(state, { drive: 'speed', speed, northBack: true, range: 10 });
   resetPhysics();
   let max = -Infinity, min = Infinity;
   for (let i = 0; i < seconds * 600; i++) {
@@ -36,7 +36,7 @@ test('gleichmäßige Drehung: Wechselspannung mit Scheitelwert B·A·ω', () => 
 });
 
 test('Spannung zwischen den Ringen folgt −B·A·ω·sin φ; Längsseiten tragen gleich viel bei', async () => {
-  Object.assign(state, { drive: 'speed', speed: 1, northUp: true });
+  Object.assign(state, { drive: 'speed', speed: 1, northBack: true });
   resetPhysics();
   for (let i = 0; i < 1200; i++) stepPhysics(1 / 600);
   const { ringVoltage } = await import('../js/physik.js');
@@ -49,19 +49,19 @@ test('Spannung zwischen den Ringen folgt −B·A·ω·sin φ; Längsseiten trage
 });
 
 test('Magnet umdrehen bzw. Drehrichtung umkehren kehrt die Spannung um', () => {
-  Object.assign(state, { drive: 'speed', speed: 1, northUp: true });
+  Object.assign(state, { drive: 'speed', speed: 1, northBack: true });
   resetPhysics();
   for (let i = 0; i < 700; i++) stepPhysics(1 / 600);
   const u = emf();
-  state.northUp = false;
+  state.northBack = false;
   assert.ok(Math.abs(emf() + u) < 1e-12);
-  state.northUp = true;
+  state.northBack = true;
   rotor.omega = -rotor.omega;
   assert.ok(Math.abs(emf() + u) < 1e-12);
 });
 
 test('Kurbel: Schleife folgt dem Finger über mehrere Umdrehungen und läuft nach dem Loslassen aus', () => {
-  Object.assign(state, { drive: 'crank', northUp: true });
+  Object.assign(state, { drive: 'crank', northBack: true });
   resetPhysics();
   startCrank(0);
   // eine gute Umdrehung in 1 s, in kleinen Schritten (Winkel springt bei ±π – darf nicht zurückdrehen)
@@ -80,7 +80,7 @@ test('Kurbel: Schleife folgt dem Finger über mehrere Umdrehungen und läuft nac
 });
 
 test('Zeiger: pendelt bei langsamer Drehung mit (Anschlag bei Überlast), bei schneller zittert er nur', () => {
-  Object.assign(state, { drive: 'speed', speed: 3, northUp: true, range: 10 });   // 3 Hz, Scheitel ≈ 15 mV
+  Object.assign(state, { drive: 'speed', speed: 3, northBack: true, range: 10 });   // 3 Hz, Scheitel ≈ 15 mV
   resetPhysics();
   let fastMax = 0;
   for (let i = 0; i < 3000; i++) { stepPhysics(1 / 600); if (i > 1200) fastMax = Math.max(fastMax, Math.abs(needle.pos)); }
@@ -95,7 +95,7 @@ test('Zeiger: pendelt bei langsamer Drehung mit (Anschlag bei Überlast), bei sc
 
 test('Festhalten: Schleife bleibt stehen, folgt Kurbel bzw. Regler und bleibt beim Loslassen stehen', async () => {
   const { setHold, holdTo } = await import('../js/physik.js');
-  Object.assign(state, { drive: 'speed', speed: 1, northUp: true, hold: false });
+  Object.assign(state, { drive: 'speed', speed: 1, northBack: true, hold: false });
   resetPhysics();
   for (let i = 0; i < 300; i++) stepPhysics(1 / 600);
   setHold(true);
@@ -120,7 +120,7 @@ test('Festhalten: Schleife bleibt stehen, folgt Kurbel bzw. Regler und bleibt be
 test('Erklärmodus: Elektronen pendeln im Takt der Spannung entlang der Längsseiten', async () => {
   const { electrons, electronForce, sideVelocity } = await import('../js/physik.js');
   const { EXPLAIN } = await import('../js/config.js');
-  Object.assign(state, { drive: 'speed', speed: 0.5, northUp: true, hold: false, explain: true });
+  Object.assign(state, { drive: 'speed', speed: 0.5, northBack: true, hold: false, explain: true });
   resetPhysics();
   const { meterReading } = await import('../js/physik.js');
   let min = 0, max = 0, sameSign = 0, samples = 0;
@@ -163,7 +163,7 @@ test('Antrieb Wind (vereinfacht): Drehzahl proportional zum Wind, mit Trägheit'
 
 test('Antrieb Wind: Schleife dreht so schnell wie der Rotor im Windpark', async () => {
   const { park, stepPark } = await import('../js/physik.js');
-  Object.assign(state, { drive: 'wind', wind: 12, hold: false, northUp: true });
+  Object.assign(state, { drive: 'wind', wind: 12, hold: false, northBack: true });
   resetPhysics();
   park.rpm = 14;
   for (let i = 0; i < 600; i++) { stepPark(1 / 600); stepPhysics(1 / 600); }
@@ -189,7 +189,7 @@ test('Laufrichtung passt zur Verdrahtung: Seite A von rechts nach links, Weg von
 test('viele Elektronen: drängen sich am einen Ende zusammen, am anderen bleibt Mangel – im Takt der Spannung', async () => {
   const { electrons, manyPositions, PATH_LENGTH, meterReading } = await import('../js/physik.js');
   const { EXPLAIN } = await import('../js/config.js');
-  Object.assign(state, { drive: 'speed', speed: 1, northUp: true, hold: false, explain: true, showManyElectrons: true });
+  Object.assign(state, { drive: 'speed', speed: 1, northBack: true, hold: false, explain: true, showManyElectrons: true });
   resetPhysics();
   let checked = 0;
   for (let i = 0; i < 3000; i++) {
@@ -222,7 +222,7 @@ test('Spule mit COIL.TURNS Windungen: Spannung COIL.TURNS-mal so groß; bei 0,5 
 test('LED (Gedankenexperiment): nur in einer Halbschwingung, mit Spule heller', async () => {
   const { ledBrightness, ringVoltage } = await import('../js/physik.js');
   function messen(coil) {
-    Object.assign(state, { drive: 'speed', speed: 0.5, northUp: true, coil, display: 'led' });
+    Object.assign(state, { drive: 'speed', speed: 0.5, northBack: true, coil, display: 'led' });
     resetPhysics();
     const r = { led: 0, ledFalsch: 0 };
     for (let i = 0; i < 6 * 600; i++) {
@@ -247,7 +247,7 @@ test('Glühlampe (realistisch, 3,5 V): bleibt bei Millivolt dunkel, auch mit Spu
   const { LAMP, SPEED_MAX, CRANK_MAX_OMEGA } = await import('../js/config.js');
   let hellste = 0;
   for (const coil of [false, true]) {
-    Object.assign(state, { drive: 'speed', speed: SPEED_MAX, northUp: true, coil, display: 'lamp' });
+    Object.assign(state, { drive: 'speed', speed: SPEED_MAX, northBack: true, coil, display: 'lamp' });
     resetPhysics();
     for (let i = 0; i < 4 * 600; i++) {
       stepPhysics(1 / 600);
@@ -264,4 +264,46 @@ test('Glühlampe (realistisch, 3,5 V): bleibt bei Millivolt dunkel, auch mit Spu
   assert.ok(gluehen(1.2) > 0 && gluehen(1.2) < 0.2, `1,2 V: glimmt (${gluehen(1.2)})`);
   assert.equal(gluehen(LAMP.FULL), 1);
   lamp.heat = 0;
+});
+
+test('Bauteile: Spule mit vielen Windungen bringt die Lampe beim schnellen Drehen zum Leuchten, mit Eisenkern schon langsam', async () => {
+  const { lampGlow } = await import('../js/physik.js');
+  const { ANKER } = await import('../js/config.js');
+  function hellste(bauteil, speed) {
+    Object.assign(state, { drive: 'speed', speed, northBack: true, coil: false, bauteil, display: 'lamp' });
+    resetPhysics();
+    let g = 0, u = 0;
+    for (let i = 0; i < 4 * 600; i++) {
+      stepPhysics(1 / 600);
+      if (i < 1200) continue;   // nach dem Anlaufen
+      g = Math.max(g, lampGlow());
+      u = Math.max(u, Math.abs(emf()));
+    }
+    return { g, u };
+  }
+  const spuleLangsam = hellste('spule', 0.5), spuleSchnell = hellste('spule', 2), eisen = hellste('eisen', 0.5);
+  const schleife = hellste('schleife', 3);
+  state.bauteil = 'schleife';
+  // Scheitelspannung: Windungszahl (und Eisenkern) mal die der Leiterschleife
+  assert.ok(Math.abs(spuleLangsam.u - ANKER.TURNS * B_FIELD * LOOP_AREA * TWO_PI * 0.5) < 0.02 * spuleLangsam.u, `${spuleLangsam.u}`);
+  assert.ok(Math.abs(eisen.u - ANKER.EISEN * spuleLangsam.u) < 0.02 * eisen.u, `${eisen.u}`);
+  assert.equal(schleife.g, 0, 'Leiterschleife: Lampe dunkel');
+  assert.equal(spuleLangsam.g, 0, 'Spule bei 0,5 U/s: noch dunkel');
+  assert.ok(spuleSchnell.g > 0.5, `Spule bei 2 U/s: leuchtet (${spuleSchnell.g})`);
+  assert.ok(eisen.g > 0.5, `mit Eisenkern bei 0,5 U/s: leuchtet (${eisen.g})`);
+});
+
+test('Tausch des Bauteils: Welle steht, Stromkreis offen', async () => {
+  const { umbau, windungen } = await import('../js/physik.js');
+  Object.assign(state, { drive: 'speed', speed: 1, northBack: true, coil: false, bauteil: 'eisen' });
+  resetPhysics();
+  for (let i = 0; i < 600; i++) stepPhysics(1 / 600);
+  umbau.aktiv = true;
+  const phi = rotor.phi;
+  for (let i = 0; i < 300; i++) stepPhysics(1 / 600);
+  assert.equal(rotor.phi, phi, 'Welle steht');
+  assert.equal(windungen(), 0);
+  assert.equal(Math.abs(emf()), 0);
+  umbau.aktiv = false;
+  state.bauteil = 'schleife';
 });

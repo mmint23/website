@@ -9,8 +9,8 @@
 // dazukommen kann.
 // ------------------------------------------------------------------
 import {
-  TURBINE, LOOP, B_FIELD, SIDE_LENGTH, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER,
-  EXPLAIN, COIL, LED, LAMP,
+  LIEGEND, TURBINE, LOOP, B_FIELD, SIDE_LENGTH, SPEED_TIME, CRANK_TIME, CRANK_MAX_OMEGA, FRICTION, FRICTION_STOP, METER,
+  EXPLAIN, COIL, LED, LAMP, ANKER,
 } from './config.js';
 import { state } from './state.js';
 
@@ -18,7 +18,8 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const TWO_PI = 2 * Math.PI;
 
 // Schleife: Drehwinkel φ um die Welle (x-Achse, gegen den Uhrzeigersinn von rechts gesehen) und
-// Winkelgeschwindigkeit ω. φ = 0: Schleife liegt waagrecht, Längsseite A vorne, B hinten.
+// Winkelgeschwindigkeit ω. φ = 0: Schleife quer zum Feld – beim liegenden Magneten senkrecht, Längsseite A oben,
+// B unten (Lage im Raum: φ + LIEGEND, config.js).
 // Festhalten: holdTarget ist die Stellung, der die Schleife folgt (Kurbel bzw. Drehwinkel-Regler)
 export const rotor = { phi: 0, omega: 0, dragging: false, target: 0, holdTarget: 0 };
 // Erklärmodus: Verschiebung der Elektronen entlang der Schleife in cm, in Laufrichtung (Ring 1 → A → B → Ring 2)
@@ -34,8 +35,8 @@ export const clock = { t: 0 };
 
 // Lage der Längsseite A (side = 0) bzw. B (side = 1) in cm, Mitte der Seite
 export function sidePosition(side, phi = rotor.phi) {
-  const s = side === 0 ? 1 : -1;
-  return { x: 0, y: -s * LOOP.RADIUS * Math.sin(phi), z: s * LOOP.RADIUS * Math.cos(phi) };
+  const s = side === 0 ? 1 : -1, a = phi + LIEGEND;
+  return { x: 0, y: -s * LOOP.RADIUS * Math.sin(a), z: s * LOOP.RADIUS * Math.cos(a) };
 }
 
 // Geschwindigkeit der Längsseite in m/s: v = ω × r
@@ -44,8 +45,8 @@ export function sideVelocity(side) {
   return { x: 0, y: -rotor.omega * p.z / 100, z: rotor.omega * p.y / 100 };
 }
 
-// Flussdichte zwischen den Polen in T (vom Nord- zum Südpol: bei Nordpol oben nach unten)
-export const fieldVector = () => ({ x: 0, y: (state.northUp ? -1 : 1) * B_FIELD, z: 0 });
+// Flussdichte zwischen den Polen in T (vom Nord- zum Südpol: bei Nordpol hinten nach vorne, zum Betrachter)
+export const fieldVector = () => ({ x: 0, y: 0, z: (state.northBack ? 1 : -1) * B_FIELD });
 
 // Laufrichtung entlang der Schleife, wie sie verdrahtet ist: Ring 1 bzw. Ende A → Seite A (in −x, vom
 // rechten zum linken Ende) → Querseite → Seite B (in +x) → Ende B bzw. Ring 2
@@ -65,8 +66,18 @@ export function stepSpule(dt) {
   spule.fortschritt += Math.sign(ziel - spule.fortschritt) * Math.min(Math.abs(ziel - spule.fortschritt), dt / COIL.ANIM);
 }
 
-// Wirksame Windungszahl: 1 (Leiterschleife) oder COIL.TURNS (Spule), hintereinander geschaltet; während des Umbaus 0
-export const windungen = () => (spule.fortschritt <= 0 ? 1 : spule.fortschritt >= 1 ? COIL.TURNS : 0);
+// Tausch des Bauteils auf der Welle (bauteile.js): solange steht die Welle still und der Kreis ist offen;
+// unterwegs: das Bauteil, das gerade bewegt wird
+export const umbau = { aktiv: false, unterwegs: null };
+
+// Wirksame Windungszahl: 1 (Leiterschleife) oder COIL.TURNS (Spule), hintereinander geschaltet; während des Umbaus 0.
+// Eingebautes Bauteil (bauteile.js): ANKER.TURNS Windungen, mit Eisenkern zusätzlich der Faktor ANKER.EISEN (stärkerer
+// Fluss durch die Spule, vereinfacht) – nicht im Erklärmodus, dort ist immer die Leiterschleife zu sehen.
+export function windungen() {
+  if (umbau.aktiv) return 0;   // Bauteil wird getauscht: Bürsten abgehoben, Kreis offen
+  if (state.bauteil !== 'schleife' && !state.explain) return ANKER.TURNS * (state.bauteil === 'eisen' ? ANKER.EISEN : 1);
+  return spule.fortschritt <= 0 ? 1 : spule.fortschritt >= 1 ? COIL.TURNS : 0;
+}
 
 // Induktionsspannung in Laufrichtung (Ende A → Ende B) in V; die Querseiten tragen nichts bei
 // (dort steht v × B senkrecht zum Draht). Bei der Spule addieren sich die Spannungen aller Windungen.
@@ -93,6 +104,10 @@ export const electronForceAlong = () => electronForce(0).x * sideDirection(0);
 // ---------------- Zeitschritt
 
 function stepRotor(dt) {
+  if (umbau.aktiv) {
+    rotor.omega = 0;   // Bauteil wird getauscht: Welle steht
+    return;
+  }
   if (state.hold) {
     // Festgehalten: folgt Kurbel bzw. Regler und bleibt sonst stehen
     if (rotor.dragging) rotor.holdTarget = rotor.target;

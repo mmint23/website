@@ -11,6 +11,7 @@ import { endCrank, setHold, holdTo, rotor, electrons, park } from './physik.js';
 import { applyMagnetPoles, setRingsInstant } from './modell.js';
 import { updateMeterFace, setMeterVisible, setDisplay, setMeterToo } from './messgeraet.js';
 import { onCrankGrab } from './ziehen.js';
+import { aufTausch, bauteilEinbauen, tauschLaeuft, NAMEN } from './bauteile.js';
 import { explainView, sideView } from './erklaerung.js';
 import { resetView as resetModelView, controls, setTable, setBildVersatz } from './szene.js';
 import { formatNumber } from './hilfen.js';
@@ -77,6 +78,19 @@ export function updateUi() {
   $('coilStatus').textContent = (state.coil
     ? `${COIL.TURNS} Windungen hintereinander.`
     : 'Einzelne Leiterschleife (1 Windung).') + ' Zum Vergleich im U-t-Diagramm: Messbereich ±15 mV.';
+  // Bauteil auf der Welle (bauteile.js, wie der Rotor im Gleichstrommotor): Auswahl, während des Tauschs gesperrt.
+  // Die Spule mit 5 Windungen gibt es nur, solange die Leiterschleife eingebaut ist.
+  const tausch = tauschLaeuft();
+  for (const button of document.querySelectorAll('[data-bauteil]')) {
+    const an = button.dataset.bauteil === state.bauteil;
+    button.classList.toggle('active', an);
+    button.setAttribute('aria-pressed', String(an));
+    button.disabled = tausch;
+  }
+  $('bauteilStatus').textContent = tausch ? 'Bauteil wird getauscht …' : `Eingebaut: ${NAMEN[state.bauteil]}`;
+  $('coilBtn').disabled = tausch || state.bauteil !== 'schleife';
+  $('coilStatus').hidden = state.bauteil !== 'schleife';
+  $('explainBtn').disabled = tausch;
   $('showManyBtn').disabled = state.coil;   // „viele e⁻“ nur bei der Leiterschleife (Kette von Ende zu Ende)
   $('explainBtn').textContent = state.explain ? 'Zurück zum Modell' : 'Erklärung: Elektronen in der Schleife';
   $('explainBtn').classList.toggle('active', state.explain);
@@ -103,7 +117,7 @@ export function updateUi() {
   $('modelWindSlider').value = state.wind;
   $('crankInfo').hidden = state.drive !== 'crank' || state.hold;
   $('speedOut').textContent = (state.speed < 0 ? '−' : '') + formatNumber(Math.abs(state.speed), 1) + ' U/s';
-  $('magnetStatus').textContent = state.northUp ? 'Nordpol (rot) oben, Südpol (grün) unten' : 'Südpol (grün) oben, Nordpol (rot) unten';
+  $('magnetStatus').textContent = state.northBack ? 'Nordpol (rot) hinten, Südpol (grün) vorne' : 'Südpol (grün) hinten, Nordpol (rot) vorne';
   $('meterTooBtn').hidden = state.display !== 'lamp';
   $('meterTooBtn').setAttribute('aria-pressed', String(state.meterToo));
   // Messbereich: Einheit mV oder V, darunter die Bereiche dieser Einheit
@@ -198,7 +212,7 @@ export function initUi() {
     updateUi();
   });
   $('flipBtn').addEventListener('click', () => {
-    state.northUp = !state.northUp;
+    state.northBack = !state.northBack;
     applyMagnetPoles();
     updateUi();
   });
@@ -273,6 +287,13 @@ export function initUi() {
       updateUi();
     });
   }
+  for (const button of document.querySelectorAll('[data-bauteil]')) {
+    button.addEventListener('click', () => {
+      endCrank();
+      if (bauteilEinbauen(button.dataset.bauteil)) updateUi();
+    });
+  }
+  aufTausch(updateUi);
   window.addEventListener('resize', () => requestAnimationFrame(bildVersetzen));   // Schülermodus: Modell neben dem Feld
   onCrankGrab(updateUi);
 

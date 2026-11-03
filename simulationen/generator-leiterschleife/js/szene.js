@@ -31,9 +31,10 @@ controls.maxDistance = 200;
 const POLAR_TISCH = Math.PI * 0.49;
 controls.maxPolarAngle = POLAR_TISCH;
 
-// Startansicht: schräg von vorne oben, Modell links, Messgerät rechts unten
+// Startansicht: schräg von vorne oben, Modell links, Messgerät rechts unten – steil genug, dass man über den vorderen
+// Pol des liegenden Magneten auf die Schleife sieht
 export function resetView() {
-  camera.position.set(-10, 18, 70);
+  camera.position.set(-36, 42, 50);
   controls.target.set(11, -6, 0);
 }
 
