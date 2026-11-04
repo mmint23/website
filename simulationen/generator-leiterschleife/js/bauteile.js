@@ -216,6 +216,9 @@ export function bauteilEinbauen(art) {
   buerstenBewegen(true);
   bewegen(alt, () => ({ p: new THREE.Vector3(0, ZIEHEN_Y, 0), r: 0, s: 1 }), 0.9);
   bewegen(alt, () => ({ p: ablageLage(alt), r: 0, s: ABLAGE_MASS }), 1.3, 8);
+  // abgelegt: bis das neue Bauteil sitzt, ist nichts eingebaut – sonst gälte das alte wieder als eingebaut und
+  // erschiene im Magneten, sobald das neue unterwegs ist
+  schritt(0, { ende: () => { state.bauteil = null; } });
   bewegen(art, () => ({ p: new THREE.Vector3(0, ZIEHEN_Y, 0), r: 0, s: 1 }), 1.3, 8);
   bewegen(art, () => ({ p: new THREE.Vector3(0, 0, 0), r: umEins(rotor.phi + LIEGEND), s: 1 }), 0.9);
   schritt(0, { ende: () => { state.bauteil = art; umbau.unterwegs = null; nachTausch(); } });
