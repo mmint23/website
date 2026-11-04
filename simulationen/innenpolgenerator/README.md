@@ -71,6 +71,17 @@ sollen die Schüler selbst herausfinden. Es bleiben die Überschrift (ohne Unter
   blinkt sie also im Takt der Drehung. Mit 500 Windungen bleibt sie fast immer dunkel; sie braucht Eisenkern, viele
   Windungen und schnelles Drehen. Bei „Ende – Anfang“ bleibt sie dunkel. Vorwiderstand und Belastung der Spulen sind
   nicht berücksichtigt.
+  **Glühlampe selbst anschließen:** Ist die Glühlampe gewählt, ist sie zunächst nicht angeschlossen – die
+  Verbindung zwischen den Spulen bleibt, aber von den Buchsen der Lampe gehen zwei schwarze Kabel mit
+  Bananensteckern ab, die vor der Lampe auf dem Tisch liegen (`stecker.js`). Man zieht sie mit Finger oder Maus an die
+  Anschlüsse der Spulen; beim Ziehen leuchten alle Anschlüsse schwach auf, in der Nähe eines Anschlusses rastet der
+  Stecker ein (kräftig markiert). Daneben losgelassen fällt er zurück auf den Tisch; ein steckender Stecker lässt sich
+  wieder abziehen, zwei Stecker am selben Anschluss stecken ineinander. Angeschlossene Kabel liegen ordentlich (zur
+  linken Spule außen am Joch hinunter und vorne über den Tisch). Die Lampe bekommt die Spannung zwischen den beiden
+  Anschlüssen, an denen ihre Stecker stecken (`lampVoltage` in `physik.js`): an A₁ und A₂ (bei „Ende – Ende“) die
+  volle Spannung wie am Messgerät, an nur einer Spule die Hälfte, an E₁ und E₂ (verbunden) keine, solange ein Stecker
+  fehlt ebenfalls keine. Im Bedienfeld steht, wo die Lampe angeschlossen ist. Die Stecker-Positionen sind Teil des
+  Zustands (`state.lampPlugs`) und gehen bei der Live-Steuerung mit.
   Die **Glühlampe** ist realistisch: ein Glühlämpchen 3,8 V / 0,07 A (steht im Bedienfeld). Der Glühdraht heizt sich
   mit der Leistung ∝ U² auf und glüht erst ab etwa 1 V (Effektivwert) sichtbar dunkelrot, hell erst bei 3,8 V, in
   beiden Richtungen, mit kurzem Nachglühen (bei langsamer Drehung flackert er). Mit der Standardspule
@@ -213,6 +224,7 @@ innenpolgenerator/
 │   ├── messgeraet.js   # Zeigermessgerät und Kabel (je nach Schaltung verlegt)
 │   ├── led.js          # LED statt Messgerät (realistisch, ab etwa 1,6 V)
 │   ├── gluehlampe.js   # Glühlampe statt Messgerät (realistisch, 3,8 V)
+│   ├── stecker.js      # Kabel der Glühlampe selbst an die Spulen stecken (ziehen, einrasten)
 │   ├── diagramm.js     # U–t-Diagramm
 │   ├── ziehen.js       # Kurbel mit Maus/Finger drehen
 │   ├── bedienfeld.js   # Knöpfe, Regler, Anzeigen, freie Fläche für die Startansicht

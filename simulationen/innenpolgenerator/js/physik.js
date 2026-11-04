@@ -81,6 +81,23 @@ export function meterVoltage() {
   return coilVoltage(0) + (state.reversed ? 1 : -1) * coilVoltage(1);
 }
 
+// Potentiale der vier Anschlüsse in V (E₁ = 0): A₁ = U₁; die Verbindung legt E₂ (Ende – Ende) bzw. A₂ (Ende – Anfang)
+// auf das Potential von E₁. (Bei einer Spule nur A₁ und E₁.)
+export function terminalPotentials() {
+  const u1 = coilVoltage(0), u2 = state.coils === 2 ? coilVoltage(1) : 0;
+  return state.reversed ? { a0: u1, e0: 0, a1: 0, e1: -u2 } : { a0: u1, e0: 0, a1: u2, e1: 0 };
+}
+
+// Spannung an der Glühlampe in V: zwischen den Anschlüssen, an denen ihre Stecker stecken (state.lampPlugs); solange
+// ein Stecker nicht steckt, ist der Stromkreis offen. An A₁ und dem freien Anschluss von Spule 2 ist sie so groß wie
+// am Messgerät, an nur einer Spule halb so groß.
+export function lampVoltage() {
+  const [p, q] = state.lampPlugs;
+  if (!p || !q) return 0;
+  const phi = terminalPotentials();
+  return (phi[p] ?? 0) - (phi[q] ?? 0);
+}
+
 // Frequenz der Wechselspannung in Hz: Bei einem Magneten mit einem Polpaar eine Schwingung je Umdrehung
 export const frequency = () => Math.abs(rotor.omega) / TWO_PI;
 
@@ -132,7 +149,7 @@ export function lampGlow() {
 
 // Glühdraht folgt der Leistung ∝ U² mit kurzer Verzögerung (Aufheizen und Nachglühen)
 function stepLamp(dt) {
-  const power = Math.min((meterVoltage() / LAMP.FULL) ** 2, 1.5);
+  const power = Math.min((lampVoltage() / LAMP.FULL) ** 2, 1.5);
   lamp.heat += (power - lamp.heat) * Math.min(1, dt / LAMP.HEAT_TIME);
 }
 

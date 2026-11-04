@@ -220,7 +220,8 @@ test('LED (rot, ab 1,6 V): nur bei genug Spannung, mit Eisenkern heller, bei „
     }
     return { led, lampe };
   }
-  const eisen = messen({ iron: true }), luft = messen({ iron: false }), aus = messen({ iron: true, reversed: true });
+  const eisen = messen({ iron: true }), luft = messen({ iron: false });
+  const aus = messen({ iron: true, reversed: true, lampPlugs: ['a0', 'e1'] });   // Lampe wie das Messgerät angesteckt
   assert.ok(eisen.led > 0.99, `mit Eisenkern: ${JSON.stringify(eisen)}`);
   assert.ok(luft.led < 0.5, `ohne Eisenkern: ${JSON.stringify(luft)}`);
   assert.ok(aus.led < 0.01 && aus.lampe < 0.01, `Ende – Anfang: ${JSON.stringify(aus)}`);
@@ -231,7 +232,8 @@ test('LED (rot, ab 1,6 V): nur bei genug Spannung, mit Eisenkern heller, bei „
 test('Windungszahl: Spannung ∝ N; Glühlampe (3,8 V) glüht erst bei realistisch großer Spannung', async () => {
   const { lampGlow } = await import('../js/physik.js');
   function messen(setup) {
-    Object.assign(state, { coils: 2, reversed: false, drive: 'speed', hold: false, lineModel: true, iron: true, ...setup });
+    Object.assign(state, { coils: 2, reversed: false, drive: 'speed', hold: false, lineModel: true, iron: true,
+      lampPlugs: ['a0', 'a1'], ...setup });
     resetPhysics();
     let u = 0, lampe = 0;
     for (let i = 0; i < 6000; i++) {
@@ -252,5 +254,31 @@ test('Windungszahl: Spannung ∝ N; Glühlampe (3,8 V) glüht erst bei realistis
   near(messen({ speed: 1, turns: 12000, iron: false }).u / messen({ speed: 1, turns: 2000, iron: false }).u, 6, 0.05, '12 000 statt 2000: sechsfach');
   assert.ok(messen({ speed: 0.5, turns: 12000, iron: false }).lampe > 0.2, '12 000 Windungen ohne Eisen, 0,5 U/s: glüht');
   assert.ok(messen({ speed: 1, turns: 12000, iron: false }).lampe > 0.9, '12 000 Windungen ohne Eisen, 1 U/s: hell');
-  Object.assign(state, { turns: 500, iron: true, lineModel: false, coils: 1 });
+  Object.assign(state, { turns: 500, iron: true, lineModel: false, coils: 1, lampPlugs: [null, null] });
+});
+
+test('Glühlampe selbst anstecken: offen dunkel, an beiden Spulen hell, an einer Spule halbe Spannung', async () => {
+  const { lampGlow, lampVoltage } = await import('../js/physik.js');
+  function messen(lampPlugs, setup = {}) {
+    Object.assign(state, { coils: 2, reversed: false, drive: 'speed', speed: 3, turns: 2000, hold: false, lineModel: true,
+      iron: true, lampPlugs, ...setup });
+    resetPhysics();
+    let u = 0, lampe = 0;
+    for (let i = 0; i < 6000; i++) {
+      stepPhysics(1 / 600);
+      if (i > 1200) { u = Math.max(u, Math.abs(lampVoltage())); lampe = Math.max(lampe, lampGlow()); }
+    }
+    return { u, lampe };
+  }
+  assert.equal(messen([null, null]).lampe, 0, 'nicht angeschlossen');
+  assert.equal(messen(['a0', null]).lampe, 0, 'nur ein Stecker: Stromkreis offen');
+  assert.equal(messen(['a0', 'a0']).u, 0, 'beide am selben Anschluss');
+  const beide = messen(['a0', 'a1']), eine = messen(['a0', 'e0']);
+  assert.ok(beide.lampe > 0.8, `an A₁ und A₂: hell ${JSON.stringify(beide)}`);
+  near(eine.u / beide.u, 0.5, 0.02, 'nur an Spule 1: halbe Spannung');
+  assert.equal(messen(['e0', 'e1']).u, 0, 'E₁ und E₂ sind verbunden: keine Spannung');
+  // Ende – Anfang: A₁ und E₂ heben sich auf, an nur einer Spule leuchtet die Lampe aber
+  assert.ok(messen(['a0', 'e1'], { reversed: true }).u < 1e-9, 'Ende – Anfang an beiden Enden: 0');
+  assert.ok(messen(['a1', 'e1'], { reversed: true }).u > 0.4 * beide.u, 'Ende – Anfang an Spule 2 allein: Spannung');
+  Object.assign(state, { lampPlugs: [null, null], turns: 500, iron: true, lineModel: false, coils: 1, reversed: false });
 });

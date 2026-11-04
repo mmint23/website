@@ -7,6 +7,7 @@ import { CRANK, GEN_ROT } from './config.js';
 import { state } from './state.js';
 import { startCrank, crankTo, endCrank } from './physik.js';
 import { crankTargets } from './modell.js';
+import { zeigerAufStecker } from './stecker.js';
 import { renderer, camera, controls } from './szene.js';
 
 const canvas = renderer.domElement;
@@ -51,7 +52,9 @@ canvas.addEventListener('pointerdown', event => {
 canvas.addEventListener('pointermove', event => {
   setRay(event);
   if (event.pointerId !== activeId) {
-    if (activeId === null && event.pointerType === 'mouse') canvas.style.cursor = grabbed() ? 'grab' : '';
+    if (activeId === null && event.pointerType === 'mouse' && !event.buttons) {
+      canvas.style.cursor = grabbed() || zeigerAufStecker() ? 'grab' : '';
+    }
     return;
   }
   const angle = angleAtPointer();
