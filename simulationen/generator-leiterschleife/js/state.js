@@ -8,7 +8,8 @@ export const state = {
   northLeft: true,    // von vorne gesehen Nordpol links, Südpol rechts (im Aufbau: Nordpol bei −z, config.js)
   coil: false,        // Spule mit COIL.TURNS Windungen statt einer einzelnen Leiterschleife
   bauteileZeigen: false, // Ablage mit den Spulen auf dem Tisch zeigen (Knopf; dann auch die Auswahl „Auf der Welle“)
-  bauteil: 'schleife', // auf der Welle: 'schleife' (Leiterschleife), 'spule' (ANKER.TURNS Windungen) oder 'eisen' (mit Eisenkern)
+  bauteil: 'schleife', // auf der Welle: 'schleife' (Leiterschleife), 'spule' (ANKER.TURNS Windungen) oder 'eisen' (mit Eisenkern);
+                      // null während eines Tauschs, solange das alte abgelegt und das neue noch nicht eingesetzt ist
   range: 3,           // Messbereich in mV (±3 mV; ab 300 im Volt-Bereich, config.js)
   display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' (Gedankenexperiment) oder 'lamp' (Glühlampe)
   meterToo: false,    // bei der Glühlampe: Messgerät parallel dazu angeschlossen

@@ -75,7 +75,7 @@ export const umbau = { aktiv: false, unterwegs: null };
 // Eingebautes Bauteil (bauteile.js): ANKER.TURNS Windungen, mit Eisenkern zusätzlich der Faktor ANKER.EISEN (stärkerer
 // Fluss durch die Spule, vereinfacht) – nicht im Erklärmodus, dort ist immer die Leiterschleife zu sehen.
 export function windungen() {
-  if (umbau.aktiv) return 0;   // Bauteil wird getauscht: Bürsten abgehoben, Kreis offen
+  if (umbau.aktiv || state.bauteil === null) return 0;   // Bauteil wird getauscht: Bürsten abgehoben, Kreis offen
   if (state.bauteil !== 'schleife' && !state.explain) return ANKER.TURNS * (state.bauteil === 'eisen' ? ANKER.EISEN : 1);
   return spule.fortschritt <= 0 ? 1 : spule.fortschritt >= 1 ? COIL.TURNS : 0;
 }
