@@ -1,8 +1,9 @@
 // ------------------------------------------------------------------
 // Übergänge im Windpark:
 //  · Haus mit Schild antippen (eingaenge in landschaft.js) → Kamerafahrt vor die Haustür → Überblendung in den Raum
-//    (raum.js) bzw. Ausblenden und Wechsel zur Simulation Generator-Leiterschleife (eigene Seite). Antippen während
-//    der Fahrt springt direkt zur Überblendung.
+//    (raum.js). Haus B (Generator-Modell, Aufschrift „HCG“): Die Ansicht vor dem Haus bleibt stehen, bis noch einmal
+//    getippt wird → Ausblenden und Wechsel zur Simulation Generator-Leiterschleife (eigene Seite). Antippen während
+//    der Fahrt springt direkt zur Überblendung bzw. vor das Haus.
 //  Beim Wechsel zu einer anderen Simulation gehen Wind und Uhrzeit in der Adresse mit (?von=windpark&wind=…&zeit=…);
 //  dort führt „Zurück zum Windpark“ wieder her. Ist der Windpark als Lehrerseite geöffnet (?lehrer&raum=…, über den
 //  Abgabe-Server), gehen auch diese Angaben mit: Die Simulation ist dann gleich Lehrerseite (Live-Steuerung, Abgaben)
@@ -17,7 +18,7 @@
 import * as THREE from 'three';
 import { TRANSITION } from './config.js';
 import { state } from './state.js';
-import { turbines, highlightTurbine, revealNacelle, eingaenge, highlightHouse } from './landschaft.js';
+import { turbines, highlightTurbine, revealNacelle, eingaenge, highlightHouse, terrainHeight } from './landschaft.js';
 import { renderer, camera, controls } from './szene.js';
 import { anlage, highlightKraftwerk, revealKraftwerk, kraftwerkBlick } from './kraftwerk.js';
 
@@ -105,9 +106,28 @@ function startHouseFlight(eingang) {
   const { lokal, vorne } = haus.userData.tuer;
   run.fromPos.copy(camera.position);
   run.fromTarget.copy(controls.target);
-  run.toTarget.copy(haus.localToWorld(lokal.clone()));
-  run.toPos.copy(haus.localToWorld(lokal.clone().add(new THREE.Vector3(0, 2.5, vorne * 14))));
+  if (eingang.ziel === 'model') {
+    // etwas weiter weg und höher: ganzes Haus mit der Aufschrift im Blick
+    run.toTarget.copy(haus.localToWorld(lokal.clone().add(new THREE.Vector3(0, 2, 0))));
+    run.toPos.copy(haus.localToWorld(lokal.clone().add(new THREE.Vector3(0, 4, vorne * 22))));
+  } else {
+    run.toTarget.copy(haus.localToWorld(lokal.clone()));
+    run.toPos.copy(haus.localToWorld(lokal.clone().add(new THREE.Vector3(0, 2.5, vorne * 14))));
+  }
+  // nicht unter dem Gelände (vor manchen Häusern steigt der Hang an)
+  run.toPos.y = Math.max(run.toPos.y, terrainHeight(run.toPos.x, run.toPos.z) + 3);
 }
+
+// Vor Haus B angekommen: Ansicht bleibt stehen, bis noch einmal getippt wird
+function vorDemHaus() {
+  camera.position.copy(run.toPos);
+  controls.target.copy(run.toTarget);
+  camera.lookAt(controls.target);
+  Object.assign(run, { phase: 'vorHaus', t: 0 });
+  hint.textContent = 'Tippe noch einmal, um zum Generator-Modell zu wechseln';
+}
+// Haus angetippt bzw. Fahrt übersprungen: Wohnzimmer gleich hinein, Haus B erst davor stehen bleiben
+const amHaus = () => (run.house.ziel === 'model' ? vorDemHaus() : Object.assign(run, { phase: 'fadeOut', t: 0 }));
 
 // Kamerafahrt vorbereiten: seitlich neben die Gondel, etwas höher, Blick auf Gondel und Generator
 function startFlight(turbine) {
@@ -162,13 +182,15 @@ export function updateTransition(dt) {
     controls.target.lerpVectors(run.fromTarget, run.toTarget, k);
     camera.lookAt(controls.target);
     if (run.t >= TRANSITION.FLY) {
-      if (run.house) Object.assign(run, { phase: 'fadeOut', t: 0 });   // vor der Tür: gleich hinein
+      if (run.house) amHaus();
       else if (run.kraftwerk) zumKraftwerk();
       else zurGondel();
     }
   } else if (run.phase === 'reveal') {
     // Gondel wird durchsichtig; danach bleibt die Ansicht stehen, bis noch einmal getippt wird
     revealNacelle(run.turbine, Math.min(1, run.t / TRANSITION.REVEAL));
+    camera.lookAt(controls.target);
+  } else if (run.phase === 'vorHaus') {
     camera.lookAt(controls.target);
   } else if (run.phase === 'kraftwerkReveal') {
     revealKraftwerk(Math.min(1, run.t / TRANSITION.REVEAL));
@@ -199,8 +221,10 @@ export function updateTransition(dt) {
 let down = null;
 canvas.addEventListener('pointerdown', event => {
   down = { x: event.clientX, y: event.clientY, time: performance.now() };
-  // Haus: während der Fahrt gleich hinein; Windrad: Fahrt überspringen bzw. beim Blick in die Gondel zurückfliegen
-  if (run.phase === 'fly' && run.house) Object.assign(run, { phase: 'fadeOut', t: 0 });
+  // Haus: Fahrt überspringen (Wohnzimmer gleich hinein), vor Haus B weiter zum Generator-Modell; Windrad: Fahrt
+  // überspringen bzw. vom Blick in die Gondel weiter zum Innenpolgenerator
+  if (run.phase === 'fly' && run.house) amHaus();
+  else if (run.phase === 'vorHaus') Object.assign(run, { phase: 'fadeOut', t: 0 });
   else if (run.phase === 'fly' && run.kraftwerk) zumKraftwerk();
   else if (run.phase === 'fly') zurGondel();
   else if (run.phase === 'reveal') Object.assign(run, { phase: 'fadeOut', t: 0 });
