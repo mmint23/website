@@ -369,6 +369,41 @@ const wohnhaus = naechstes(houses);
 const werkstatt = naechstes(houses.filter(h => rechts(h) > rechts(wohnhaus) + 45));
 export const eingaenge = [betretbar(wohnhaus, 'A', 'room'), betretbar(werkstatt, 'B', 'model', 24)];
 
+// Große Aufschrift auf der Vorderwand eines betretbaren Hauses (über der Tür, an Stelle der beiden vorderen Fenster)
+function aufschrift(haus, text) {
+  const { w, d, h, tuer: { vorne } } = haus.userData;
+  const wandZ = vorne * (d / 2);
+  // vordere Fenster und ihre Lichtscheine entfernen
+  for (const teil of [...haus.children]) {
+    const z = teil.position.z * vorne;
+    if ((teil.isSprite || teil.geometry === FENSTER) && z > d / 2 && Math.abs(teil.position.x) > 0.1) teil.removeFromParent();
+  }
+  const breite = Math.min(w - 1.2, 9), hoehe = Math.min(h - 3.1, breite * 0.38);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = Math.round(1024 * hoehe / breite);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#f7f4ec';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#1d4f91';
+  ctx.lineWidth = 18;
+  ctx.strokeRect(9, 9, canvas.width - 18, canvas.height - 18);
+  ctx.fillStyle = '#1d4f91';
+  ctx.font = `900 ${Math.round(canvas.height * 0.72)}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, canvas.width / 2, canvas.height * 0.54, canvas.width * 0.86);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  const tafel = new THREE.Mesh(new THREE.PlaneGeometry(breite, hoehe),
+    new THREE.MeshStandardMaterial({ map: texture, roughness: 0.6, emissive: 0xffffff, emissiveMap: texture, emissiveIntensity: 0.15 }));
+  tafel.position.set(0, 2.8 + hoehe / 2, wandZ + vorne * 0.08);
+  tafel.rotation.y = vorne > 0 ? 0 : Math.PI;
+  haus.add(tafel);
+}
+aufschrift(werkstatt, 'HCG');
+
 // Hervorheben (Maus darüber); null: keins
 export function highlightHouse(eingang) {
   for (const e of eingaenge) {

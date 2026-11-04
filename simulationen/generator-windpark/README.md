@@ -41,8 +41,9 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   dreht sich innen, die Spulen stehen außen fest). Wind und Uhrzeit gehen in der Adresse mit; „Zurück zum
   Windpark“ im Innenpolgenerator bringt in denselben Windpark zurück. Antippen während der Fahrt überspringt sie.
   Der Windpark übernimmt `?wind=…&zeit=…` aus der Adresse auch sonst (z. B. für einen Link mit Abendstimmung).
-- **Haus B antippen** (im Dorf, Schild „B“ darüber): Kamerafahrt vor die Haustür, Ausblenden und
-  Wechsel zur Simulation **Generator-Leiterschleife** (eigene Seite, Antrieb „Wind“ mit dem Wind von hier, kurz
+- **Haus B antippen** (im Dorf, Schild „B“ darüber; auf der Vorderwand in großer Schrift „HCG“ an Stelle der
+  vorderen Fenster): Kamerafahrt vor das Haus; die Ansicht bleibt dort stehen (wie beim Windrad, Hinweis unten), bis
+  noch einmal getippt wird. Dann Ausblenden und Wechsel zur Simulation **Generator-Leiterschleife** (eigene Seite, Antrieb „Wind“ mit dem Wind von hier, kurz
   „Vereinfachtes Modell des Generators“). „Direkt zum Generator-Modell“ im Bedienfeld und der Knopf im
   Wohnzimmer wechseln ohne Kamerafahrt dorthin. „← Zurück zum Windpark“ dort bringt in denselben Windpark zurück.
 - **Kohlekraftwerk** (Knopf „Kohlekraftwerk zeigen“ im Bedienfeld, auch `?kraftwerk=1` in der Adresse; bleibt im
