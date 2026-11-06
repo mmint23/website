@@ -59,8 +59,9 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   und Drehzahl, in Wirklichkeit 3000 U/min, dargestellt stark verlangsamt), dem Vergleich mit dem Windrad („Was ist
   gleich, was ist anders?“) und Knöpfen zum Innenpolgenerator, zum Generator-Modell und zurück zum Windpark. Man kann
   sich um das Kraftwerk herumdrehen und heranzoomen; abends brennt im Kraftwerk Hallenlicht.
-- Das Bedienfeld zeigt zunächst nur die Uhrzeit; Wind, Kohlekraftwerk und Generator lassen sich per Klick
-  ausklappen.
+- Das Bedienfeld zeigt zunächst nur die Uhrzeit; Wind, Kohlekraftwerk und Generator stehen unter „Weitere
+  Einstellungen“ (per Klick ausklappen). So steht in der Startansicht nirgends „Wind“ oder „Generator“ (auch der
+  Seitentitel heißt nur „Licht im Dorf“) – gut als Unterrichtseinstieg.
 - Die Startansicht zeigt alle fünf Windräder und das Dorf links vom Bedienfeld; die Schilder der betretbaren Häuser
   bleiben auch aus der Ferne gleich groß.
 - Alles ist aus einfachen Formen gebaut (keine geladenen 3D-Modelle), damit es schnell lädt und auf Tablets

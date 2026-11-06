@@ -127,3 +127,7 @@ html, body {
 .klapp > summary::after { content: "▸"; color: #4a5866; transition: transform 0.15s; }
 .klapp[open] > summary::after { transform: rotate(90deg); }
 .klapp[open] > summary { margin-bottom: 4px; }
+
+/* Unterabschnitte in „Weitere Einstellungen“ */
+.unterabschnitt { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e8ed; }
+.unterabschnitt h3 { margin: 0 0 4px; font-size: 0.95rem; }
