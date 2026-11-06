@@ -28,8 +28,8 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
 - **Haus antippen** (das Haus am Dorfrand mit dem Schild „A“; mit der Maus wird es hervorgehoben):
   Kamerafahrt vor die Haustür, Überblendung in ein Wohnzimmer. Durchs Fenster sieht man die Windräder – sie
   drehen so schnell wie im Windpark, der Himmel passt zur Uhrzeit, nachts blinkt die Befeuerung. Eine Stehlampe
-  hängt an der Steckdose und brennt abends. Am Fenster steht jemand und fragt sich: „Wie wird aus der Energie der
-  Windräder eigentlich elektrische Energie?“ – Einstieg in die Energiekette. Im Bedienfeld: „Zurück zum
+  hängt an der Steckdose und brennt abends. Am Fenster steht jemand und fragt sich: „Wie macht das Windrad aus der
+  Bewegungsenergie des Windes elektrische Energie für meine Lampen?“ – Einstieg in die Energiekette. Im Bedienfeld: „Zurück zum
   Windpark“ und „Zum Generator-Modell“ (dort die Antwort; eigene Simulation).
 - **Windrad antippen** (jedes der fünf; mit der Maus wird es beim Darüberfahren hervorgehoben): Die Kamera
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator

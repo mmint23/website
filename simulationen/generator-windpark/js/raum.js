@@ -205,35 +205,35 @@ for (const dz of [-0.025, 0.025]) {
 }
 
 // Gedankenblase als Bild (Sprite, zeigt immer zur Kamera)
-const FRAGE = ['Wie wird aus der Energie', 'der Windräder eigentlich', 'elektrische Energie?'];
+const FRAGE = ['Wie macht das Windrad', 'aus der Bewegungsenergie', 'des Windes elektrische', 'Energie für meine Lampen?'];
 {
   const canvas = document.createElement('canvas');
   canvas.width = 900;
-  canvas.height = 520;
+  canvas.height = 560;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#ffffff';
   ctx.strokeStyle = '#1d2733';
   ctx.lineWidth = 6;
   // abgerundete Blase, unten rechts kleine Gedankenkreise zur Person hin
   ctx.beginPath();
-  ctx.roundRect(60, 40, 780, 320, 150);
+  ctx.roundRect(50, 30, 800, 380, 130);
   ctx.fill();
   ctx.stroke();
-  for (const [x, y, r] of [[730, 415, 34], [790, 480, 20]]) {
+  for (const [x, y, r] of [[730, 460, 34], [790, 525, 20]]) {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
   }
   ctx.fillStyle = '#1d2733';
-  ctx.font = 'bold 56px system-ui, sans-serif';
+  ctx.font = 'bold 48px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  FRAGE.forEach((zeile, i) => ctx.fillText(zeile, 450, 120 + i * 82));
+  FRAGE.forEach((zeile, i) => ctx.fillText(zeile, 450, 220 + (i - (FRAGE.length - 1) / 2) * 66, 680));
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const blase = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false }));
-  blase.scale.set(1.3, 1.3 * 520 / 900, 1);
+  blase.scale.set(1.3, 1.3 * canvas.height / canvas.width, 1);
   blase.position.set(-0.15, 2.0, -1.45);   // links über der Person, vor dem Fenster
   blase.renderOrder = 10;
   raumScene.add(blase);
