@@ -182,8 +182,10 @@ Das U-t-Diagramm lässt sich auch hier per Knopf einblenden, so lässt sich verg
 
 - **Seite 1: 3D-Modell** (`bilder/tafel.svg`): Screenshots des 3D-Modells im Erklärmodus in den Stellungen φ = 0°,
   90°, 180°, 270° und 360°, groß in zwei Reihen (oben drei, darunter zwei), jeweils mit der Gradzahl darunter – nur
-  mit dem einzelnen Elektron in Längsseite A (weißer Rand), ohne Feldlinien und Pfeile. So lassen sich B, v und die
-  Lorentzkraft direkt an das Elektron zeichnen.
+  mit dem einzelnen Elektron in Längsseite A (weißer Rand), ohne Feldlinien. In jedem Bild steht ein Pfeil für B, wie ihn
+  das Modell im Erklärmodus zeigt (blau, halb durchsichtig, durchgehend von der Polfläche des Nordpols vorne bis zur
+  Polfläche des Südpols hinten): der dem Elektron nächste, 1,5 cm neben ihm entlang der Welle. Seine Lage im Bild ist
+  aus dem Fluchtpunkt der Feldlinien bestimmt. v und die Lorentzkraft zeichnet man selbst an das Elektron.
 - **Seite 2: U-t-Diagramm** (`bilder/tafel2.svg`): dieselben fünf Bilder kleiner nebeneinander, darunter ein leeres
   U-t-Diagramm. Die Zeitmarken 0, T/4, T/2, 3T/4 und T stehen genau unter den Bildern (gestrichelte Hilfslinien):
   Aus den Stellungen – Schleife quer zum Feld (senkrecht): U = 0, Schleife parallel zum Feld (waagrecht): |U| am größten – lässt sich die Sinuskurve
