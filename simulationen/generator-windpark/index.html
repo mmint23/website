@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Windpark – vom Wind zum Licht im Dorf</title>
+  <title>Licht im Dorf</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -17,7 +17,8 @@
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
   </div>
 
-  <!-- Bedienfeld im Windpark: nur die Uhrzeit offen, alles andere zum Ausklappen -->
+  <!-- Bedienfeld im Windpark: nur die Uhrzeit offen, alles andere unter einem neutralen Punkt zum Ausklappen – in der
+       Startansicht steht nirgends „Wind“ oder „Generator“ (Unterrichtseinstieg) -->
   <aside class="panel" id="parkPanel">
     <section>
       <h2>Tageszeit</h2>
@@ -29,29 +30,28 @@
     </section>
     <section>
       <details class="klapp">
-        <summary>Wind</summary>
-        <label class="slider">
-          <span class="row">Windgeschwindigkeit <output id="windOut"></output></span>
-          <input id="windSlider" type="range" />
-        </label>
-        <p class="status" id="beaufortStatus"></p>
-        <p class="status" id="rotorStatus"></p>
-      </details>
-    </section>
-    <section>
-      <details class="klapp">
-        <summary>Kohlekraftwerk</summary>
-        <button id="kraftwerkBtn" type="button">Kohlekraftwerk zeigen</button>
-        <p class="status" id="kraftwerkHinweis" hidden>Hinter dem Windpark steht jetzt ein Kohlekraftwerk. Tippe darauf,
-          um hineinzuschauen.</p>
-      </details>
-    </section>
-    <section>
-      <details class="klapp">
-        <summary>Generator</summary>
-        <p class="status">Tippe auf ein Windrad, um in die Gondel zu schauen – von dort geht es zum Innenpolgenerator.
-          Im Dorf: Haus A führt in ein Wohnzimmer, Haus B zum Generator-Modell.</p>
-        <button id="toModelBtn" type="button">Direkt zum Generator-Modell</button>
+        <summary>Weitere Einstellungen</summary>
+        <div class="unterabschnitt">
+          <h3>Wind</h3>
+          <label class="slider">
+            <span class="row">Windgeschwindigkeit <output id="windOut"></output></span>
+            <input id="windSlider" type="range" />
+          </label>
+          <p class="status" id="beaufortStatus"></p>
+          <p class="status" id="rotorStatus"></p>
+        </div>
+        <div class="unterabschnitt">
+          <h3>Kohlekraftwerk</h3>
+          <button id="kraftwerkBtn" type="button">Kohlekraftwerk zeigen</button>
+          <p class="status" id="kraftwerkHinweis" hidden>Hinter dem Windpark steht jetzt ein Kohlekraftwerk. Tippe darauf,
+            um hineinzuschauen.</p>
+        </div>
+        <div class="unterabschnitt">
+          <h3>Generator</h3>
+          <p class="status">Tippe auf ein Windrad, um in die Gondel zu schauen – von dort geht es zum Innenpolgenerator.
+            Im Dorf: Haus A führt in ein Wohnzimmer, Haus B zum Generator-Modell.</p>
+          <button id="toModelBtn" type="button">Direkt zum Generator-Modell</button>
+        </div>
       </details>
     </section>
   </aside>

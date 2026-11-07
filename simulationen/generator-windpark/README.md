@@ -28,8 +28,8 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
 - **Haus antippen** (das Haus am Dorfrand mit dem Schild „A“; mit der Maus wird es hervorgehoben):
   Kamerafahrt vor die Haustür, Überblendung in ein Wohnzimmer. Durchs Fenster sieht man die Windräder – sie
   drehen so schnell wie im Windpark, der Himmel passt zur Uhrzeit, nachts blinkt die Befeuerung. Eine Stehlampe
-  hängt an der Steckdose und brennt abends. Am Fenster steht jemand und fragt sich: „Wie wird aus der Energie der
-  Windräder eigentlich elektrische Energie?“ – Einstieg in die Energiekette. Im Bedienfeld: „Zurück zum
+  hängt an der Steckdose und brennt abends. Am Fenster steht jemand und fragt sich: „Wie macht das Windrad aus der
+  Bewegungsenergie des Windes elektrische Energie für meine Lampen?“ – Einstieg in die Energiekette. Im Bedienfeld: „Zurück zum
   Windpark“ und „Zum Generator-Modell“ (dort die Antwort; eigene Simulation).
 - **Windrad antippen** (jedes der fünf; mit der Maus wird es beim Darüberfahren hervorgehoben): Die Kamera
   fliegt seitlich an die Gondel, das Gehäuse wird durchsichtig, und man sieht Rotorwelle und Generator
@@ -59,8 +59,9 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   und Drehzahl, in Wirklichkeit 3000 U/min, dargestellt stark verlangsamt), dem Vergleich mit dem Windrad („Was ist
   gleich, was ist anders?“) und Knöpfen zum Innenpolgenerator, zum Generator-Modell und zurück zum Windpark. Man kann
   sich um das Kraftwerk herumdrehen und heranzoomen; abends brennt im Kraftwerk Hallenlicht.
-- Das Bedienfeld zeigt zunächst nur die Uhrzeit; Wind, Kohlekraftwerk und Generator lassen sich per Klick
-  ausklappen.
+- Das Bedienfeld zeigt zunächst nur die Uhrzeit; Wind, Kohlekraftwerk und Generator stehen unter „Weitere
+  Einstellungen“ (per Klick ausklappen). So steht in der Startansicht nirgends „Wind“ oder „Generator“ (auch der
+  Seitentitel heißt nur „Licht im Dorf“) – gut als Unterrichtseinstieg.
 - Die Startansicht zeigt alle fünf Windräder und das Dorf links vom Bedienfeld; die Schilder der betretbaren Häuser
   bleiben auch aus der Ferne gleich groß.
 - Alles ist aus einfachen Formen gebaut (keine geladenen 3D-Modelle), damit es schnell lädt und auf Tablets
