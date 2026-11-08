@@ -131,3 +131,44 @@ html, body {
 /* Unterabschnitte in „Weitere Einstellungen“ */
 .unterabschnitt { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e8ed; }
 .unterabschnitt h3 { margin: 0 0 4px; font-size: 0.95rem; }
+
+/* Kleiner Knopf im Bedienfeld (z. B. „Frage“) */
+.panel button.klein { display: inline-block; width: auto; padding: 5px 14px; font-size: 0.9rem; }
+.panel button.klein.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
+
+/* Leitfrage groß über der Landschaft, links vom Bedienfeld */
+.frage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 312px;
+  bottom: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 5;
+  pointer-events: none;   /* daneben lässt sich die Landschaft weiter drehen */
+}
+.frage p {
+  pointer-events: auto;   /* ziehen verschiebt die Frage, kurzer Klick blendet sie aus */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  margin: 0;
+  max-width: 900px;
+  padding: 28px 36px;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 16px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.25);
+  font-size: clamp(1.6rem, 3.6vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #1d2733;
+}
+.frage p:active { cursor: grabbing; }
+.frage p.frei { position: fixed; }   /* verschoben: steht dort, wo man sie hingezogen hat */
+@media (max-width: 700px) {
+  .frage { right: 0; bottom: 45%; }
+}

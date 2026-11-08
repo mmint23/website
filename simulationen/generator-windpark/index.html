@@ -12,6 +12,12 @@
   <div class="fade" id="fade"></div>
 
 
+  <!-- Leitfrage für den Unterrichtseinstieg (Knopf „Frage“), groß über der Landschaft; der Kasten lässt sich ziehen,
+       ein kurzer Klick darauf blendet ihn aus -->
+  <div class="frage" id="frage" hidden>
+    <p>Wie wandelt das Windrad die Bewegungsenergie des Windes in elektrische Energie um?</p>
+  </div>
+
   <div class="hint">
     <span id="hintText">Ziehen: Ansicht drehen · Mausrad/zwei Finger: zoomen · Rechte Maustaste: verschieben</span>
     <button id="resetView" type="button">Ansicht zurücksetzen</button>
@@ -27,6 +33,7 @@
         <input id="timeSlider" type="range" min="0" max="24" step="0.25" />
       </label>
       <p class="status">Abends gehen im Dorf die Lichter an.</p>
+      <button id="frageBtn" class="klein" type="button" aria-pressed="false">Frage</button>
     </section>
     <section>
       <details class="klapp">

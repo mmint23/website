@@ -59,6 +59,10 @@ gehen in der Adresse mit und beim Zurückkommen wieder zurück):
   und Drehzahl, in Wirklichkeit 3000 U/min, dargestellt stark verlangsamt), dem Vergleich mit dem Windrad („Was ist
   gleich, was ist anders?“) und Knöpfen zum Innenpolgenerator, zum Generator-Modell und zurück zum Windpark. Man kann
   sich um das Kraftwerk herumdrehen und heranzoomen; abends brennt im Kraftwerk Hallenlicht.
+- **Knopf „Frage“** (klein, unter der Uhrzeit, auch in der Startansicht): blendet groß über der Landschaft die
+  Leitfrage ein: „Wie wandelt das Windrad die Bewegungsenergie des Windes in elektrische Energie um?“ Die Frage lässt
+  sich mit Finger oder Maus dorthin ziehen, wo sie stören soll (bleibt dort, solange die Seite offen ist). Noch ein
+  Klick auf den Knopf oder ein kurzer Klick auf die Frage blendet sie wieder aus.
 - Das Bedienfeld zeigt zunächst nur die Uhrzeit; Wind, Kohlekraftwerk und Generator stehen unter „Weitere
   Einstellungen“ (per Klick ausklappen). So steht in der Startansicht nirgends „Wind“ oder „Generator“ (auch der
   Seitentitel heißt nur „Licht im Dorf“) – gut als Unterrichtseinstieg.
