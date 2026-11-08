@@ -34,7 +34,50 @@ const HINWEISE = {
   kraftwerk: 'Ziehen: ums Kraftwerk herum · Mausrad/zwei Finger: näher heran · Rechte Maustaste: verschieben',
 };
 
+let frageZeigen = false;   // Leitfrage groß über der Landschaft (nur im Windpark)
+
+// Leitfrage mit Finger oder Maus verschieben: Der Kasten folgt dem Zeiger und bleibt ganz im Fenster; ein kurzer Klick
+// ohne Bewegung blendet ihn aus. Die Stelle bleibt, solange die Seite offen ist (auch beim erneuten Einblenden).
+function frageZiehbar() {
+  const kasten = $('frage').querySelector('p');
+  let zug = null;
+  const begrenzen = (links, oben) => {
+    const { width, height } = kasten.getBoundingClientRect();
+    kasten.style.left = `${Math.min(Math.max(links, 0), innerWidth - width)}px`;
+    kasten.style.top = `${Math.min(Math.max(oben, 0), innerHeight - height)}px`;
+  };
+  kasten.addEventListener('pointerdown', event => {
+    const { left, top } = kasten.getBoundingClientRect();
+    zug = { id: event.pointerId, x: event.clientX, y: event.clientY, left, top, bewegt: false };
+    kasten.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  kasten.addEventListener('pointermove', event => {
+    if (!zug || event.pointerId !== zug.id) return;
+    const dx = event.clientX - zug.x, dy = event.clientY - zug.y;
+    if (!zug.bewegt && Math.hypot(dx, dy) < 6) return;
+    if (!zug.bewegt && !kasten.classList.contains('frei')) {
+      // beim ersten Ziehen aus der Mitte lösen, dabei die Breite behalten
+      kasten.style.width = `${kasten.getBoundingClientRect().width}px`;
+      kasten.classList.add('frei');
+    }
+    zug.bewegt = true;
+    begrenzen(zug.left + dx, zug.top + dy);
+  });
+  kasten.addEventListener('pointerup', event => {
+    if (!zug || event.pointerId !== zug.id) return;
+    if (!zug.bewegt) { frageZeigen = false; updateUi(); }
+    zug = null;
+  });
+  kasten.addEventListener('pointercancel', () => { zug = null; });
+  addEventListener('resize', () => {
+    if (kasten.classList.contains('frei')) begrenzen(parseFloat(kasten.style.left), parseFloat(kasten.style.top));
+  });
+}
 function updateUi() {
+  $('frage').hidden = !frageZeigen || state.view !== 'park';
+  $('frageBtn').setAttribute('aria-pressed', String(frageZeigen));
+  $('frageBtn').classList.toggle('active', frageZeigen);
   $('hintText').textContent = HINWEISE[state.view];
   $('parkPanel').hidden = state.view !== 'park';
   $('roomPanel').hidden = state.view !== 'room';
@@ -106,6 +149,9 @@ export function initUi() {
   $('kraftwerkToGenBtn').addEventListener('click', () => zurSimulation('innenpolgenerator'));
   $('kraftwerkToModelBtn').addEventListener('click', () => zurSimulation('generator-leiterschleife'));
   $('resetView').addEventListener('click', resetView);
+  // Leitfrage ein- und ausblenden (Knopf oder kurzer Klick auf die Frage); ziehen verschiebt sie
+  $('frageBtn').addEventListener('click', () => { frageZeigen = !frageZeigen; updateUi(); });
+  frageZiehbar();
 
   applyViewSettings(state.view);
   resetView();
