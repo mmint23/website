@@ -19,6 +19,8 @@ export const state = {
   slowMotion: false,
   range: 0.3,         // Messbereich ±0,3 V
   display: 'meter',   // angeschlossen: 'meter' (Zeigermessgerät), 'led' oder 'lamp' (Glühlampe)
+  lampPlugs: [null, null],   // Glühlampe: wo die Stecker ihrer zwei Kabel stecken ('a0', 'e0', 'a1', 'e1': Anschluss A
+                             // bzw. E von Spule 1 bzw. 2) oder null (liegt noch auf dem Tisch) – steckt man selbst an
   explain: false,     // Erklärmodus: nur hier Magnetfeld (Feldlinien, B-Pfeil, B–t-Diagramm, Tangente, reale Physik)
   showB: false,       // Pfeil für B im Spuleninneren (Spule und Kern dann durchsichtig)
   showPlot: false,    // Diagramm U–t (im Erklärmodus dazu B–t); zu Beginn aus

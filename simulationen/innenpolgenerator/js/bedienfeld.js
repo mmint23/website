@@ -8,6 +8,7 @@ import { METER, SPEED_MAX, WIND_MAX, TURBINE, TURNS, LAMP, LED } from './config.
 import { state, ausWindpark, imErklaermodusStarten } from './state.js';
 import { endCrank, setHold, holdTo, rotor, frequency, park } from './physik.js';
 import { updateMeterFace } from './messgeraet.js';
+import { onPlugChange } from './stecker.js';
 import { onCrankGrab } from './ziehen.js';
 import { fitView, controls } from './szene.js';
 import { formatNumber } from './hilfen.js';
@@ -25,6 +26,15 @@ const DISPLAY_INFO = {
   lamp: `Glühlämpchen ${formatNumber(LAMP.FULL, 1)} V / 0,07 A: Es glüht erst ab etwa `
     + `${formatNumber(LAMP.THRESHOLD, 0)} V sichtbar, hell erst bei ${formatNumber(LAMP.FULL, 1)} V.`,
 };
+// Wo die Stecker der Glühlampe stecken (state.lampPlugs, stecker.js)
+const ANSCHLUSS = { a0: 'A von Spule 1', e0: 'E von Spule 1', a1: 'A von Spule 2', e1: 'E von Spule 2' };
+function lampenAnschluss() {
+  const [p, q] = state.lampPlugs;
+  if (!p && !q) return 'Die Lampe ist noch nicht angeschlossen. Ziehe die Stecker ihrer Kabel an die Anschlüsse der Spulen.';
+  if (!p || !q) return `Ein Stecker steckt an ${ANSCHLUSS[p ?? q]}, der andere fehlt noch – der Stromkreis ist offen.`;
+  if (p === q) return `Beide Stecker stecken an ${ANSCHLUSS[p]}.`;
+  return `Die Lampe ist an ${ANSCHLUSS[p]} und ${ANSCHLUSS[q]} angeschlossen.`;
+}
 const WIRING = [['wiringOkBtn', false], ['wiringSwapBtn', true]];
 const CHECKS = [['fieldCheck', 'showField'], ['insideCheck', 'colorInside'], ['bCheck', 'showB'], ['plotCheck', 'showPlot']];
 
@@ -48,6 +58,8 @@ export function updateUi() {
   for (const button of $('turnsButtons').children) segment(button.id, Number(button.dataset.turns) === state.turns);
   $('displayInfo').hidden = state.display === 'meter' || state.explain;
   $('displayInfo').textContent = DISPLAY_INFO[state.display] ?? '';
+  $('lampStatus').hidden = state.display !== 'lamp' || state.explain;
+  $('lampStatus').textContent = lampenAnschluss();
   for (const [id, display] of DISPLAYS) segment(id, state.display === display);
   $('displayButtons').hidden = state.explain;   // Auswahl nur im Modell
   for (const [id, reversed] of WIRING) segment(id, state.reversed === reversed);
@@ -258,6 +270,7 @@ export function initUi() {
     });
   }
   onCrankGrab(updateUi);
+  onPlugChange(updateUi);
   controls.addEventListener('start', () => { verschoben = true; });
   window.addEventListener('resize', () => { if (!verschoben) resetView(); else erklaerLage(); });
 

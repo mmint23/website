@@ -10,6 +10,7 @@ import { syncFeld } from './feldlinien.js';
 import { syncMeter, syncCables } from './messgeraet.js';
 import { syncLed } from './led.js';
 import { syncLamp } from './gluehlampe.js';
+import { syncStecker } from './stecker.js';
 import { updatePlot } from './diagramm.js';
 import { initUi, updateReadout } from './bedienfeld.js';
 import './ziehen.js';
@@ -36,6 +37,7 @@ renderer.setAnimationLoop(() => {
   syncMeter();
   syncLed();
   syncLamp();
+  syncStecker();
   updateReadout();
   updatePlot();
   if (nurAnzeigen) ansichtUebernehmen();

@@ -216,6 +216,11 @@ function layCables() {
     scene.remove(cable);
   }
   const [s1, s2] = terminals;
+  // Glühlampe: nur die Verbindung zwischen den Spulen; die Kabel der Lampe steckt man selbst an (stecker.js)
+  if (state.display === 'lamp') {
+    cables = state.coils === 2 ? [makeCable(bridge(s1.e, state.reversed ? s2.a : s2.e), mat.cableBlack)] : [];
+    return;
+  }
   cables = [makeCable(toMeter(s1.a, 'plus', [[21, 5, 6], [27, 0, 7]]), mat.cableBlack)];
   if (state.coils === 1) {
     cables.push(makeCable(toMeter(s1.e, 'minus', [[20, -7, 6]]), mat.cableBlack));
