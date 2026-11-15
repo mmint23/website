@@ -215,7 +215,7 @@
             <circle cx="110" cy="116" r="15" fill="var(--flaeche)" stroke="currentColor" stroke-width="2"/>
             <text x="110" y="121" text-anchor="middle" font-size="13" fill="currentColor" font-family="system-ui, sans-serif">V~</text>
             <circle cx="110" cy="62" r="3" fill="currentColor"/><circle cx="110" cy="170" r="3" fill="currentColor"/>
-            <text x="18" y="121" font-family="Georgia, serif" font-style="italic" font-size="18" fill="currentColor">U<tspan font-size="12" dy="4" font-style="normal">1</tspan></text>
+            <text x="12" y="121" font-family="Georgia, serif" font-style="italic" font-size="18" fill="currentColor">U<tspan font-size="12" dy="4" font-style="normal">P</tspan></text>
           </g>
 
           <!-- Eisenkern (Schritt 3) -->
@@ -246,7 +246,7 @@
             <circle cx="342" cy="62" r="3" fill="currentColor"/><circle cx="342" cy="170" r="3" fill="currentColor"/>
             <circle cx="388" cy="62" r="4" fill="var(--flaeche)" stroke="currentColor" stroke-width="1.5"/>
             <circle cx="388" cy="170" r="4" fill="var(--flaeche)" stroke="currentColor" stroke-width="1.5"/>
-            <text x="398" y="121" font-family="Georgia, serif" font-style="italic" font-size="18" fill="currentColor">U<tspan font-size="12" dy="4" font-style="normal">2</tspan></text>
+            <text x="398" y="121" font-family="Georgia, serif" font-style="italic" font-size="18" fill="currentColor">U<tspan font-size="12" dy="4" font-style="normal">S</tspan></text>
           </g>
         </svg>
         <figcaption id="bildtext"></figcaption>
@@ -274,13 +274,13 @@
 
     // Die Schritte in richtiger Reihenfolge; „teile“ = was davon im Bild beim Ablauf hervorgehoben wird
     const SCHRITTE = [
-      { text: 'An die Primärspule wird die Wechselspannung U₁ angelegt, deshalb fließt in ihr Wechselstrom.',
+      { text: 'An die Primärspule wird die Wechselspannung U<sub>P</sub> angelegt, deshalb fließt in ihr Wechselstrom.',
         teile: ['t-primaer', 't-pspule'], feld: false },
       { text: 'Der Wechselstrom erzeugt ein sich ständig änderndes Magnetfeld („Wechselmagnetfeld“).',
         teile: ['t-pspule'], feld: true },
       { text: 'Der Eisenkern verstärkt das Magnetfeld und verlängert es in die Sekundärspule hinein.',
         teile: ['t-kern'], feld: true },
-      { text: 'Zwischen den Enden der Sekundärspule entsteht durch das Wechselmagnetfeld eine Induktionsspannung U₂.',
+      { text: 'Zwischen den Enden der Sekundärspule entsteht durch das Wechselmagnetfeld eine Induktionsspannung U<sub>S</sub>.',
         teile: ['t-sekundaer'], feld: true },
     ];
 
@@ -311,7 +311,7 @@
       li.innerHTML = `<p></p><div class="pfeile">
           <button type="button" data-richtung="-1" aria-label="nach oben">▲</button>
           <button type="button" data-richtung="1" aria-label="nach unten">▼</button></div>`;
-      li.querySelector('p').textContent = SCHRITTE[index].text;
+      li.querySelector('p').innerHTML = SCHRITTE[index].text;
       return li;
     }
 
@@ -455,7 +455,7 @@
       svg.classList.toggle('feld-an', SCHRITTE[index].feld);
       svg.querySelectorAll('.teil').forEach(t => t.classList.toggle('an', SCHRITTE[index].teile.includes(t.id)));
       karten().forEach(k => k.classList.toggle('hervor', Number(k.dataset.index) === index));
-      $('bildtext').textContent = `Schritt ${index + 1}: ${SCHRITTE[index].text}`;
+      $('bildtext').innerHTML = `Schritt ${index + 1}: ${SCHRITTE[index].text}`;
     }
 
     function stopAblauf() {
